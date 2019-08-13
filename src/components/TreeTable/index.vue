@@ -1,6 +1,6 @@
 
 <template>
- <el-table ref="multipleTable" :data="formatData" :row-style="showRow" v-bind="$attrs">   <!--  @header-click="chooseall" -->
+ <el-table ref="multipleTable" :data="formatData"  row-key="id" :row-style="showRow" v-bind="$attrs">   <!--  @header-click="chooseall" -->
     <el-table-column :render-header="renderHeader" width="50" align="center">
       <template slot-scope="scope">
         <el-checkbox v-model="scope.row.checks" @change="toselect(scope.row)"></el-checkbox>
@@ -20,7 +20,10 @@
       <template slot-scope="scope">
         <!-- Todo -->
         <!-- eslint-disable-next-line vue/no-confusing-v-for-v-if -->
-        <span v-for="space in scope.row._level" v-if="index === 0" :key="space" class="ms-tree-space"/>
+        <template  v-if="index === 0">
+          <span v-for="space in scope.row._level" :key="space" class="ms-tree-space"/>
+        </template>
+        
         <span v-if="iconShow(index,scope.row)" class="tree-ctrl" @click="toggleExpanded(scope.$index)">
           <i v-if="!scope.row._expanded" class="el-icon-plus"/>
           <i v-else class="el-icon-minus"/>

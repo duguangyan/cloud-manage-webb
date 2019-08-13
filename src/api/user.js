@@ -2,8 +2,9 @@ import request from '@/utils/request'
 
 export function login(data) {
   return request({
-    url: '/user/login',
+    url: '/upms/login/pwd',
     method: 'post',
+    headers: { 'Authorization': 'Basic cwap: xx' },
     data
   })
 }

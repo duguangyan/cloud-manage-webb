@@ -1,13 +1,20 @@
 <template>
   <div class="app-container">
-    <el-tree
-      :props="props"
-      :load="loadNode"
-      lazy
-      show-checkbox>
-    </el-tree>
-    <tree-table :data="data" :columns="columns" border/>
-  </div>
+  <el-table
+    :data="dictData"
+    style="width: 100%"
+    row-key="id"
+    border
+    lazy
+    :load="load"
+    :tree-props="{children: 'children', hasChildren: 'hasChildren'}">
+    <el-table-column
+      prop="name"
+      label="姓名"
+      width="180">
+    </el-table-column>
+  </el-table>
+</div>
 </template>
 
 <script>
@@ -22,7 +29,12 @@ export default {
   components: { treeTable },
   data() {
     return {
-      dictData: [],
+      dictData: [
+        {
+          id: 1,
+          name: ''
+        }
+      ],
       listLoading: true,
       query: {
         id: ''
@@ -31,134 +43,55 @@ export default {
       dialogStatus: '',
       dialogPvVisible: false,
       downloadLoading: false,
-      props: {
-        label: 'name',
-        children: 'zones',
-        isLeaf: 'leaf'
-      },
-      columns: [
-        {
-          text: "事件",
-          value: "event",
-          width: 200
-        },
-        {
-          text: "ID",
-          value: "id"
-        }
-      ],
-      data: [
-        {
-          id: 0,
-          event: "事件1",
-          timeLine: 50,
-          comment: "无"
-        },
-        {
+      tableData1: [{
           id: 1,
-          event: "事件1",
-          timeLine: 100,
-          comment: "无",
-          children: [
-            {
-              id: 2,
-              event: "事件2",
-              timeLine: 10,
-              comment: "无"
-            },
-            {
-              id: 3,
-              event: "事件3",
-              timeLine: 90,
-              comment: "无",
-              children: [
-                {
-                  id: 4,
-                  event: "事件4",
-                  timeLine: 5,
-                  comment: "无"
-                },
-                {
-                  id: 5,
-                  event: "事件5",
-                  timeLine: 10,
-                  comment: "无"
-                },
-                {
-                  id: 6,
-                  event: "事件6",
-                  timeLine: 75,
-                  comment: "无",
-                  children: [
-                    {
-                      id: 7,
-                      event: "事件7",
-                      timeLine: 50,
-                      comment: "无",
-                      children: [
-                        {
-                          id: 71,
-                          event: "事件71",
-                          timeLine: 25,
-                          comment: "xx"
-                        },
-                        {
-                          id: 72,
-                          event: "事件72",
-                          timeLine: 5,
-                          comment: "xx"
-                        },
-                        {
-                          id: 73,
-                          event: "事件73",
-                          timeLine: 20,
-                          comment: "xx"
-                        }
-                      ]
-                    },
-                    {
-                      id: 8,
-                      event: "事件8",
-                      timeLine: 25,
-                      comment: "无"
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
+          date: '2016-05-02',
+          name: '王小虎',
+          address: '上海市普陀区金沙江路 1518 弄'
+        }, {
+          id: 2,
+          date: '2016-05-04',
+          name: '王小虎',
+          address: '上海市普陀区金沙江路 1517 弄'
+        }, {
+          id: 3,
+          date: '2016-05-01',
+          name: '王小虎',
+          address: '上海市普陀区金沙江路 1519 弄',
+          hasChildren: true
+        }, {
+          id: 4,
+          date: '2016-05-03',
+          name: '王小虎',
+          address: '上海市普陀区金沙江路 1516 弄'
+        }]
     }
   },
   created() {
-
+     this.getDictById()
   },
   methods: {
-    loadNode(node, resolve) {
-      console.log(node)
-      if (node.level === 0) {
-        this.listLoading = true
-        getDictById().then(res => {
-          this.dictData = res.data
-          return resolve([{ name: res.data[0].name }]);
-        })
-        
-      }
-      console.log(node)
-      if(node.level >= 1) {
-        getDictByPid({pid: node.id}).then(res => {
-          const data = [];
-          for(var i = 0; i < res.data.length; i++) {
-            data.push({
-              name: res.data[i].name,
-              id: res.data[i].id,
-              leaf: res.data[i].haveChild === 1?false:true
-            })
-          }
-          resolve(data)
-        })
-      }
+    getDictById() {
+      getDictById().then(res => {
+        this.dictData.id = res.date[0].id
+        this.dictData.name = res.data[0].name
+      })
+    },
+    load(tree, treeNode, resolve) {
+      console.log('load')
+      console.log(tree)
+      getDictByPid({
+        pid: treeNode.id
+      }).then(res => {
+        let data = []
+        for(let i = 0; i < res.data.length; i++) {
+          data.push({
+            id: res.data[i].id,
+            name: res.data[i].name
+          })
+        }
+        resolve(data)
+      })
     }
   }
 }

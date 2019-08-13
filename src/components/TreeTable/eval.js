@@ -9,7 +9,7 @@ export default function treeToArray(
   let tmp = []
   Array.from(data).forEach(function(record) {
     if (record._expanded === undefined) {
-      Vue.set(record, '_expanded', expandAll);
+      Vue.set(record, '_expanded', expandAll)
     }
     let _level = 1
     if (level !== undefined && level !== null) {
@@ -20,9 +20,9 @@ export default function treeToArray(
     if (parent) {
       Vue.set(record, 'parent', parent)
     }
-    tmp.push(record);
+    tmp.push(record)
     if (record.child && record.child.length > 0) {
-      const child = treeToArray(record.child, expandAll, record, _level);
+      const child = treeToArray(record.child, expandAll, record, _level)
       tmp = tmp.concat(child)
     }
   })
