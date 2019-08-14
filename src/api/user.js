@@ -4,7 +4,6 @@ export function login(data) {
   return request({
     url: '/upms/login/pwd',
     method: 'post',
-    headers: { 'Authorization': 'Basic cwap: xx' },
     data
   })
 }

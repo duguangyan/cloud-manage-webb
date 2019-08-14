@@ -6,8 +6,8 @@ import { getToken } from '@/utils/auth'
 // create an axios instance
 const service = axios.create({
   // baseURL: process.env.VUE_APP_BASE_API,
-  baseURL: 'http://192.168.0.122:8000/', // url = base url + request url
-  // withCredentials: true, // send cookies when cross-domain requests
+  headers: { 'Authorization': 'Basic cwap: xx' },
+  baseURL: 'http://192.168.0.202:8000/',
   timeout: 5000 // request timeout
 })
 
@@ -81,4 +81,5 @@ service.interceptors.response.use(
   }
 )
 
+console.log(service)
 export default service
