@@ -18,7 +18,7 @@ router.beforeEach(async(to, from, next) => {
   document.title = getPageTitle(to.meta.title)
 
   // determine whether the user has logged in
-  setToken()
+  // setToken()
   const hasToken = getToken()
 
   if (hasToken) {
@@ -29,6 +29,7 @@ router.beforeEach(async(to, from, next) => {
     } else {
       // const hasGetUserInfo = store.getters.name
       const hasGetUserInfo = true
+      console.log('hasinfo:', hasGetUserInfo)
       if (hasGetUserInfo) {
         next()
       } else {
@@ -37,6 +38,7 @@ router.beforeEach(async(to, from, next) => {
           await store.dispatch('user/getInfo')
           // 实际是请求用户信息后返回，这里是模拟数据，直接从store中取
           const roles = store.getters.roles
+          console.log('roles:', roles)
           store.dispatch('permission/GenerateRoutes', { roles }).then(() => { // 生成可访问的路由表
             router.addRoutes(store.getters.addRouters) // 动态添加可访问路由表
             router.options.routes = store.getters.routers

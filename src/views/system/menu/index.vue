@@ -261,7 +261,7 @@ export default {
     getList(data) {
       // 分页事件
       this.listQuery.pageIndex = data.page
-      this.getRoleList()
+      this.getResource()
     },
     handleFilter() {
       this.listQuery.pageIndex = 1
