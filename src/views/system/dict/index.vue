@@ -1,6 +1,7 @@
 <template>
   <div class="app-container">
     <el-table
+      ref="treeTable"
       v-loading="listLoading"
       :data="dictData"
       style="width: 100%"
@@ -12,13 +13,19 @@
       <el-table-column
         prop="name"
         label="字典名"
-        width="180">
+        >
       </el-table-column>
       <el-table-column
         prop="status"
         label="状态"
         align="center"
         width="180">
+      </el-table-column>
+      <el-table-column
+        prop="value"
+        label="字典值"
+        align="center"
+        width="400">
       </el-table-column>
       <el-table-column
         prop="remark"
@@ -54,6 +61,9 @@
               :value="item.id">
             </el-option>
           </el-select>
+        </el-form-item>
+        <el-form-item label="字典值">
+          <el-input v-model="role.value" placeholder="请输入字典值" />
         </el-form-item>
          <el-form-item label="备注">
           <el-input
@@ -91,6 +101,7 @@ export default {
     return {
       role: Object.assign({}, defaultRole),
       dictData: [],
+      tableData: [],
       statusData: [
         {id: 0, name: '禁止'},
         {id: 1, name: '启用'}
@@ -100,6 +111,7 @@ export default {
         update: 'Edit',
         create: 'Create'
       },
+      changeId: '',
       dialogType: 'new',
       rules: {
         type: [{ required: true, message: 'type is required', trigger: 'change' }],
@@ -120,7 +132,8 @@ export default {
       dialogFormVisible: false,
       dialogStatus: '',
       dialogPvVisible: false,
-      downloadLoading: false
+      downloadLoading: false,
+      maps:new Map()
     }
   },
   created() {
@@ -134,42 +147,50 @@ export default {
         this.listLoading = false
         if(Array.isArray(res.data)) {
           for(let i = 0; i < res.data.length; i++) {
-            this.dictData.push({
+            let obj = {
               name: res.data[i].name,
               id: res.data[i].id,
+              pid: res.data[i].pid,
+              value: res.data[i].value === null? '': res.data[i].value,
               status: this.statusDes[res.data[i].status],
               remark: res.data[i].remark === null? '': res.data[i].remark,
               hasChildren: res.data[i].haveChild === 1? true: false
-            })
+            }
+            this.dictData.push(obj)
+            this.tableData.push(obj)
           }
+         
         }
       })
     },
     load(tree, treeNode, resolve) {
-      console.log('tree')
-      console.log(tree)
-      console.log('treenode')
-      console.log(treeNode)
+      const pid = tree.id;
+      this.maps.set(pid, {tree, treeNode, resolve})
       getDictByPid({
         pid: tree.id
       }).then(res => {
         let data = []
         if(Array.isArray(res.data)) {
           for(let i = 0; i < res.data.length; i++) {
-            data.push({
+            let obj = {
               name: res.data[i].name,
               id: res.data[i].id,
+              pid: res.data[i].pid,
+              value: res.data[i].value === null? '': res.data[i].value,
               status: this.statusDes[res.data[i].status],
               remark: res.data[i].remark === null? '': res.data[i].remark,
               hasChildren: res.data[i].haveChild === 1? true: false
-            })
+            }
+            data.push(obj)
+            this.tableData.push(obj)
           }
         }
+        console.log(this.dictData)
+        console.log(this.tableData)
         resolve(data)
       })
     },
-    msgEdit(scope) {
-      console.log(scope)
+    msgEdit(scope, node, data) {
       this.dialogType = 'edit'
       this.dialogVisible = true
       this.checkStrictly = true
@@ -177,10 +198,10 @@ export default {
     },
     msgAdd(scope) {
       this.role = Object.assign({}, defaultRole)
+      console.log(scope)
       this.dialogType = 'new'
       this.dialogVisible = true
-      this.checkStrictly = true
-      this.role = deepClone(scope)
+      this.changeId = scope.id
     },
     handleUpdate(row) {
       // 编辑事件
@@ -199,19 +220,14 @@ export default {
           type: 'warning'
         }).then(() => {
           deleteDict({id: data.id}).then(response => {
-            // for (const v of this.dictData) {
-            //   if (v.id === data.id) {
-            //     const index = this.list.indexOf(v)
-            //     this.dictData.splice(index, 1)
-            //     break
-            //   }
-            // }
-            
             this.$message({
               type: 'success',
               message: '删除成功!'
             });
-            this.getDictById()
+           
+            // const {tree, treeNode, resolve} = this.maps.get(data.pid)
+            this.$set(this.$refs.treeTable.store.states.lazyTreeNodeMap, data.id, [])
+            // this.load(tree,treeNode,resolve);
           })
         }).catch(() => {
           this.$message({
@@ -232,20 +248,22 @@ export default {
          await updateDict({
           id: this.role.id,
           name: this.role.name,
-          status: this.role.status,
+          status: (this.role.status === '启用'? 1: 0),
+          value: this.role.value,
           remark: this.role.remark
          })
-        for (const v of this.dictData) {
-            if (v.id === this.role.id) {
-              const index = this.dictData.indexOf(v)
-              this.dictData.splice(index, 1, this.role)
-              break
-            }
-        }
-      } else {
-        const { data } = await addDict({
+         this.$set(this.$refs.treeTable.store.states.lazyTreeNodeMap, this.role.id, {
           id: this.role.id,
           name: this.role.name,
+          status: this.role.status,
+          value: this.role.value,
+          remark: this.role.remark
+         })
+      } else {
+        const { data } = await addDict({
+          pid: this.changeId,
+          name: this.role.name,
+          value: this.role.value,
           // status: this.role.status,
           remark: this.role.remark
         })
