@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function login(data) {
   return request({
-    url: '/upms/login/pwd',
+    url: '/upms/oauth/token',
     method: 'post',
     data
   })
@@ -20,5 +20,13 @@ export function logout() {
   return request({
     url: '/user/logout',
     method: 'post'
+  })
+}
+
+export function getRoles(query) {
+  return request({
+    url: '/upms/resource/getResourceMenuById',
+    method: 'get',
+    params: query
   })
 }

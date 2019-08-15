@@ -7,7 +7,7 @@
 <script>
 
 export default {
-  name: 'List',
+  name: 'list',
   data() {
     return {
         

@@ -19,9 +19,9 @@
       fit
       highlight-current-row
     >
-      <el-table-column align="center" label="ID" width="95">
+      <el-table-column align="center" label="ID" width="300">
         <template slot-scope="scope">
-          {{ scope.$index }}
+          {{ scope.row.id }}
         </template>
       </el-table-column>
       <el-table-column label="系统名"  width="300">

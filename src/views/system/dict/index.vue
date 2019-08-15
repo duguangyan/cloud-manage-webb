@@ -40,7 +40,7 @@
           <el-button type="primary" size="mini" @click="msgAdd(row)">
             添加
           </el-button>
-          <el-button v-if="row.status!='deleted'" size="mini" type="danger" @click="handleDelete(row,'deleted')">
+          <el-button v-if="row.status!='deleted'" size="mini" type="danger" @click="handleDelete(row, $event)">
             删除
           </el-button>
         </template>
@@ -100,6 +100,7 @@ export default {
   data() {
     return {
       role: Object.assign({}, defaultRole),
+      listLoading: false,
       dictData: [],
       tableData: [],
       statusData: [
@@ -112,6 +113,7 @@ export default {
         create: 'Create'
       },
       changeId: '',
+      changePid: '',
       dialogType: 'new',
       rules: {
         type: [{ required: true, message: 'type is required', trigger: 'change' }],
@@ -127,6 +129,7 @@ export default {
       query: {
         id: ''
       },
+      treeNode: {},
       dialogVisible: false,
       checkStrictly: false,
       dialogFormVisible: false,
@@ -137,11 +140,11 @@ export default {
     }
   },
   created() {
-    this.listLoading = true
     this.getDictById()
   },
   methods: {
     getDictById() {
+      this.listLoading = true
       this.dictData = []
       getDictById().then(res => {
         this.listLoading = false
@@ -157,7 +160,6 @@ export default {
               hasChildren: res.data[i].haveChild === 1? true: false
             }
             this.dictData.push(obj)
-            this.tableData.push(obj)
           }
          
         }
@@ -182,11 +184,11 @@ export default {
               hasChildren: res.data[i].haveChild === 1? true: false
             }
             data.push(obj)
-            this.tableData.push(obj)
           }
         }
-        console.log(this.dictData)
-        console.log(this.tableData)
+        console.log('___________')
+        console.log(tree)
+        console.log(treeNode)
         resolve(data)
       })
     },
@@ -202,6 +204,7 @@ export default {
       this.dialogType = 'new'
       this.dialogVisible = true
       this.changeId = scope.id
+      this.changePid = scope.pid
     },
     handleUpdate(row) {
       // 编辑事件
@@ -212,7 +215,7 @@ export default {
         this.$refs['dataForm'].clearValidate()
       })
     },
-    handleDelete(data, msg) {
+    handleDelete(data, e) {
       // 删除
       this.$confirm('此操作将永久删除该系统, 是否继续?', '提示', {
           confirmButtonText: '确定',
@@ -224,9 +227,9 @@ export default {
               type: 'success',
               message: '删除成功!'
             });
-           
+            this.getDictById()
             // const {tree, treeNode, resolve} = this.maps.get(data.pid)
-            this.$set(this.$refs.treeTable.store.states.lazyTreeNodeMap, data.id, [])
+            // this.$set(this.$refs.treeTable.store.states.lazyTreeNodeMap, data.id, [])
             // this.load(tree,treeNode,resolve);
           })
         }).catch(() => {
@@ -267,6 +270,11 @@ export default {
           // status: this.role.status,
           remark: this.role.remark
         })
+        // console.log('pid:', this.changeId)
+        // console.log(this.maps)
+        // console.log(this.maps.get(this.changeId))
+        // const {tree, treeNode, resolve} = this.maps.get(this.changeId)
+        // this.load(tree, treeNode, resolve);
         this.getDictById()
       }
 

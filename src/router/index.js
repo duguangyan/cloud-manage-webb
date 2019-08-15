@@ -47,140 +47,140 @@ export const constantRoutes = [
       component: () => import('@/views/dashboard/index'),
       meta: { title: '主页', icon: 'dashboard' }
     }]
-  },
+  }
 
-  {
-    path: '/product',
-    component: Layout,
-    redirect: '/product',
-    name: 'Product',
-    meta: { title: '商品管理', icon: 'example' },
-    children: [
-      {
-        path: 'classify',
-        name: 'Classify',
-        component: () => import('@/views/product/classify/index'),
-        meta: { title: '分类管理', icon: 'table' }
-      },
-      {
-        path: 'unit',
-        name: 'Unit',
-        component: () => import('@/views/product/unit/index'),
-        meta: { title: '计量单位', icon: 'tree' }
-      },
-      {
-        path: 'list',
-        name: 'List',
-        component: () => import('@/views/product/list/index'),
-        meta: { title: '商品列表', icon: 'tree' }
-      }
-    ]
-  },
+  // {
+  //   path: '/product',
+  //   component: Layout,
+  //   redirect: '/product',
+  //   name: 'Product',
+  //   meta: { title: '商品管理', icon: 'example' },
+  //   children: [
+  //     {
+  //       path: 'classify',
+  //       name: 'Classify',
+  //       component: () => import('@/views/product/classify/index'),
+  //       meta: { title: '分类管理', icon: 'table' }
+  //     },
+  //     {
+  //       path: 'unit',
+  //       name: 'Unit',
+  //       component: () => import('@/views/product/unit/index'),
+  //       meta: { title: '计量单位', icon: 'tree' }
+  //     },
+  //     {
+  //       path: 'list',
+  //       name: 'List',
+  //       component: () => import('@/views/product/list/index'),
+  //       meta: { title: '商品列表', icon: 'tree' }
+  //     }
+  //   ]
+  // },
 
-  {
-    path: '/order',
-    component: Layout,
-    name: 'Order',
-    meta: { title: '订单管理', icon: 'example' },
-    children: [
-      {
-        path: 'classify',
-        name: 'Classify',
-        component: () => import('@/views/order/sellOrder/index'),
-        meta: { title: '销售订单', icon: 'table' }
-      }
-    ]
-  },
+  // {
+  //   path: '/order',
+  //   component: Layout,
+  //   name: 'Order',
+  //   meta: { title: '订单管理', icon: 'example' },
+  //   children: [
+  //     {
+  //       path: 'classify',
+  //       name: 'Classify',
+  //       component: () => import('@/views/order/sellOrder/index'),
+  //       meta: { title: '销售订单', icon: 'table' }
+  //     }
+  //   ]
+  // },
 
-  {
-    path: '/activity',
-    component: Layout,
-    name: 'Activity',
-    meta: { title: '活动管理', icon: 'example' },
-    children: [
-      {
-        path: 'banner',
-        name: 'Banner',
-        component: () => import('@/views/activity/banner/index'),
-        meta: { title: 'Banner管理', icon: 'table' }
-      },
-      {
-        path: 'column',
-        name: 'Column',
-        component: () => import('@/views/activity/column/index'),
-        meta: { title: '栏目管理', icon: 'table' }
-      }
-    ]
-  },
+  // {
+  //   path: '/activity',
+  //   component: Layout,
+  //   name: 'Activity',
+  //   meta: { title: '活动管理', icon: 'example' },
+  //   children: [
+  //     {
+  //       path: 'banner',
+  //       name: 'Banner',
+  //       component: () => import('@/views/activity/banner/index'),
+  //       meta: { title: 'Banner管理', icon: 'table' }
+  //     },
+  //     {
+  //       path: 'column',
+  //       name: 'Column',
+  //       component: () => import('@/views/activity/column/index'),
+  //       meta: { title: '栏目管理', icon: 'table' }
+  //     }
+  //   ]
+  // },
 
-  {
-    path: '/stat',
-    component: Layout,
-    name: 'Stat',
-    meta: { title: '数据统计', icon: 'example' },
-    children: [
-      {
-        path: 'general',
-        name: 'General',
-        component: () => import('@/views/stat/general/index'),
-        meta: { title: '数据概况', icon: 'table' }
-      },
-      {
-        path: 'analyze',
-        name: 'Analyze',
-        component: () => import('@/views/stat/analyze/index'),
-        meta: { title: '商品分析', icon: 'table' }
-      }
-    ]
-  },
+  // {
+  //   path: '/stat',
+  //   component: Layout,
+  //   name: 'Stat',
+  //   meta: { title: '数据统计', icon: 'example' },
+  //   children: [
+  //     {
+  //       path: 'general',
+  //       name: 'General',
+  //       component: () => import('@/views/stat/general/index'),
+  //       meta: { title: '数据概况', icon: 'table' }
+  //     },
+  //     {
+  //       path: 'analyze',
+  //       name: 'Analyze',
+  //       component: () => import('@/views/stat/analyze/index'),
+  //       meta: { title: '商品分析', icon: 'table' }
+  //     }
+  //   ]
+  // },
 
-  {
-    path: '/permission',
-    component: Layout,
-    name: 'Permission',
-    meta: { title: '权限管理', icon: 'example' },
-    children: [
-      {
-        path: 'role',
-        name: 'Role',
-        component: () => import('@/views/permission/role/index'),
-        meta: { title: '角色管理', icon: 'table' }
-      },
-      {
-        path: 'unit',
-        name: 'Unit',
-        component: () => import('@/views/permission/user/index'),
-        meta: { title: '用户管理', icon: 'tree' }
-      }
-    ]
-  },
+  // {
+  //   path: '/permission',
+  //   component: Layout,
+  //   name: 'Permission',
+  //   meta: { title: '权限管理', icon: 'example' },
+  //   children: [
+  //     {
+  //       path: 'role',
+  //       name: 'Role',
+  //       component: () => import('@/views/permission/role/index'),
+  //       meta: { title: '角色管理', icon: 'table' }
+  //     },
+  //     {
+  //       path: 'unit',
+  //       name: 'Unit',
+  //       component: () => import('@/views/permission/user/index'),
+  //       meta: { title: '用户管理', icon: 'tree' }
+  //     }
+  //   ]
+  // },
 
-  {
-    path: '/system',
-    component: Layout,
-    name: 'System',
-    meta: { title: '系统配置', icon: 'example' },
-    children: [
-      {
-        path: 'menu',
-        name: 'Menu',
-        component: () => import('@/views/system/menu/index'),
-        meta: { title: '菜单资源', icon: 'form' }
-      },
-      {
-        path: 'dict',
-        name: 'Dict',
-        component: () => import('@/views/system/dict/index'),
-        meta: { title: '字典管理', icon: 'table' }
-      },
-      {
-        path: 'config',
-        name: 'Config',
-        component: () => import('@/views/system/config/index'),
-        meta: { title: '系统管理', icon: 'form' }
-      }
-    ]
-  },
+  // {
+  //   path: '/system',
+  //   component: Layout,
+  //   name: 'System',
+  //   meta: { title: '系统配置', icon: 'example' },
+  //   children: [
+  //     {
+  //       path: 'menu',
+  //       name: 'Menu',
+  //       component: () => import('@/views/system/menu/index'),
+  //       meta: { title: '菜单资源', icon: 'form' }
+  //     },
+  //     {
+  //       path: 'dict',
+  //       name: 'Dict',
+  //       component: () => import('@/views/system/dict/index'),
+  //       meta: { title: '字典管理', icon: 'table' }
+  //     },
+  //     {
+  //       path: 'config',
+  //       name: 'Config',
+  //       component: () => import('@/views/system/config/index'),
+  //       meta: { title: '系统管理', icon: 'form' }
+  //     }
+  //   ]
+  // },
 
   // {
   //   path: '/nested',
@@ -240,88 +240,78 @@ export const constantRoutes = [
   //   ]
   // },
 
-  // 404 page must be placed at the end !!!
-  { path: '*', redirect: '/404', hidden: true }
+  // // 404 page must be placed at the end !!!
+  // { path: '*', redirect: '/404', hidden: true }
 ]
 
 // export const asyncRoutes = [
 //   {
-//     path: '/permission',
+//     path: '/',
 //     component: Layout,
-//     redirect: '/permission/page',
-//     alwaysShow: true, // will always show the root menu
-//     name: 'Permission',
-//     meta: {
-//       title: 'Permission',
-//       icon: 'lock',
-//       roles: ['admin', 'editor'] // you can set roles in root nav
-//     },
-//     children: [
-//       {
-//         path: 'page',
-//         component: () => import('@/views/permission/page'),
-//         name: 'PagePermission',
-//         meta: {
-//           title: 'Page Permission',
-//           roles: ['admin'] // or you can only set roles in sub nav
-//         }
-//       },
-//       {
-//         path: 'directive',
-//         component: () => import('@/views/permission/directive'),
-//         name: 'DirectivePermission',
-//         meta: {
-//           title: 'Directive Permission'
-//           // if do not set roles, means: this page does not require permission
-//         }
-//       },
-//       {
-//         path: 'role',
-//         component: () => import('@/views/permission/role'),
-//         name: 'RolePermission',
-//         meta: {
-//           title: 'Role Permission',
-//           roles: ['admin']
-//         }
-//       }
-//     ]
+//     redirect: '/dashboard',
+//     children: [{
+//       path: 'dashboard',
+//       name: 'Dashboard',
+//       component: () => import('@/views/dashboard/index'),
+//       meta: { title: '主页', icon: 'dashboard' }
+//     }]
 //   },
-
 //   {
-//     path: '/example',
-//     component: Layout,
-//     redirect: '/example/list',
-//     name: 'Example',
-//     meta: {
-//       title: 'Example',
-//       icon: 'example'
-//     },
+//     path: '/product',
+//     name: 'Product',
+//     meta: { title: '商品管理', icon: 'example' },
 //     children: [
 //       {
-//         path: 'create',
-//         component: () => import('@/views/example/create'),
-//         name: 'CreateArticle',
-//         meta: { title: 'Create Article', icon: 'edit' }
+//         path: 'classify',
+//         name: 'Classify',
+//         component: () => import('@/views/product/classify/index'),
+//         meta: { title: '分类管理', icon: 'table' }
 //       },
 //       {
-//         path: 'edit/:id(\\d+)',
-//         component: () => import('@/views/example/edit'),
-//         name: 'EditArticle',
-//         meta: { title: 'Edit Article', noCache: true, activeMenu: '/example/list' },
-//         hidden: true
+//         path: 'unit',
+//         name: 'Unit',
+//         component: () => import('@/views/product/unit/index'),
+//         meta: { title: '计量单位', icon: 'tree' }
 //       },
 //       {
 //         path: 'list',
-//         component: () => import('@/views/example/list'),
-//         name: 'ArticleList',
-//         meta: { title: 'Article List', icon: 'list' }
+//         name: 'List',
+//         component: () => import('@/views/product/list/index'),
+//         meta: { title: '商品列表', icon: 'tree' }
 //       }
 //     ]
-//   },
-
-//   // 404 page must be placed at the end !!!
-//   { path: '*', redirect: '/404', hidden: true }
+//   }
 // ]
+
+// https://www.cnblogs.com/llcdxh/p/9778491.html
+// 文章中描述DllPlugin和DllReferencePlugin处理，适用于vue-cli2.0，cli3.0的开发是否适用后续研究。
+// const _import = require('@/router/_import_' + process.env.NODE_ENV) // eslint-disable-line import/no-dynamic-require
+
+/**
+ * 通过后台数据生成动态路由
+ * 遍历后台传来的路由字符串，转换为组件对象
+ * @param {Array} asyncRouterMap
+ * @returns {Boolean}
+ * @example see @/store/modules/permission.js
+ */
+// export function getAsyncRouter(asyncRouterMap) {
+//   const accessedRouters = asyncRouterMap.filter(route => {
+//     const component = route.component
+//     if (component) {
+//       if (component === 'Layout') { // Layout组件特殊处理
+//         route.component = Layout
+//       } else {
+//         route.component = resolve => require(route.component, resolve)
+//       }
+//     }
+//     if (route.children && route.children.length > 0) {
+//       route.children = getAsyncRouter(route.children)
+//     }
+//     return true
+//   })
+
+//   return accessedRouters
+// }
 
 const createRouter = () => new Router({
   // mode: 'history', // require service support

@@ -30,6 +30,7 @@
 
     <el-table 
       ref="multipleTable" 
+      v-loading="listLoading"
       :data="resourceData"
       tooltip-effect="dark" 
       @selection-change="handleSelectionChange"
@@ -197,6 +198,7 @@ export default {
   data() {
     return {
       role: Object.assign({}, defaultRole),
+      listLoading: false,
       systemData: [],
       statusData: [
         {id: 0, name: '禁止'},
@@ -252,7 +254,9 @@ export default {
       // 多选事件
     },
     getResource() {
+      this.listLoading = true
       getResource(this.listQuery).then(res => {
+        this.listLoading = false
         this.resourceData = res.data.records
         this.total = res.data.total
         this.allPages = res.data.pages

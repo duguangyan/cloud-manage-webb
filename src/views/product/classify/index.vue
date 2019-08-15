@@ -7,7 +7,7 @@
 <script>
 
 export default {
-  name: 'Classify',
+  name: 'classify',
   data() {
     return {
         

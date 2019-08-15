@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function getRoutes(query) {
   return request({
-    url: '/upms/role/getRoleResources',
+    url: '/upms/resource/getResourceById',
     method: 'get',
     params: query
   })

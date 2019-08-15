@@ -14,6 +14,7 @@
     <el-button size="small">批量锁定</el-button>
 
     <el-table 
+      v-loading="listLoading"
       ref="multipleTable" 
       :data="userData"
       tooltip-effect="dark" 
@@ -117,6 +118,7 @@ export default {
   data() {
     return {
       role: Object.assign({}, defaultRole),
+      listLoading: false,
       systemData: [
       ],
       routes: [],
@@ -158,7 +160,9 @@ export default {
       // 多选事件
     },
     getUserList() {
+      this.listLoading = true
       getUserList(this.listQuery).then(res => {
+        this.listLoading = false
         this.userData = res.data.records
         this.total = res.data.total
         this.allPages = res.data.pages

@@ -1,4 +1,4 @@
-import { login, logout, getInfo } from '@/api/user'
+import { login, logout, getInfo, getRoles } from '@/api/user'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import router, { resetRouter } from '@/router'
 
@@ -6,7 +6,8 @@ const state = {
   token: getToken(),
   refreshToken: '',
   name: '',
-  avatar: ''
+  avatar: '',
+  roles: []
 }
 
 const mutations = {
@@ -21,6 +22,9 @@ const mutations = {
   },
   SET_AVATAR: (state, avatar) => {
     state.avatar = avatar
+  },
+  SET_ROLES: (state, roles) => {
+    state.roles = roles
   }
 }
 
@@ -29,7 +33,7 @@ const actions = {
   login({ commit }, userInfo) {
     const { username, password } = userInfo
     return new Promise((resolve, reject) => {
-      login({ account: username.trim(), pwd: password }).then(response => {
+      login({ username: username.trim(), password: password, grant_type: 'password', scope: 'btc', client_id: 'cmanager', client_secret: 'xx' }).then(response => {
         const { data } = response
         commit('SET_TOKEN', data.access_token)
         commit('SET_REFRESH_TOKEN', data.refresh_token)
@@ -70,6 +74,23 @@ const actions = {
         removeToken()
         resetRouter()
         resolve()
+      }).catch(error => {
+        reject(error)
+      })
+    })
+  },
+
+  getRoles({ commit, state }) {
+    return new Promise((resolve, reject) => {
+      getRoles({ userId: 1 }).then(response => {
+        const { data } = response
+
+        if (!data) {
+          reject('Verification failed, please Login again.')
+        }
+        commit('SET_ROLES', data)
+        commit('SET_NAME', 'admin')
+        resolve(data)
       }).catch(error => {
         reject(error)
       })

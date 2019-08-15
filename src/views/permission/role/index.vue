@@ -12,6 +12,7 @@
     <el-button type="primary" size="small" @click="handleAddRole">新增角色</el-button>
 
     <el-table 
+      v-loading="listLoading"
       ref="multipleTable" 
       :data="rolesData"
       tooltip-effect="dark" 
@@ -77,6 +78,29 @@
       </div>
     </el-dialog>
 
+    <el-dialog :visible.sync="roleDialogVisible" :title="'分配权限'">
+      <el-form :model="role" label-width="80px" label-position="left">
+        <el-form-item label="角色名称">
+          <el-input v-model="role.name" placeholder="" readonly />
+        </el-form-item>
+        <el-form-item label="权限列表">
+          <el-tree
+            ref="tree"
+            :check-strictly="checkStrictly"
+            :data="routesData"
+            :props="defaultProps"
+            show-checkbox
+            node-key="path"
+            class="permission-tree"
+          />
+        </el-form-item>
+      </el-form>
+      <div style="text-align:right;">
+        <el-button type="danger" @click="dialogVisible=false">取消</el-button>
+        <el-button type="primary" @click="confirmRole">确定</el-button>
+      </div>
+    </el-dialog>
+
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageIndex" :limit.sync="listQuery.pageSize"  @pagination="getList" />
   </div>
 </template>
@@ -100,10 +124,12 @@ export default {
   data() {
     return {
       role: Object.assign({}, defaultRole),
+      listLoading: false,
       routes: [],
       rolesList: [],
       rolesData: [],
       dialogVisible: false,
+      roleDialogVisible: false,
       dialogType: 'new',
       checkStrictly: false,
       defaultProps: {
@@ -117,7 +143,8 @@ export default {
         pageIndex: 1,
         pageSize: 10
       },
-      multipleSelection: []
+      multipleSelection: [],
+      num: 0
     }
   },
   components: { Pagination },
@@ -128,8 +155,8 @@ export default {
   },
   created() {
     // Mock: get all routes and roles list from server
-    // this.getRoutes()
-    this.getRoles()
+    this.getRoutes()
+    // this.getRoles()
     this.getRoleList() 
   },
   methods: {
@@ -138,10 +165,14 @@ export default {
       console.log(val)
     },
     getRoleList() {
+      this.listLoading = true
       getRoleList(this.listQuery).then(res => {
-        this.rolesData = res.data.records
-        this.total = res.data.total
-        this.allPages = res.data.pages
+        this.listLoading = false
+        if(Array.isArray(res.data.records)) {
+          this.rolesData = res.data.records
+        }
+        this.total = res.data.total != null? res.data.total: 0
+        this.allPages = res.data.pages != null? res.data.pages: 0
       })
     },
     getList(data) {
@@ -154,10 +185,13 @@ export default {
       this.getRoleList()
     },
     async getRoutes(scope) {
-      const res = await getRoutes({id: scope.row.id})
-      this.serviceRoutes = res.data.resources
-      this.routes = this.generateRoutes(res.data)
-      console.log(routes)
+      const res = await getRoutes({userId: 1})
+      if(Array.isArray(res.data)) {
+        this.serviceRoutes = res.data
+        this.routes = this.generateRoutes(res.data)
+        console.log('routes')
+        console.log(this.routes)
+      }
     },
     async getRoles() {
       const res = await getRoles({id: 1})
@@ -165,21 +199,27 @@ export default {
     },
     // Reshape the routes structure so that it looks the same as the sidebar
     generateRoutes(routes, basePath = '/') {
+      console.log('generateRoutes:')
+      console.log(routes)
       const res = []
 
       for (let route of routes) {
         // skip some route
         if (route.hidden) { continue }
 
-        const onlyOneShowingChild = this.onlyOneShowingChild(route.children, route)
+        
+        // const onlyOneShowingChild = this.onlyOneShowingChild(route.children, route)
+        const onlyOneShowingChild = false
+        
 
         if (route.children && onlyOneShowingChild && !route.alwaysShow) {
           route = onlyOneShowingChild
         }
-
+        this.num++
         const data = {
-          path: path.resolve(basePath, route.path),
-          title: route.meta && route.meta.title
+          // path: path.resolve(basePath, route.path),
+          path: '/example' + this.num,
+          title: route.name
 
         }
 
@@ -219,20 +259,30 @@ export default {
       this.role = deepClone(scope.row)
     },
     handleEdit(scope) {
-      this.dialogType = 'edit'
-      this.dialogVisible = true
+      // this.dialogType = 'edit'
+      this.roleDialogVisible = true
       this.checkStrictly = true
       this.role = deepClone(scope.row)
-      this.role.routes = [
-        {id: 1, name: 'souye'},
-        {id: 2, name: 'caiwuye'}
-      ]
-      this.$nextTick(() => {
-        const routes = this.generateRoutes(this.role.routes)
-        this.$refs.tree.setCheckedNodes(this.generateArr(routes))
-        // set checked state of a node not affects its father and child nodes
-        this.checkStrictly = false
+      console.log(this.role)
+      getRoutes({userId: this.role.id}).then(res => {
+        this.$nextTick(() => {
+        
+        const routes = Array.isArray(res.data)? this.generateRoutes(res.data): this.generateRoutes([])
+        
+          
+          console.log('edit routes')
+          console.log(routes)
+          this.$refs.tree.setCheckedNodes(this.generateArr([
+            {
+            path: "/example1",
+            title: "主页"
+            }
+          ]))
+          // set checked state of a node not affects its father and child nodes
+          this.checkStrictly = false
+        })
       })
+      
     },
     handleDelete({ $index, row }) {
       this.$confirm('确定要删除该角色?', 'Warning', {
@@ -273,10 +323,14 @@ export default {
     async confirmRole() {
       const isEdit = this.dialogType === 'edit'
       
-      // const checkedKeys = this.$refs.tree.getCheckedKeys()
-      // this.role.routes = this.generateTree(deepClone(this.serviceRoutes), '/', checkedKeys)
+       const checkedKeys = this.$refs.tree.getCheckedKeys()
+       console.log('checkedKeys:')
+       console.log(checkedKeys)
+       this.role.routes = this.generateTree(deepClone(this.serviceRoutes), '/', checkedKeys)
 
       if (isEdit) {
+        console.log(this.role)
+        return
         // await updateRole(this.role.key, this.role)
          await updateRole({
            name: this.role.name,
