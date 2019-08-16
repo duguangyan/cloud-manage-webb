@@ -327,4 +327,6 @@ export function resetRouter() {
   router.matcher = newRouter.matcher // reset router
 }
 
+// module.exports = file => () => import('@/views/' + file + '.vue')
+
 export default router

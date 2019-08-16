@@ -2,27 +2,31 @@ import axios from 'axios'
 import { MessageBox, Message } from 'element-ui'
 import store from '@/store'
 import { getToken } from '@/utils/auth'
+import QS from 'qs'
 
-const transFun = (data = {}) => Object.entries(data).map(ent => ent.join('=')).join('&')
 // create an axios instance
 const service = axios.create({
+  // baseURL: 'http://192.168.0.202:8000',
   baseURL: process.env.VUE_APP_BASE_API,
-  timeout: 5000, // request timeout
-  headers: {
-    'Content-Type': 'application/x-www-form-urlencoded',
-    'name': 'ssss'
-  },
-  transformRequest: transFun
+  timeout: 5000 // request timeout
 })
 
 // request interceptor
 service.interceptors.request.use(
   config => {
+    // 将请求类型改为普通的表单类型
+    config.headers['Content-Type'] = 'application/x-www-form-urlencoded'
+    if (config.method === 'post') {
+      console.log('is post')
+      config.data = QS.stringify({
+        ...config.data // 将参数变成  a=xx&b=xx&c=xx这样的参数列表
+      })
+    }
     // do something before request is sent
     if (store.getters.token) {
       config.headers['Authorization'] = 'Bearer ' + getToken()
     } else {
-      config.headers['Authorization'] = 'Basic cwap:xx'
+      config.headers['Authorization'] = 'Basic Y21hbmFnZXI6eHg='
     }
     return config
   },
