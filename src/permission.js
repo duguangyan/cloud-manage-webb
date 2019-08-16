@@ -33,7 +33,7 @@ router.beforeEach(async(to, from, next) => {
       } else {
         try {
           // get user info
-          await store.dispatch('user/getInfo')
+          // await store.dispatch('user/getInfo')
           // 实际是请求用户信息后返回，这里是模拟数据，直接从store中取
 
           // store.dispatch('permission/GenerateRoutes', { roles }).then(() => { // 生成可访问的路由表
