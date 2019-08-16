@@ -24,20 +24,13 @@ export function addRole(data) {
   })
 }
 
-// export function updateRole(id, data) {
-//   return request({
-//     url: `/role/${id}`,
-//     method: 'put',
-//     data
-//   })
-// }
-
-// export function deleteRole(id) {
-//   return request({
-//     url: `/role/${id}`,
-//     method: 'delete'
-//   })
-// }
+export function addResourceBatch(data) {
+  return request({
+    url: '/upms/role/addResourceBatch',
+    method: 'post',
+    data
+  })
+}
 
 export function deleteRole(query) {
   return request({
@@ -62,3 +55,12 @@ export function updateRole(data) {
     data
   })
 }
+
+export function getRoleResources(query) {
+  return request({
+    url: '/upms/role/getRoleResources',
+    method: 'get',
+    params: query
+  })
+}
+
