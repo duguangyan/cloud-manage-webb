@@ -54,3 +54,11 @@ export function updateUser(data) {
   })
 }
 
+// 锁定用户
+export function lockUser(query) {
+  return request({
+    url: '/upms/user/lock',
+    method: 'post',
+    params: query
+  })
+}

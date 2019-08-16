@@ -8,11 +8,11 @@ export function login(data) {
   })
 }
 
-export function getInfo(token) {
+export function getInfo(query) {
   return request({
-    url: '/user/info',
+    url: '/upms/user/getUserInfo',
     method: 'get',
-    params: { token }
+    params: query
   })
 }
 
@@ -25,7 +25,7 @@ export function logout() {
 
 export function getRoles(query) {
   return request({
-    url: '/upms/resource/getResourceMenuById',
+    url: '/upms/resource/getUserResourceTree',
     method: 'get',
     params: query
   })
