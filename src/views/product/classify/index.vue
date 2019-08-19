@@ -33,7 +33,7 @@
           <i class="el-icon-circle-plus-outline" 
             type="text"
             size="mini"
-            @click="() => append(data)" />
+            @click="() => append(node, data)" />
         </span>
       </span>
     </el-tree>
@@ -152,9 +152,13 @@ export default {
             return false
           }
     },
-    append(data) {
+    append(node, data) {
+      console.log('node')
+      console.log(node)
+      console.log('data')
       console.log(data)
       this.nodeData = data
+      this.node = node
       this.role = Object.assign({}, defaultRole)
       this.parentId = data.id
       this.dialogType = 'new'
@@ -242,6 +246,9 @@ export default {
           this.$set(this.nodeData, 'children', []);
         }
         this.nodeData.children.push(newChild);
+        this.node.expanded = true
+        console.log('x')
+        console.log(this.nodeData)
       } else if(this.dialogType === 'root') {
         this.listLoading = true
         await insertRootProduct({ name: this.role.name })
