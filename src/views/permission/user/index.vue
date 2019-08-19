@@ -48,19 +48,34 @@
       </el-table-column>
       <el-table-column align="center" label="状态" width="220">
         <template slot-scope="scope">
-          {{ scope.row.status }}
+          <template v-if="scope.row.status === 0">
+              锁定
+            </template>
+            <template v-else-if="scope.row.status === 1">
+              正常
+            </template>
+            <template v-else-if="scope.row.status === -1">
+              删除
+            </template>
         </template>
       </el-table-column>
       <el-table-column align="center" label="操作" min-width="220">
         <template slot-scope="scope">
           <el-button type="primary" size="small" @click="msgEdit(scope)">编辑</el-button>
-          <el-button type="primary" size="small" @click="handleEdit(scope)">锁定</el-button>
+          <el-button type="primary" size="small" @click="handleLock(scope)">
+            <template v-if="scope.row.status === 0">
+              解锁
+            </template>
+            <template v-else-if="scope.row.status === 1">
+              锁定
+            </template>
+          </el-button>
           <el-button type="danger" size="small" @click="handleDelete(scope)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
 
-    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'分配权限':'新增角色'">
+    <el-dialog :visible.sync="dialogVisible" :closeOnClickModal="false" :title="dialogType==='edit'?'分配权限':'新增角色'">
       <el-form :model="role" label-width="80px" label-position="left">
         <el-form-item label="昵称">
           <el-input v-model="role.nickName" placeholder="请输入昵称" />
@@ -102,7 +117,7 @@
 import path from 'path'
 import { deepClone } from '@/utils'
 import waves from '@/directive/waves' // waves directive
-import { getUserList, updateUser, addUser, userDelete } from '@/api/manageUser'
+import { getUserList, updateUser, addUser, userDelete, lockUser } from '@/api/manageUser'
 import { getSystem } from '@/api/systemList'
 import Pagination from '@/components/Pagination'
 const defaultRole = {
@@ -247,21 +262,17 @@ export default {
       this.checkStrictly = true
       this.role = deepClone(scope.row)
     },
-    handleEdit(scope) {
-      this.dialogType = 'edit'
-      this.dialogVisible = true
-      this.checkStrictly = true
-      this.role = deepClone(scope.row)
-      this.role.routes = [
-        {id: 1, name: 'souye'},
-        {id: 2, name: 'caiwuye'}
-      ]
-      this.$nextTick(() => {
-        const routes = this.generateRoutes(this.role.routes)
-        this.$refs.tree.setCheckedNodes(this.generateArr(routes))
-        // set checked state of a node not affects its father and child nodes
-        this.checkStrictly = false
+    handleLock({ $index, row }) {
+      this.listLoading = true
+      lockUser({ id: row.id }).then(res => {
+        this.listLoading = false
+        if(this.userData[$index].status === 0) {
+          this.userData[$index].status = 1
+        } else if(this.userData[$index].status === 1) {
+          this.userData[$index].status = 0
+        }
       })
+   
     },
     handleDelete({ $index, row }) {
       this.$confirm('确定要删除该角色?', 'Warning', {

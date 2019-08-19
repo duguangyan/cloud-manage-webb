@@ -3,6 +3,7 @@ import { getRoles } from '@/api/user'
 import Layout from '@/layout'
 
 const _import = require('@/router/_import_' + process.env.NODE_ENV) // 获取组件的方法
+// const _import = require('@/router/_import_development') // 获取组件的方法
 
 function filterAsyncRouter(asyncRouterMap) { // 遍历后台传来的路由字符串，转换为组件对象
   const accessedRouters = asyncRouterMap.filter(route => {
@@ -34,8 +35,6 @@ const mutations = {
   SET_ROUTES: (state, routes) => {
     state.addRoutes = routes
     state.routes = constantRoutes.concat(routes)
-    console.log('state')
-    console.log(state.routes)
   }
 }
 
@@ -43,7 +42,7 @@ const actions = {
   generateRoutes({ commit }, roles) {
     return new Promise((resolve, reject) => {
       let accessedRouters = []
-      getRoles({ userId: 1 }).then(res => {
+      getRoles({ userId: this.getters.userId }).then(res => {
         accessedRouters = filterAsyncRouter(res.data)
         commit('SET_ROUTES', accessedRouters)
         resolve()

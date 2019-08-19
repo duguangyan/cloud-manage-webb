@@ -26,14 +26,14 @@ router.beforeEach(async(to, from, next) => {
       next({ path: '/' })
       NProgress.done()
     } else {
-      const hasGetUserInfo = store.getters.routes
-      console.log('hasinfo:', hasGetUserInfo.length)
-      if (hasGetUserInfo.length > 0) {
+      const hasRoutes = store.getters.routes
+      // const hasGetUserInfo = store.getters.name
+      if (hasRoutes.length > 0) {
         next()
       } else {
         try {
           // get user info
-          // await store.dispatch('user/getInfo')
+          await store.dispatch('user/getInfo')
           // 实际是请求用户信息后返回，这里是模拟数据，直接从store中取
 
           // store.dispatch('permission/GenerateRoutes', { roles }).then(() => { // 生成可访问的路由表
@@ -45,39 +45,11 @@ router.beforeEach(async(to, from, next) => {
           // console.log('accessroutes:')
           // console.log(accessRoutes)
           // dynamically add accessible routes
-          // accessRoutes = [
-          //   {
-          //     path: '/product',
-          //     name: 'Product',
-          //     meta: { title: '商品管理', icon: 'example' },
-          //     children: [
-          //       {
-          //         path: 'classify',
-          //         name: 'Classify',
-          //         component: () => import('@/views/product/classify/index'),
-          //         meta: { title: '分类管理', icon: 'table' }
-          //       },
-          //       {
-          //         path: 'unit',
-          //         name: 'Unit',
-          //         component: () => import('@/views/product/unit/index'),
-          //         meta: { title: '计量单位', icon: 'tree' }
-          //       },
-          //       {
-          //         path: 'list',
-          //         name: 'List',
-          //         component: () => import('@/views/product/list/index'),
-          //         meta: { title: '商品列表', icon: 'tree' }
-          //       }
-          //     ]
-          //   }
-          // ]
           await store.dispatch('permission/generateRoutes')
           router.options.routes = store.getters.routes
           router.addRoutes(store.getters.routes)
           next({ ...to, replace: true }) // hack方法 确保addRoutes已完成 ,set the replace: true so the navigation will not leave a history record
         } catch (error) {
-          console.log('error')
           console.log(error)
           // remove token and go to login page to re-login
           await store.dispatch('user/resetToken')

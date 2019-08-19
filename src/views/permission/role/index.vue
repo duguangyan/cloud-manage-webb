@@ -47,7 +47,7 @@
       </el-table-column>
     </el-table>
 
-    <el-dialog :visible.sync="dialogVisible" :title="dialogTitle">
+    <el-dialog :visible.sync="dialogVisible" :closeOnClickModal="false" :title="dialogTitle">
       <el-form :model="role" label-width="80px" label-position="left">
         <template v-if="dialogType ==='edit' || dialogType === 'new'">
          <el-form-item label="角色名称">
@@ -138,9 +138,6 @@ export default {
     }
   },
   created() {
-    // Mock: get all routes and roles list from server
-    this.getRoutes()
-    // this.getRoles()
     this.getRoleList() 
   },
   methods: {
@@ -168,11 +165,13 @@ export default {
       this.getRoleList()
     },
     async getRoutes(scope) {
-      const res = await getRoutes({userId: 1})
+      this.listLoading = true
+      const res = await getRoutes({ userId: this.$store.getters.userId })
       if(Array.isArray(res.data)) {
         this.serviceRoutes = res.data
         this.routes = this.generateRoutes(res.data)
       }
+      this.listLoading = false
     },
     async getRoles() {
       const res = await getRoles({id: 1})
@@ -236,7 +235,8 @@ export default {
       this.dialogVisible = true
       this.checkStrictly = true
       this.role = deepClone(scope.row)
-      getRoleResources({id: this.role.id}).then(res => {
+      this.getRoutes()
+      getRoleResources({roleId: this.role.id}).then(res => {
         this.$nextTick(() => {
         const routes = Array.isArray(res.data.resources)? this.generateRoutes(res.data.resources): this.generateRoutes([])
         this.$refs.tree.setCheckedNodes(routes)

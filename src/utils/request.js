@@ -17,7 +17,6 @@ service.interceptors.request.use(
     // 将请求类型改为普通的表单类型
     config.headers['Content-Type'] = 'application/x-www-form-urlencoded'
     if (config.method === 'post') {
-      console.log('is post')
       config.data = QS.stringify({
         ...config.data // 将参数变成  a=xx&b=xx&c=xx这样的参数列表
       })

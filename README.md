@@ -12,7 +12,7 @@ git clone
 cd file
 
 # install dependency
-npm install registry=https.npm.taobao.org
+npm intsll --registry=https://registry.npm.taobao.org
 
 # develop
 npm run dev

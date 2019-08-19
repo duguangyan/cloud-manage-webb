@@ -7,7 +7,7 @@ const state = {
   refreshToken: '',
   name: '',
   avatar: '',
-  roles: []
+  userId: ''
 }
 
 const mutations = {
@@ -21,11 +21,18 @@ const mutations = {
     state.name = name
   },
   SET_AVATAR: (state, avatar) => {
-    state.avatar = avatar
+    if (avatar) {
+      state.avatar = avatar
+    }
   },
-  SET_ROLES: (state, roles) => {
-    state.roles = roles
+  SET_USERID: (state, id) => {
+    if (id) {
+      state.userId = id
+    }
   }
+  // SET_ROLES: (state, roles) => {
+  //   state.roles = roles
+  // }
 }
 
 const actions = {
@@ -48,17 +55,19 @@ const actions = {
   // get user info
   getInfo({ commit, state }) {
     return new Promise((resolve, reject) => {
-      getInfo(state.token).then(response => {
+      getInfo().then(response => {
         const { data } = response
 
         if (!data) {
           reject('Verification failed, please Login again.')
         }
 
-        const { name, avatar } = data
+        const { username, avatar, id } = data
 
-        commit('SET_NAME', name)
+        commit('SET_NAME', username)
         commit('SET_AVATAR', avatar)
+        commit('SET_USERID', id)
+        // commit('SET_AVATAR', avatar)
         resolve(data)
       }).catch(error => {
         reject(error)
@@ -80,22 +89,22 @@ const actions = {
     })
   },
 
-  getRoles({ commit, state }) {
-    return new Promise((resolve, reject) => {
-      getRoles({ userId: 1 }).then(response => {
-        const { data } = response
+  // getRoles({ commit, state }) {
+  //   return new Promise((resolve, reject) => {
+  //     getRoles({ userId: 1 }).then(response => {
+  //       const { data } = response
 
-        if (!data) {
-          reject('Verification failed, please Login again.')
-        }
-        commit('SET_ROLES', data)
-        commit('SET_NAME', 'admin')
-        resolve(data)
-      }).catch(error => {
-        reject(error)
-      })
-    })
-  },
+  //       if (!data) {
+  //         reject('Verification failed, please Login again.')
+  //       }
+  //       commit('SET_ROLES', data)
+  //       commit('SET_NAME', 'admin')
+  //       resolve(data)
+  //     }).catch(error => {
+  //       reject(error)
+  //     })
+  //   })
+  // },
 
   // remove token
   resetToken({ commit }) {

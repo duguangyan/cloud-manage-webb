@@ -108,7 +108,7 @@
       </el-table-column>
     </el-table>
 
-    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'分配权限':'新增角色'">
+    <el-dialog :visible.sync="dialogVisible" :closeOnClickModal="false" :title="dialogType==='edit'?'分配权限':'新增角色'">
       <el-form :model="role" label-width="80px" label-position="left">
         <el-form-item label="名称">
           <el-input v-model="role.name" placeholder="请输入名称" />

@@ -58,7 +58,7 @@ export function updateUser(data) {
 export function lockUser(query) {
   return request({
     url: '/upms/user/lock',
-    method: 'post',
+    method: 'get',
     params: query
   })
 }
