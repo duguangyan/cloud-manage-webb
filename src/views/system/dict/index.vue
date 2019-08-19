@@ -1,5 +1,11 @@
 <template>
   <div class="app-container">
+    <div class="filter-container">
+      <el-input v-model="listQuery.name"  placeholder="请输入搜索内容" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">搜索</el-button>
+      <el-button v-waves class="filter-item" @click="handAddTop">新增一级字典</el-button>
+    </div>
+
     <el-table
       ref="treeTable"
       v-loading="listLoading"
@@ -47,12 +53,12 @@
       </el-table-column>
     </el-table>
 
-  <el-dialog :visible.sync="dialogVisible" :closeOnClickModal="false" :title="dialogType==='edit'?'分配权限':'新增角色'">
+  <el-dialog :visible.sync="dialogVisible" :closeOnClickModal="false" :title="dialogType==='edit'?'编辑字典':'添加字典'">
       <el-form :model="role" label-width="80px" label-position="left">
         <el-form-item label="字典名">
           <el-input v-model="role.name" placeholder="请输入字典名" />
         </el-form-item>
-        <el-form-item label="状态">
+        <el-form-item label="状态" v-if="dialogType==='edit'">
           <el-select v-model="role.status" placeholder="请选择">
             <el-option
               v-for="item in statusData"
@@ -87,7 +93,7 @@ import { addDict, getDictById, getDictByPid, updateDict, deleteDict } from '@/ap
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import { deepClone } from '@/utils'
-import treeTable from "@/components/TreeTable";
+import treeTable from '@/components/TreeTable'
 const defaultRole = {
   name: '',
   status: '',
@@ -95,7 +101,8 @@ const defaultRole = {
 }
 
 export default {
-  name: 'Dict',
+  name: 'dict',
+  directives: { waves },
   components: { treeTable },
   data() {
     return {
@@ -124,6 +131,11 @@ export default {
         id: '',
         name: '',
         remark: ''
+      },
+      listQuery: {
+        name: '',
+        pageIndex: 1,
+        pageSize: 10
       },
       listLoading: true,
       query: {
@@ -192,6 +204,14 @@ export default {
         resolve(data)
       })
     },
+    handleFilter() {
+
+    },
+    handAddTop() {
+      this.role = Object.assign({}, defaultRole)
+      this.dialogType = 'new'
+      this.dialogVisible = true
+    },
     msgEdit(scope, node, data) {
       this.dialogType = 'edit'
       this.dialogVisible = true
@@ -200,7 +220,6 @@ export default {
     },
     msgAdd(scope) {
       this.role = Object.assign({}, defaultRole)
-      console.log(scope)
       this.dialogType = 'new'
       this.dialogVisible = true
       this.changeId = scope.id
@@ -263,13 +282,15 @@ export default {
           remark: this.role.remark
          })
       } else {
+        this.listLoading = true
         const { data } = await addDict({
-          pid: this.changeId,
+          parentId: this.changeId,
           name: this.role.name,
           value: this.role.value,
           // status: this.role.status,
           remark: this.role.remark
         })
+        this.listLoading = false
         // console.log('pid:', this.changeId)
         // console.log(this.maps)
         // console.log(this.maps.get(this.changeId))
@@ -293,3 +314,8 @@ export default {
   }
 }
 </script>
+<style lang="scss" scoped>
+  .filter-container{
+    padding-bottom: 30px;
+  }
+</style>

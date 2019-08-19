@@ -75,7 +75,7 @@
       </el-table-column>
     </el-table>
 
-    <el-dialog :visible.sync="dialogVisible" :closeOnClickModal="false" :title="dialogType==='edit'?'分配权限':'新增角色'">
+    <el-dialog :visible.sync="dialogVisible" :closeOnClickModal="false" :title="dialogType==='edit'?'编辑用户信息':'新增角色'">
       <el-form :model="role" label-width="80px" label-position="left">
         <el-form-item label="昵称">
           <el-input v-model="role.nickName" placeholder="请输入昵称" />
