@@ -16,14 +16,9 @@
       ref="multipleTable" 
       :data="rolesData"
       tooltip-effect="dark" 
-      @selection-change="handleSelectionChange"
       :header-cell-style="{background: '#f3f3f3'}" 
       style="width: 100%;margin-top:10px;">
-      <el-table-column
-        type="selection"
-        width="55">
-      </el-table-column>
-      <el-table-column align="left" label="角色名称" width="220">
+      <el-table-column align="center" label="角色名称" width="220">
         <template slot-scope="scope">
           {{ scope.row.name }}
         </template>
@@ -141,9 +136,6 @@ export default {
     this.getRoleList() 
   },
   methods: {
-    handleSelectionChange(val) {
-      // 多选事件
-    },
     getRoleList() {
       this.listLoading = true
       getRoleList(this.listQuery).then(res => {

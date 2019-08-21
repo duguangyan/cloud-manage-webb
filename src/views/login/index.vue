@@ -53,13 +53,9 @@
 </template>
 
 <script>
-    import {
-        validUsername
-    } from '@/utils/validate'
-    import {
-        getSystem
-    } from '@/api/systemList'
-    import Cookies from 'js-cookie'
+    import { validUsername } from '@/utils/validate'
+    import { getSystem } from '@/api/systemList'
+
 
     export default {
         name: 'Login',

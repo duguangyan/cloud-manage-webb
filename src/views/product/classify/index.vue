@@ -2,7 +2,7 @@
   <div class="app-container">
     <div class="filter-container">
       <el-input v-model="filterText"  placeholder="输入关键字进行过滤" style="width: 200px;" class="filter-item"/>
-      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">搜索</el-button>
+      <!-- <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">搜索</el-button> -->
       <el-button v-waves class="filter-item" @click="handAddRoot">新增一级分类</el-button>
     </div>
 
@@ -18,27 +18,28 @@
       :filter-node-method="filterNode"
       :allow-drop="allowDrop"
       :expand-on-click-node="false"
-      :default-expanded-keys="expandArr"
       :highlight-current="true"
       ref="tree">
       <span class="custom-tree-node" slot-scope="{ node, data }">
         <!-- <span>{{ node.label }}</span> -->
         <span class="col-cont" v-html="showDate(node.label)" ></span>
         <span class="more">
-          <i class="el-icon-edit" @click="msgEdit(node, data)" />
+          <i class="el-icon-edit" title="修改名称" @click="msgEdit(node, data)" />
           <i class="el-icon-remove-outline" 
             type="text"
             size="mini"
+            title="删除分类"
             @click="() => handleDelete(node, data)" />
           <i class="el-icon-circle-plus-outline" 
             type="text"
             size="mini"
+            title="新增子集分类"
             @click="() => append(node, data)" />
         </span>
       </span>
     </el-tree>
 
-    <el-dialog :visible.sync="dialogVisible" :closeOnClickModal="false" :title="dialogType==='edit'?'编辑分类':'添加子分类'">
+    <el-dialog :visible.sync="dialogVisible" :closeOnClickModal="false" :title="dialogMsg">
       <el-form :model="role" label-width="80px" label-position="left">
         <el-form-item label="分类名">
           <el-input v-model="role.name" placeholder="请输入分类名" />
@@ -55,7 +56,7 @@
 <script>
 import waves from '@/directive/waves'
 import { deepClone } from '@/utils'
-import { getProductTree, insertRootProduct, insertProduct, deleteProduct, updateProduct, searchProduct } from '@/api/product'
+import { getProductTree, insertRootProduct, insertProduct, deleteProduct, updateProduct, searchProduct, getProductNum } from '@/api/product'
 let id = 1000;
 const defaultRole = {
   name: '',
@@ -75,7 +76,6 @@ export default {
         pageIndex: 1,
         pageSize: 10
       },
-      expandArr: [],
       defaultProps: {
         children: 'children',
         label: function(a, b) {
@@ -86,6 +86,7 @@ export default {
       node: {},
       nodeData: {},
       dialogType: 'new',
+      dialogMsg: '新增一级分类',
       dialogVisible: false,
       checkStrictly: false,
       downloadLoading: false,
@@ -94,7 +95,6 @@ export default {
   },
   watch: {
     filterText(val) {
-      console.log(val)
       this.$refs.tree.filter(val);
     }
   },
@@ -135,6 +135,7 @@ export default {
     },
     handAddRoot() {
       this.dialogType = 'root'
+      this.dialogMsg = '添加一级分类'
       this.dialogVisible = true
     },
      filterNode(value, data) {
@@ -153,10 +154,7 @@ export default {
           }
     },
     append(node, data) {
-      console.log('node')
-      console.log(node)
-      console.log('data')
-      console.log(data)
+      this.dialogMsg = '添加子分类'
       this.nodeData = data
       this.node = node
       this.role = Object.assign({}, defaultRole)
@@ -173,11 +171,15 @@ export default {
     },
     handleDelete(node, data) {
       // 删除
-      this.$confirm('此操作将永久删除该分类, 是否继续?', '提示', {
+        this.$confirm('此操作将永久删除该分类, 是否继续?', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
+          // getProductNum({ id: data.id}).then(res => {
+            
+          // })
+          // return
           this.listLoading = true
           deleteProduct({id: data.id}).then(response => {
             this.$message({
@@ -197,7 +199,7 @@ export default {
           });          
         });
     },
-    sort(draggingNode,dropNode,type,event) {
+    sort(draggingNode, dropNode,type, event) {
       /* console.log('排序')
       console.log(dropNode)   //dropNode.parent.childNodes =[] 拖拽之后的重新组合的数组 */
       let obj = {
@@ -211,8 +213,35 @@ export default {
       // this.updateOrderMe(obj)
       console.log(obj)
     },
+    sortArr(draggingNode, dropNode,type, event) {
+      console.log(draggingNode)
+      console.log(dropNode)
+      if (draggingNode.data.aboveId === dropNode.data.aboveId) {
+        let obj = {
+          aboveId:'',
+          arr:[]
+        }
+        obj.aboveId = dropNode.data.aboveId
+        for (let item of dropNode.parent.childNodes) {
+          obj.arr.push(item.data.id)
+        }
+        console.log(obj)
+        this.updateOrderMe(obj)
+      } else {
+        let obj = {
+          aboveId:'',
+          id:'',
+          newAboveId:''
+        }
+        obj.aboveId = draggingNode.data.aboveId
+        obj.id = draggingNode.data.id
+        obj.newAboveId = dropNode.data.id
+        this.randomDrag(obj)
+      }
+    },
     msgEdit(node, data) {
       this.dialogType = 'edit'
+      this.dialogMsg = '编辑分类名'
       this.dialogVisible = true
       this.checkStrictly = true
       this.nodeData = data
@@ -229,19 +258,17 @@ export default {
     async confirmRole() {
       this.listLoading = true
       if (this.dialogType === 'edit') {
-        console.log('node')
-        console.log(this.node)
-         await updateProduct({
-          id: this.role.id,
-          name: this.role.name
-         })
-         this.nodeData.name = this.role.name
+        await updateProduct({
+        id: this.role.id,
+        name: this.role.name
+        })
+        this.nodeData.name = this.role.name
       } else if(this.dialogType === 'new') {
         const { data } = await insertProduct({
           parentId: this.nodeData.id,
           name: this.role.name
         })
-        const newChild = { id: data.id + 1, name: this.role.name, children: [] };
+        const newChild = { id: data.id, name: this.role.name, children: [] };
         if (!this.nodeData.children) {
           this.$set(this.nodeData, 'children', []);
         }
@@ -272,7 +299,7 @@ export default {
    showDate(val) {
       val = val + '';
       if (val.indexOf(this.filterText) !== -1 && this.filterText !== '') {
-      return val.replace(this.filterText, '<font color="#409EFF">' + this.filterText + '</font>')
+      return val.replace(this.filterText, '<font color="#FF0000">' + this.filterText + '</font>')
       } else {
       return val
       }

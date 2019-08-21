@@ -36,11 +36,11 @@ export function updateProduct(data) {
 }
 
 // 删除分类
-export function deleteProduct(data) {
+export function deleteProduct(query) {
   return request({
     url: '/goods/category/delete',
-    method: 'post',
-    data
+    method: 'get',
+    params: query
   })
 }
 

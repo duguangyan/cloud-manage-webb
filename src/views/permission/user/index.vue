@@ -7,11 +7,11 @@
       手机号码：
       <el-input v-model="listQuery.phone"  placeholder="请输入手机号码" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">搜索</el-button>
-      <el-button v-waves class="filter-item" icon="el-icon-search">重置</el-button>
+      <el-button v-waves class="filter-item" icon="el-icon-search" @click="resetSearch">重置</el-button>
     </div>
 
     <el-button type="primary" size="small" @click="handleAddRole">新增角色</el-button>
-    <el-button size="small">批量锁定</el-button>
+    <el-button size="small" @click="handleLockMul" >批量锁定</el-button>
 
     <el-table 
       v-loading="listLoading"
@@ -23,12 +23,12 @@
       style="width: 100%;margin-top:10px;">
       <el-table-column
         type="selection"
-        width="55">
+        width="55"> 
       </el-table-column>
       <el-table-column align="center" label="头像" width="220">
         <template slot-scope="scope">
-          <el-avatar v-if="scope.row.headImgUrl && scope.row.headImgUrl.length > 0" :src="scope.row.headImgUrl"></el-avatar>
-          <!-- <el-avatar v-else> user </el-avatar> -->
+          <img v-if="scope.row.headImgUrl && scope.row.headImgUrl.length > 0" :src="scope.row.headImgUrl" class="user-avatar">
+          <img v-else-if="scope.row.headImgUrl === '' || scope.row.headImgUrl === null" src= "@/assets/img/circle_avatar.png" size="50" class="user-avatar">
         </template>
       </el-table-column>
       <el-table-column align="center" label="昵称" width="220">
@@ -39,6 +39,11 @@
       <el-table-column align="center" label="真实姓名" width="220">
         <template slot-scope="scope">
           {{ scope.row.realName }}
+        </template>
+      </el-table-column>
+      <el-table-column align="center" label="账号" width="220">
+        <template slot-scope="scope">
+          {{ scope.row.username }}
         </template>
       </el-table-column>
       <el-table-column align="center" label="手机号码" width="220">
@@ -76,21 +81,21 @@
     </el-table>
 
     <el-dialog :visible.sync="dialogVisible" :closeOnClickModal="false" :title="dialogType==='edit'?'编辑用户信息':'新增角色'">
-      <el-form :model="role" label-width="80px" label-position="left">
+      <el-form ref="editForm" :model="role" label-width="80px" label-position="left" :rules="editRules">
         <el-form-item label="昵称">
           <el-input v-model="role.nickName" placeholder="请输入昵称" />
         </el-form-item>
          <el-form-item label="真实姓名">
           <el-input v-model="role.realName" placeholder="请输入真实姓名" />
         </el-form-item>
-         <el-form-item label="手机号码">
+         <el-form-item label="手机号码" prop="phone">
           <el-input v-model="role.phone" placeholder="请输入手机号码" />
         </el-form-item>
         <el-form-item label="账号">
           <el-input v-model="role.username" placeholder="请输入账号" />
         </el-form-item>
         <el-form-item label="密码">
-          <el-input v-model="role.pass" placeholder="请输入密码" />
+          <el-input v-model="role.password" minlength="6" maxlength="32" placeholder="请输入密码" />
         </el-form-item>
         <el-form-item label="系统">
           <el-select v-model="role.systemId" placeholder="请选择">
@@ -105,7 +110,7 @@
       </el-form>
       <div style="text-align:right;">
         <el-button type="danger" @click="dialogVisible=false">取消</el-button>
-        <el-button type="primary" @click="confirmRole">确定</el-button>
+        <el-button type="primary" @click="regFun">确定</el-button>
       </div>
     </el-dialog>
 
@@ -117,9 +122,10 @@
 import path from 'path'
 import { deepClone } from '@/utils'
 import waves from '@/directive/waves' // waves directive
-import { getUserList, updateUser, addUser, userDelete, lockUser } from '@/api/manageUser'
+import { getUserList, updateUser, addUser, userDelete, lockUser, lockUsers } from '@/api/manageUser'
 import { getSystem } from '@/api/systemList'
 import Pagination from '@/components/Pagination'
+import { validTelphone } from '@/utils/validate'
 const defaultRole = {
   key: '',
   name: '',
@@ -131,11 +137,25 @@ export default {
   name: 'User',
   directives: { waves },
   data() {
+    const validateTelphone = (rule, value, callback) => {
+      if (!validTelphone(value)) {
+          callback(new Error('请输入正确的手机号码'))
+      } else {
+          callback()
+      }
+    }
     return {
       role: Object.assign({}, defaultRole),
       listLoading: false,
       systemData: [
       ],
+      editRules: {
+          phone: [{
+              required: false,
+              trigger: 'blur',
+              validator: validateTelphone
+          }]
+      },
       routes: [],
       rolesList: [],
       userData: [],
@@ -164,15 +184,22 @@ export default {
     }
   },
   created() {
-    // Mock: get all routes and roles list from server
-    // this.getRoutes()
-    // this.getRoles()
     this.getUserList() 
     this.getSystem()
   },
   methods: {
     handleSelectionChange(val) {
       // 多选事件
+      this.multipleSelection = val
+    },
+    resetSearch() {
+      this.listQuery = {
+        pageIndex: 1,
+        pageSize: 10,
+        username: '',
+        phone: ''
+      },
+      this.getUserList()
     },
     getUserList() {
       this.listLoading = true
@@ -201,7 +228,6 @@ export default {
       const res = await getRoutes({id: scope.row.id})
       this.serviceRoutes = res.data.resources
       this.routes = this.generateRoutes(res.data)
-      console.log(routes)
     },
     async getRoles() {
       const res = await getRoles({id: 1})
@@ -272,10 +298,42 @@ export default {
           this.userData[$index].status = 0
         }
       })
-   
+    },
+    handleLockMul() {
+      if(this.multipleSelection.length === 0) {
+          this.$message({ type: 'warning', message: '请先勾选要锁定的用户！' })
+      } else {
+        this.$confirm('确定要批量锁定这些用户?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.listLoading = true
+          let ids = ''
+          for(let i = 0; i < this.multipleSelection.length; i++) {
+            if(i != this.multipleSelection.length - 1) {
+              ids += this.multipleSelection[i].id + ','
+            } else {
+              ids += this.multipleSelection[i].id
+            }
+          }
+          lockUsers({ ids: ids }).then(res => {
+            for (const v1 of this.multipleSelection) {
+              for(const v2 of this.userData) {
+                if(v1.id === v2.id) {
+                  const index = this.userData.indexOf(v2)
+                  this.userData[index].status = 0
+                  break
+                }
+              }
+            }
+          })
+          this.listLoading = false
+        })
+      }
     },
     handleDelete({ $index, row }) {
-      this.$confirm('确定要删除该角色?', 'Warning', {
+      this.$confirm('确定要删除该角色?', '警告', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
@@ -309,8 +367,16 @@ export default {
       }
       return res
     },
+    regFun () {
+      this.$refs.editForm.validate(valid => {
+        if(valid) {
+          this.confirmRole()
+        }
+      })
+    },
     async confirmRole() {
       const isEdit = this.dialogType === 'edit'
+      console.log(this.role)
       if (isEdit) {
          await updateUser({
            systemId: this.role.systemId,
@@ -318,6 +384,7 @@ export default {
            nickName: this.role.nickName,
            username: this.role.username,
            realName: this.role.realName,
+           password: this.role.password,
            phone: this.role.phone
          })
         for (const v of this.userData) {
@@ -378,6 +445,10 @@ export default {
 
 <style lang="scss" scoped>
 .app-container {
+  .user-avatar{
+    width: 30px;
+    height: 30px;
+  }
   .filter-container{
     padding-bottom: 30px;
   }

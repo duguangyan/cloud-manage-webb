@@ -28,7 +28,7 @@
       <el-button v-waves class="filter-item" icon="el-icon-search" @click="handleAddResource">新增资源</el-button>
     </div>
 
-    <el-table 
+    <!-- <el-table 
       ref="multipleTable" 
       v-loading="listLoading"
       :data="resourceData"
@@ -106,6 +106,67 @@
           <el-button type="danger" size="small" @click="handleDelete(scope)">删除</el-button>
         </template>
       </el-table-column>
+    </el-table> -->
+    <el-table
+      ref="treeTable"
+      v-loading="listLoading"
+      :data="meanData"
+      style="width: 100%"
+      row-key="id"
+      border
+      lazy
+      :load="load"
+      :tree-props="{children: 'children', hasChildren: 'hasChildren'}">
+      <el-table-column
+        prop="name"
+        label="名称"
+        >
+      </el-table-column>
+      <el-table-column
+        prop="type"
+        label="类型"
+        align="center"
+        width="180">
+      </el-table-column>
+      <el-table-column
+        prop="code"
+        label="链接地址"
+        align="center"
+        width="400">
+      </el-table-column>
+      <el-table-column
+        prop="status"
+        label="状态"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="operation"
+        label="事件"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="auth"
+        label="授权"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="描述"
+        label="remark"
+        align="center">
+      </el-table-column>
+      <el-table-column label="操作" align="center" width="300" class-name="small-padding fixed-width">
+        <template slot-scope="{ row }">
+          <el-button type="primary" size="mini" @click="msgEdit(row)">
+            编辑
+          </el-button>
+          <!-- <el-button type="primary" size="mini" @click="msgAdd(row)">
+            添加
+          </el-button> -->
+          <el-button v-if="row.status!='deleted'" size="mini" type="danger" @click="handleDelete(row, $event)">
+            删除
+          </el-button>
+        </template>
+      </el-table-column>
     </el-table>
 
     <el-dialog :visible.sync="dialogVisible" :closeOnClickModal="false" :title="dialogType==='edit'?'分配权限':'新增角色'">
@@ -116,43 +177,43 @@
         <el-form-item label="类型">
           <el-select v-model="role.type" placeholder="请选择">
             <el-option
-              v-for="item in typeData"
-              :key="item.id"
-              :label="item.name"
-              :value="item.id">
+              v-for="(val, key) in typeData"
+              :key="key"
+              :label="val"
+              :value="val">
             </el-option>
           </el-select>
         </el-form-item>
          <el-form-item label="链接地址">
-          <el-input v-model="role.url" placeholder="请输入链接地址" />
+          <el-input v-model="role.code" placeholder="请输入链接地址" />
         </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="role.status" placeholder="请选择">
             <el-option
-              v-for="item in statusData"
-              :key="item.id"
-              :label="item.name"
-              :value="item.id">
+              v-for="(val, key) in statusData"
+              :key="key"
+              :label="val"
+              :value="val">
             </el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="事件">
           <el-select v-model="role.operation" placeholder="请选择">
             <el-option
-              v-for="item in operaData"
-              :key="item.id"
-              :label="item.name"
-              :value="item.id">
+              v-for="(val, key) in operaData"
+              :key="key"
+              :label="val"
+              :value="val">
             </el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="授权">
           <el-select v-model="role.auth" placeholder="请选择">
             <el-option
-              v-for="item in authData"
-              :key="item.id"
-              :label="item.name"
-              :value="item.id">
+              v-for="(val, key) in authData"
+              :key="key"
+              :label="val"
+              :value="val">
             </el-option>
           </el-select>
         </el-form-item>
@@ -179,7 +240,7 @@
 import path from 'path'
 import { deepClone } from '@/utils'
 import waves from '@/directive/waves' // waves directive
-import { getResource, updateUser, addResource, resourceDelete, updateResource } from '@/api/menu'
+import { getMeanFirstRec, getMeanByPid, getResource, resourceDelete, updateUser, addResource, updateResource } from '@/api/menu'
 import { getSystem } from '@/api/systemList'
 import Pagination from '@/components/Pagination'
 const defaultRole = {
@@ -200,25 +261,45 @@ export default {
       role: Object.assign({}, defaultRole),
       listLoading: false,
       systemData: [],
-      statusData: [
-        {id: 0, name: '禁止'},
-        {id: 1, name: '启用'}
-      ],
-      typeData: [
-        {id: 0, name: '菜单'},
-        {id: 1, name: '按钮'},
-        {id: 2, name: '接口'}
-      ],
-      operaData: [
-        {id: 0, name: 'tab打开'},
-        {id: 1, name: '窗口打开'}
-      ],
-      authData: [
-        {id: -1, name: '禁止'},
-        {id: 0, name: '不需要认证'},
-        {id: 1, name: '已认证'},
-        {id: 2, name: '角色'}
-      ],
+      meanData: [],
+      statusData: {
+        '0': '禁止',
+        '1': '启用',
+      },
+      statusDataN: {
+        '禁止': 0,
+        '启用': 1
+      },
+      typeData: {
+        '0': '菜单',
+        '1': '按钮',
+        '2': '接口',
+      },
+      typeDataN: {
+        '菜单': 0,
+        '按钮': 1,
+        '接口': 2
+      },
+      operaData: {
+        '0': 'tab打开',
+        '1': '窗口打开',
+      },
+      operaDataN: {
+        'tab打开': 0,
+        '窗口打开': 1
+      },
+      authData: {
+        '-1': '禁止',
+        '0': '不需要认证',
+        '1': '已认证',
+        '2': '角色',
+      },
+      authDataN: {
+        '禁止': -1,
+        '不需要认证': 0,
+        '已认证': 1,
+        '角色': 2
+      },
       routes: [],
       rolesList: [],
       resourceData: [],
@@ -247,11 +328,64 @@ export default {
     }
   },
   created() {
-    this.getResource() 
+    this.getMeanFirstRec()
   },
   methods: {
     handleSelectionChange(val) {
       // 多选事件
+    },
+    getMeanFirstRec() {
+      this.listLoading = true
+      this.meanData = []
+      getMeanFirstRec().then(res => {
+        this.listLoading = false
+        if(Array.isArray(res.data)) {
+          for(let i = 0; i < res.data.length; i++) {
+            let obj = {
+              name: res.data[i].name,
+              id: res.data[i].id,
+              pid: res.data[i].parentId,
+              code: res.data[i].code,
+              status: this.statusData[String(res.data[i].status)],
+              operation: this.operaData[String(res.data[i].operation)],
+              auth: this.authData[String(res.data[i].auth)],
+              type: this.typeData[String(res.data[i].type)],
+              remark: res.data[i].remark === null? '': res.data[i].remark,
+              hasChildren: res.data[i].haveChild === 1? true: false
+            }
+            this.meanData.push(obj)
+          }
+         
+        }
+        console.log(this.meanData)
+      })
+    },
+    load(tree, treeNode, resolve) {
+      // const pid = tree.id;
+      // this.maps.set(pid, {tree, treeNode, resolve})
+      getMeanByPid({
+        parentId: tree.id
+      }).then(res => {
+        let data = []
+        if(Array.isArray(res.data)) {
+          for(let i = 0; i < res.data.length; i++) {
+            let obj = {
+              name: res.data[i].name,
+              id: res.data[i].id,
+              pid: res.data[i].pid,
+              code: res.data[i].code,
+              status: this.statusData[String(res.data[i].status)],
+              operation: this.operaData[String(res.data[i].operation)],
+              auth: this.authData[String(res.data[i].auth)],
+              type: this.typeData[String(res.data[i].type)],
+              remark: res.data[i].remark === null? '': res.data[i].remark,
+              hasChildren: res.data[i].haveChild === 1? true: false
+            }
+            data.push(obj)
+          }
+        }
+        resolve(data)
+      })
     },
     getResource() {
       this.listLoading = true
@@ -337,11 +471,12 @@ export default {
       this.dialogType = 'new'
       this.dialogVisible = true
     },
-    msgEdit(scope) {
+    msgEdit(row) {
       this.dialogType = 'edit'
       this.dialogVisible = true
       this.checkStrictly = true
-      this.role = deepClone(scope.row)
+      this.role = deepClone(row)
+      console.log(this.role)
     },
     handleEdit(scope) {
       this.dialogType = 'edit'
@@ -359,22 +494,19 @@ export default {
         this.checkStrictly = false
       })
     },
-    handleDelete({ $index, row }) {
+    handleDelete( row, e ) {
       this.$confirm('确定要删除该资源?', 'Warning', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(async() => {
+        console.log(row)
           await resourceDelete({id: row.id})
-          this.resourceData.splice($index, 1)
           this.$message({
             type: '成功',
             message: '删除成功!'
           })
-          if(this.resourceData.length === 0 && this.allPages - 1 > 0) {
-            --this.listQuery.pageIndex
-          }
-          this.getResource()
+          this.getMeanFirstRec()
         }).catch(err => { console.error(err) })
     },
     generateTree(routes, basePath = '/', checkedKeys) {
@@ -396,35 +528,38 @@ export default {
     },
     async confirmRole() {
       const isEdit = this.dialogType === 'edit'
+      console.log('role')
+      console.log(this.role)
       if (isEdit) {
          await updateResource({
            id: this.role.id,
            name: this.role.name,
-            status: this.role.status,
+           status: this.statusDataN[this.role.status],
            url: this.role.url,
-           type: this.role.type,
-           operation: this.role.operation,
-           auth: this.role.auth,
+           type: this.typeDataN[this.role.type],
+           operation: this.operaDataN[this.role.operation],
+           auth: this.authDataN[this.role.auth],
            remark: this.role.remark
          })
-        for (const v of this.resourceData) {
-            if (v.id === this.role.id) {
-              const index = this.resourceData.indexOf(v)
-              this.resourceData.splice(index, 1, this.role)
-              break
-            }
-        }
+        // for (const v of this.resourceData) {
+        //     if (v.id === this.role.id) {
+        //       const index = this.resourceData.indexOf(v)
+        //       this.resourceData.splice(index, 1, this.role)
+        //       break
+        //     }
+        // }
+        this.getMeanFirstRec()
       } else {
         const { data } = await addResource({
           name: this.role.name,
           // status: this.role.status,
           url: this.role.url,
-          type: this.role.type,
-          operation: this.role.operation,
-          auth: this.role.auth,
+          type: this.typeDataN[this.role.type],
+          operation: this.operaDataN[this.role.operation],
+          auth: this.authDataN[this.role.auth],
           remark: this.role.remark
         })
-        this.getResource()
+        this.getMeanFirstRec()
       }
 
       const { name, url, remark } = this.role

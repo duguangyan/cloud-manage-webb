@@ -39,7 +39,7 @@
         align="center">
       </el-table-column>
       <el-table-column label="操作" align="center" width="300" class-name="small-padding fixed-width">
-        <template slot-scope="{row}">
+        <template slot-scope="{ row }">
           <el-button type="primary" size="mini" @click="msgEdit(row)">
             编辑
           </el-button>
@@ -169,7 +169,8 @@ export default {
               value: res.data[i].value === null? '': res.data[i].value,
               status: this.statusDes[res.data[i].status],
               remark: res.data[i].remark === null? '': res.data[i].remark,
-              hasChildren: res.data[i].haveChild === 1? true: false
+              hasChildren: res.data[i].haveChild === 1? true: false,
+              children: []
             }
             this.dictData.push(obj)
           }
@@ -198,9 +199,6 @@ export default {
             data.push(obj)
           }
         }
-        console.log('___________')
-        console.log(tree)
-        console.log(treeNode)
         resolve(data)
       })
     },
@@ -212,7 +210,7 @@ export default {
       this.dialogType = 'new'
       this.dialogVisible = true
     },
-    msgEdit(scope, node, data) {
+    msgEdit(scope) {
       this.dialogType = 'edit'
       this.dialogVisible = true
       this.checkStrictly = true
@@ -282,6 +280,14 @@ export default {
           remark: this.role.remark
          })
       } else {
+        // console.log('id:', this.changeId)
+        // console.log(this.maps)
+        // console.log(this.maps.get(this.changeId))
+        // const {tree, treeNode, resolve} = this.maps.get(this.changeId)
+        // console.log('tree')
+        // console.log(tree)
+        // console.log(treeNode)
+        // return
         this.listLoading = true
         const { data } = await addDict({
           parentId: this.changeId,

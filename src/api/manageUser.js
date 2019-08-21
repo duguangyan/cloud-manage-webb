@@ -62,3 +62,12 @@ export function lockUser(query) {
     params: query
   })
 }
+
+// 批量锁定用户
+export function lockUsers(query) {
+  return request({
+    url: '/user/lockBatch',
+    method: 'get',
+    params: query
+  })
+}

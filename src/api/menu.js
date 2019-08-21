@@ -9,14 +9,23 @@ export function getResource(query) {
   })
 }
 
-// 根据用户名获取用户
-// export function getByUsername(data) {
-//   return request({
-//     url: '/upms/user/getByUsername',
-//     method: 'post',
-//     data
-//   })
-// }
+// 查询一级资源
+export function getMeanFirstRec(query) {
+  return request({
+    url: '/upms/resource/getFirstResource',
+    method: 'get',
+    params: query
+  })
+}
+
+// 根据pid获取资源
+export function getMeanByPid(query) {
+  return request({
+    url: '/upms/resource/getByParentId',
+    method: 'get',
+    params: query
+  })
+}
 
 // 根据手机号码获取用户
 // export function getByPhone(query) {
