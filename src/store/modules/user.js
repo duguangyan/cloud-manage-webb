@@ -41,7 +41,7 @@ const actions = {
     const { username, password } = userInfo
     return new Promise((resolve, reject) => {
       login({ username: username.trim(), password: password, grant_type: 'password', scope: '1', client_id: 'cmanager', client_secret: 'xx' }).then(response => {
-        const { data } = response
+        const data = response
         commit('SET_TOKEN', data.access_token)
         commit('SET_REFRESH_TOKEN', data.refresh_token)
         setToken(data.access_token)

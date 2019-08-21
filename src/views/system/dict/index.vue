@@ -89,7 +89,7 @@
 </template>
 
 <script>
-import { addDict, getDictById, getDictByPid, updateDict, deleteDict } from '@/api/dict'
+import { addDict, getDictById, getDictByPid, updateDict, deleteDict } from '@/api/upms/dict'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import { deepClone } from '@/utils'

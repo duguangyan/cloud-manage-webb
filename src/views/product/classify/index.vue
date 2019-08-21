@@ -11,7 +11,7 @@
       v-loading="listLoading"
       draggable
       @node-drop="sort"
-      @node-expand="nodeClick"
+
       :data="productData"
       node-key="id"
       :props="defaultProps"
@@ -40,14 +40,14 @@
     </el-tree>
 
     <el-dialog :visible.sync="dialogVisible" :closeOnClickModal="false" :title="dialogMsg">
-      <el-form :model="role" label-width="80px" label-position="left">
-        <el-form-item label="分类名">
-          <el-input v-model="role.name" placeholder="请输入分类名" />
+      <el-form ref="productForm" :model="role" label-width="80px" label-position="left" :rules="productRules">
+        <el-form-item label="分类名" prop="name">
+          <el-input v-model="role.name" maxlength="20" placeholder="请输入分类名" />
         </el-form-item>
       </el-form>
       <div style="text-align:right;">
         <el-button type="danger" @click="dialogVisible=false">取消</el-button>
-        <el-button type="primary" @click="confirmRole">确定</el-button>
+        <el-button type="primary" @click="regFun">确定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -56,7 +56,8 @@
 <script>
 import waves from '@/directive/waves'
 import { deepClone } from '@/utils'
-import { getProductTree, insertRootProduct, insertProduct, deleteProduct, updateProduct, searchProduct, getProductNum } from '@/api/product'
+import { getProductTree, insertRootProduct, insertProduct, deleteProduct, updateProduct, searchProduct, getProductNum, moveProduct } from '@/api/goods/product'
+import { validWord } from '@/utils/validate'
 let id = 1000;
 const defaultRole = {
   name: '',
@@ -67,6 +68,13 @@ export default {
   name: 'classify',
   directives: { waves },
   data() {
+    const validateName = (rule, value, callback) => {
+      if (!validWord(value)) {
+          callback(new Error('名称里不能有特殊字符'))
+      } else {
+          callback()
+      }
+    }
     return {
       role: Object.assign({}, defaultRole),
       filterText: '',
@@ -81,6 +89,13 @@ export default {
         label: function(a, b) {
           return a.name
         }
+      },
+      productRules: {
+          name: [{
+              required: true,
+              trigger: 'blur',
+              validator: validateName
+          }]
       },
       parentId: '',
       node: {},
@@ -117,10 +132,6 @@ export default {
     this.getProductTree()
   },
   methods: {
-    nodeClick(data) {
-      console.log('---')
-      console.log(data)
-    },
     getProductTree() {
       // 获取初始商品树
       getProductTree().then(res => {
@@ -144,14 +155,14 @@ export default {
     },
 
     allowDrop(draggingNode, dropNode, type){
-          if (draggingNode.data.level === dropNode.data.level) {
-            if (draggingNode.data.aboveId === dropNode.data.aboveId) {
-              return type === 'prev' || type === 'next'
-            }
-          } else {
-            // 不同级进行处理
-            return false
-          }
+      if (draggingNode.level === dropNode.level) {
+        if (draggingNode.data.aboveId === dropNode.data.aboveId) {
+          return type === 'prev' || type === 'next'
+        }
+      } else {
+        // 不同级不进行处理
+        return false
+      }
     },
     append(node, data) {
       this.dialogMsg = '添加子分类'
@@ -200,18 +211,32 @@ export default {
         });
     },
     sort(draggingNode, dropNode,type, event) {
-      /* console.log('排序')
-      console.log(dropNode)   //dropNode.parent.childNodes =[] 拖拽之后的重新组合的数组 */
-      let obj = {
-        aboveId:'',
-        arr:[]
+      // dropNode.parent.childNodes =[] 拖拽之后的重新组合的数组
+      let sort = 0
+      console.log('ddd')
+      console.log(dropNode)
+      for(let i = 0; i < dropNode.parent.childNodes.length; i++) {
+        if(dropNode.parent.childNodes[i].data.id === draggingNode.data.id) {
+          if(i - 1 >= 0) {
+            console.log('----------------')
+            console.log(dropNode.parent.childNodes[i - 1].data)
+            sort = parseInt(dropNode.parent.childNodes[i - 1].data.sort) + 1
+          } else {
+            sort = 1
+          }
+          break
+        }
       }
-      obj.aboveId = dropNode.data.aboveId
-      for (let item of dropNode.parent.childNodes) {
-        obj.arr.push(item.data.id)
-      }
-      // this.updateOrderMe(obj)
-      console.log(obj)
+      this.listLoading = true
+      moveProduct({ 
+        categoryId: draggingNode.data.id,
+        parentId: dropNode.parent.data.id,
+        sort: sort
+      }).then(res => {
+        this.listLoading = false
+      }).catch(err => {
+        this.listLoading = false
+      })
     },
     sortArr(draggingNode, dropNode,type, event) {
       console.log(draggingNode)
@@ -249,11 +274,17 @@ export default {
     },
     msgAdd(scope) {
       this.role = Object.assign({}, defaultRole)
-      console.log(scope)
       this.dialogType = 'new'
       this.dialogVisible = true
       this.changeId = scope.id
       this.changePid = scope.pid
+    },
+    regFun () {
+      this.$refs.productForm.validate(valid => {
+        if(valid) {
+          this.confirmRole()
+        }
+      })
     },
     async confirmRole() {
       this.listLoading = true
@@ -261,12 +292,18 @@ export default {
         await updateProduct({
         id: this.role.id,
         name: this.role.name
+        }).catch(err => { 
+          this.listLoading = false
+          console.error(err)
         })
         this.nodeData.name = this.role.name
       } else if(this.dialogType === 'new') {
         const { data } = await insertProduct({
           parentId: this.nodeData.id,
           name: this.role.name
+        }).catch(err => { 
+          this.listLoading = false
+          console.error(err)
         })
         const newChild = { id: data.id, name: this.role.name, children: [] };
         if (!this.nodeData.children) {
@@ -274,8 +311,6 @@ export default {
         }
         this.nodeData.children.push(newChild);
         this.node.expanded = true
-        console.log('x')
-        console.log(this.nodeData)
       } else if(this.dialogType === 'root') {
         this.listLoading = true
         await insertRootProduct({ name: this.role.name })

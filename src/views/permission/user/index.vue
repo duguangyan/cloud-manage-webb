@@ -2,10 +2,11 @@
   <div class="app-container">
 
     <div class="filter-container">
-      用户姓名：
-      <el-input v-model="listQuery.username"  placeholder="请输入用户姓名" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.realName"  placeholder="请输入真实姓名" style="width: 200px;" class="filter-item mr10" @keyup.enter.native="handleFilter" />
+      账号：
+      <el-input v-model="listQuery.username"  placeholder="请输入用户账号" style="width: 200px;" class="filter-item mr10" @keyup.enter.native="handleFilter" />
       手机号码：
-      <el-input v-model="listQuery.phone"  placeholder="请输入手机号码" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.phone"  placeholder="请输入手机号码" style="width: 200px;" class="filter-item mr10" @keyup.enter.native="handleFilter" />
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">搜索</el-button>
       <el-button v-waves class="filter-item" icon="el-icon-search" @click="resetSearch">重置</el-button>
     </div>
@@ -64,7 +65,7 @@
             </template>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="操作" min-width="220">
+      <el-table-column align="center" label="操作" min-width="320">
         <template slot-scope="scope">
           <el-button type="primary" size="small" @click="msgEdit(scope)">编辑</el-button>
           <el-button type="primary" size="small" @click="handleLock(scope)">
@@ -75,13 +76,35 @@
               锁定
             </template>
           </el-button>
+          <el-button type="primary" size="small" @click="setRole(scope)">分配角色</el-button>
           <el-button type="danger" size="small" @click="handleDelete(scope)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
 
-    <el-dialog :visible.sync="dialogVisible" :closeOnClickModal="false" :title="dialogType==='edit'?'编辑用户信息':'新增角色'">
-      <el-form ref="editForm" :model="role" label-width="80px" label-position="left" :rules="editRules">
+    <el-dialog :visible.sync="dialogVisible" :closeOnClickModal="false" :title="dialogMsg">
+      <template v-if="dialogType === 'role'">
+        <el-table
+          ref="roleMmulTable"
+          :data="roleTable"
+          tooltip-effect="dark"
+          style="width: 100%"
+          @select="roleSelectFun">
+          <el-table-column
+            type="selection"
+             label="角色名"
+            width="55">
+          </el-table-column>
+          <el-table-column
+            prop="name"
+            label="角色名"
+          >
+          </el-table-column>
+        </el-table>
+        <pagination v-show="roleTotal>0" :total="roleTotal" :page.sync="roleListQuery.pageIndex" :limit.sync="roleListQuery.pageSize"  @pagination="getRoleList" />
+      </template>
+      <template v-else>
+        <el-form ref="editForm" :model="role" label-width="80px" label-position="left" :rules="editRules">
         <el-form-item label="昵称">
           <el-input v-model="role.nickName" placeholder="请输入昵称" />
         </el-form-item>
@@ -106,8 +129,9 @@
               :value="item.id">
             </el-option>
           </el-select>
-        </el-form-item>
-      </el-form>
+          </el-form-item>
+        </el-form>
+      </template>
       <div style="text-align:right;">
         <el-button type="danger" @click="dialogVisible=false">取消</el-button>
         <el-button type="primary" @click="regFun">确定</el-button>
@@ -122,7 +146,8 @@
 import path from 'path'
 import { deepClone } from '@/utils'
 import waves from '@/directive/waves' // waves directive
-import { getUserList, updateUser, addUser, userDelete, lockUser, lockUsers } from '@/api/manageUser'
+import { getUserList, updateUser, addUser, userDelete, lockUser, lockUsers, processUserRoleBatch } from '@/api/upms/manageUser'
+import { getRoleList } from '@/api/manageRole'
 import { getSystem } from '@/api/systemList'
 import Pagination from '@/components/Pagination'
 import { validTelphone } from '@/utils/validate'
@@ -134,7 +159,7 @@ const defaultRole = {
 }
 
 export default {
-  name: 'User',
+  name: 'user',
   directives: { waves },
   data() {
     const validateTelphone = (rule, value, callback) => {
@@ -146,35 +171,49 @@ export default {
     }
     return {
       role: Object.assign({}, defaultRole),
+      roleTable: [],
       listLoading: false,
-      systemData: [
-      ],
+      systemData: [],
       editRules: {
-          phone: [{
-              required: false,
-              trigger: 'blur',
-              validator: validateTelphone
-          }]
+        phone: [{
+            required: false,
+            trigger: 'blur',
+            validator: validateTelphone
+        }]
       },
       routes: [],
       rolesList: [],
       userData: [],
       dialogVisible: false,
       dialogType: 'new',
+      dialogMsg: '新增角色',
       checkStrictly: false,
       defaultProps: {
         children: 'children',
         label: 'title'
       },
       total: 0,
+      roleTotal: 0,
       allPages: 0,
       listQuery: {
         username: '',
         phone: '',
+        realName: '',
         pageIndex: 1,
         pageSize: 10
       },
-      multipleSelection: []
+      roleListQuery: {
+        userId: '',
+        pageIndex: 1,
+        pageSize: 10
+      },
+      userMulSelect: [],
+      roleMulSelect: [],
+      selectObj: {},
+      selectData: [],
+      addObj: new Set(),
+      deleteObj: new Set(),
+      addLen: 0
     }
   },
   components: { Pagination },
@@ -188,9 +227,25 @@ export default {
     this.getSystem()
   },
   methods: {
+    roleSelectFun(val, row) {
+      if(this.addLen < val.length) {
+        if(row.userHave === 0) {
+          this.addObj.add(row.id)
+        } else {
+          this.deleteObj.delete(row.id)
+        }
+      } else {
+        if(row.userHave === 1) {
+          this.deleteObj.add(row.id)
+        } else {
+          this.addObj.delete(row.id)
+        }
+      }
+      this.addLen = val.length
+    },
     handleSelectionChange(val) {
       // 多选事件
-      this.multipleSelection = val
+      this.userMulSelect = val
     },
     resetSearch() {
       this.listQuery = {
@@ -208,7 +263,27 @@ export default {
         this.userData = res.data.records
         this.total = res.data.total
         this.allPages = res.data.pages
+      }).catch(err => {
+        this.listLoading = false
       })
+    },
+    async getRoleList() {
+      const { data } = await  getRoleList(this.roleListQuery).catch(err => {})
+      this.roleTotal = data.total
+      this.addLen = 0
+      if(Array.isArray(data.records)) {
+        this.roleTable = data.records
+        this.roleTable.map((val, index) => {
+          if(this.addObj.has(val.id) || (!this.deleteObj.has(val.id) && val.userHave === 1)) {
+            ++this.addLen
+            this.$nextTick(() => {
+              this.$refs.roleMmulTable.toggleRowSelection(val, true);//默认选中   
+            })
+          }
+          
+        })
+       
+      }
     },
     getSystem() {
       getSystem().then(res => {
@@ -218,7 +293,7 @@ export default {
     getList(data) {
       // 分页事件
       this.listQuery.pageIndex = data.page
-      this.getRoleList()
+      this.getUserList()
     },
     handleFilter() {
       this.listQuery.pageIndex = 1
@@ -275,32 +350,47 @@ export default {
       return data
     },
     handleAddRole() {
+      // 新增角色
       this.role = Object.assign({}, defaultRole)
       this.dialogType = 'new'
+      this.dialogMsg = '新增角色'
       this.dialogVisible = true
     },
     msgEdit(scope) {
+      // 编辑角色
       if(this.systemData.length === 0) {
         this.getSystem()
       }
       this.dialogType = 'edit'
+      this.dialogMsg = '编辑角色'
       this.dialogVisible = true
       this.checkStrictly = true
       this.role = deepClone(scope.row)
     },
     handleLock({ $index, row }) {
+      // 锁定、解锁角色
+      console.log('row', row)
       this.listLoading = true
-      lockUser({ id: row.id }).then(res => {
+      lockUser({ id: row.id, status: row.status===0? 1: 0 }).then(res => {
         this.listLoading = false
-        if(this.userData[$index].status === 0) {
-          this.userData[$index].status = 1
-        } else if(this.userData[$index].status === 1) {
-          this.userData[$index].status = 0
-        }
+        this.userData[$index].status = this.userData[$index].status === 0? 1: 0
+      }).catch(err => {
+        this.listLoading = false
       })
     },
+    async setRole(scope) {
+      // 分配角色
+      this.dialogType = 'role'
+      this.dialogMsg = '分配角色'
+      this.role = deepClone(scope.row)
+      this.roleListQuery.userId = this.role.id
+      this.getRoleList()
+      this.dialogVisible = true
+      this.checkStrictly = true
+    },
     handleLockMul() {
-      if(this.multipleSelection.length === 0) {
+      // 批量锁定用户
+      if(this.userMulSelect.length === 0) {
           this.$message({ type: 'warning', message: '请先勾选要锁定的用户！' })
       } else {
         this.$confirm('确定要批量锁定这些用户?', '提示', {
@@ -310,15 +400,15 @@ export default {
         }).then(() => {
           this.listLoading = true
           let ids = ''
-          for(let i = 0; i < this.multipleSelection.length; i++) {
-            if(i != this.multipleSelection.length - 1) {
-              ids += this.multipleSelection[i].id + ','
+          for(let i = 0; i < this.userMulSelect.length; i++) {
+            if(i != this.userMulSelect.length - 1) {
+              ids += this.userMulSelect[i].id + ','
             } else {
-              ids += this.multipleSelection[i].id
+              ids += this.userMulSelect[i].id
             }
           }
           lockUsers({ ids: ids }).then(res => {
-            for (const v1 of this.multipleSelection) {
+            for (const v1 of this.userMulSelect) {
               for(const v2 of this.userData) {
                 if(v1.id === v2.id) {
                   const index = this.userData.indexOf(v2)
@@ -368,16 +458,19 @@ export default {
       return res
     },
     regFun () {
-      this.$refs.editForm.validate(valid => {
-        if(valid) {
-          this.confirmRole()
-        }
-      })
+      if(this.dialogType === 'role') {
+        this.confirmRole()
+      } else {
+        this.$refs.editForm.validate(valid => {
+          if(valid) {
+            this.confirmRole()
+          }
+        })
+      }
+      
     },
     async confirmRole() {
-      const isEdit = this.dialogType === 'edit'
-      console.log(this.role)
-      if (isEdit) {
+      if ( this.dialogType === 'edit') {
          await updateUser({
            systemId: this.role.systemId,
            id: this.role.id,
@@ -386,7 +479,10 @@ export default {
            realName: this.role.realName,
            password: this.role.password,
            phone: this.role.phone
-         })
+         }).catch(err => { 
+          this.listLoading = false
+          console.error(err)
+        })
         for (const v of this.userData) {
             if (v.id === this.role.id) {
               const index = this.userData.indexOf(v)
@@ -394,7 +490,7 @@ export default {
               break
             }
         }
-      } else {
+      } else if (this.dialogType === 'new'){
         const { data } = await addUser({
           systemId: '553ebb6cad7440c99d5f89b26ef4fd2c',
           nickName: this.role.nickName,
@@ -402,20 +498,49 @@ export default {
           realName: this.role.realName,
           phone: this.role.phone,
           password: this.role.pass
+        }).catch(err => { 
+          this.listLoading = false
+          console.error(err)
         })
         this.getUserList()
+      } else if(this.dialogType === 'role') {
+        // let roleIds = ''
+        // this.selectObj.map((val, index) => {
+        //   val.map((valIn, indexIn) => {
+        //     if(index === 0) {
+        //     roleIds += valIn.id
+        //     } else {
+        //       roleIds += ',' + valIn.id
+        //     }
+        //   })
+          
+        // })
+        let addIds = ''
+        let deleteIds = ''
+        this.addObj.forEach((item) => {
+          addIds += addIds.length === 0? item: ',' + item
+        })
+        this.deleteObj.forEach((item) => {
+
+          deleteIds += deleteIds.length === 0? item: ',' + item
+        })
+        const { data } = await processUserRoleBatch({
+          userId: this.role.id,
+          roleIds: addIds,
+          delRoleIds: deleteIds
+        }).catch(err => { 
+          this.listLoading = false
+          console.error(err)
+        })
+        this.roleListQuery.pageIndex = 1
+        this.getRoleList()
       }
 
       const { description, key, name } = this.role
       this.dialogVisible = false
       this.$notify({
-        title: 'Success',
+        title: '成功',
         dangerouslyUseHTMLString: true,
-        message: `
-            <div>Role Key: ${key}</div>
-            <div>Role Nmae: ${name}</div>
-            <div>Description: ${description}</div>
-          `,
         type: 'success'
       })
     },
@@ -445,6 +570,9 @@ export default {
 
 <style lang="scss" scoped>
 .app-container {
+  .mr10{
+    margin-right: 10px;
+  }
   .user-avatar{
     width: 30px;
     height: 30px;

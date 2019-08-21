@@ -80,7 +80,7 @@
 </template>
 
 <script>
-import { getSystem, updateSystem, addSystem, deleteSystem } from '@/api/systemList'
+import { getSystem, updateSystem, addSystem, deleteSystem } from '@/api/upms/systemList'
 import Pagination from '@/components/Pagination'
 import waves from '@/directive/waves' // waves directive
 

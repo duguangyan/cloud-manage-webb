@@ -26,3 +26,11 @@ export function validUsername(str) {
 export function validTelphone(str) {
   return /^1[3456789]\d{9}$/.test(str)
 }
+
+/**
+* @param {string} str
+* @returns {Boolean}
+*/
+export function validWord(str) {
+  return /^[\u4E00-\u9FA5A-Za-z0-9]+$/.test(str)
+}

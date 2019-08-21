@@ -3,9 +3,9 @@
 
     <div class="filter-container">
       名称：
-      <el-input v-model="listQuery.name"  placeholder="请输入用户姓名" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.name"  placeholder="请输入用户姓名" style="width: 200px;" class="filter-item mr10" @keyup.enter.native="handleFilter" />
       状态：
-      <el-select v-model="listQuery.status" placeholder="请选择">
+      <el-select v-model="listQuery.status" class="mr10" placeholder="请选择">
         <el-option
           v-for="item in statusData"
           :key="item.id"
@@ -14,7 +14,7 @@
         </el-option>
       </el-select>
       类型：
-      <el-select v-model="listQuery.type" placeholder="请选择">
+      <el-select v-model="listQuery.type" class="mr10" placeholder="请选择">
         <el-option
           v-for="item in typeData"
           :key="item.id"
@@ -240,7 +240,7 @@
 import path from 'path'
 import { deepClone } from '@/utils'
 import waves from '@/directive/waves' // waves directive
-import { getMeanFirstRec, getMeanByPid, getResource, resourceDelete, updateUser, addResource, updateResource } from '@/api/menu'
+import { getMeanFirstRec, getMeanByPid, getResource, resourceDelete, updateUser, addResource, updateResource } from '@/api/upms/menu'
 import { getSystem } from '@/api/systemList'
 import Pagination from '@/components/Pagination'
 const defaultRole = {
@@ -601,6 +601,9 @@ export default {
 
 <style lang="scss" scoped>
 .app-container {
+  .mr10{
+    margin-right: 10px;
+  }
   .filter-container{
     padding-bottom: 30px;
   }

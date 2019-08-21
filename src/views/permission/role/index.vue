@@ -87,7 +87,7 @@
 import path from 'path'
 import { deepClone } from '@/utils'
 import waves from '@/directive/waves'
-import { getRoutes, getRoles, addRole, deleteRole, updateRole, getRoleList, addResourceBatch, getRoleResources } from '@/api/manageRole'
+import { getRoutes, getRoles, addRole, deleteRole, updateRole, getRoleList, addResourceBatch, getRoleResources, getUserResourceTree } from '@/api/upms/manageRole'
 import Pagination from '@/components/Pagination'
 const defaultRole = {
   key: '',
@@ -195,7 +195,9 @@ export default {
     generateArr(routes) {
       let data = []
       routes.forEach(route => {
-        data.push(route)
+        if(route.checked === 1) {
+          data.push(route)
+        }
         if (route.children) {
           const temp = this.generateArr(route.children)
           if (temp.length > 0) {
@@ -227,14 +229,17 @@ export default {
       this.dialogVisible = true
       this.checkStrictly = true
       this.role = deepClone(scope.row)
-      if(this.routes.length === 0) {
-        this.listLoading = true
-        await this.getRoutes()
-        this.listLoading = false
-      }
-      getRoleResources({roleId: this.role.id}).then(res => {
+      // if(this.routes.length === 0) {
+      //   this.listLoading = true
+      //   await this.getRoutes()
+      //   this.listLoading = false
+      // }
+      // getRoleResources({roleId: this.role.id}).then(res => {
+      getUserResourceTree({userId: this.role.id}).then(res => {
+        this.serviceRoutes = res.data
+        this.routes = this.generateRoutes(res.data)
         this.$nextTick(() => {
-        const routes = Array.isArray(res.data.resources)? this.generateRoutes(res.data.resources): this.generateRoutes([])
+        const routes = Array.isArray(res.data)? this.generateArr(res.data): this.generateRoutes([])
         this.$refs.tree.setCheckedNodes(routes)
         // set checked state of a node not affects its father and child nodes
         this.checkStrictly = false
