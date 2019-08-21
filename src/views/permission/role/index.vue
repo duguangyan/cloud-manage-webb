@@ -221,13 +221,17 @@ export default {
       this.checkStrictly = true
       this.role = deepClone(scope.row)
     },
-    handleEdit(scope) {
+    async handleEdit(scope) {
       this.dialogTitle = '分配权限'
       this.dialogType = 'roles'
       this.dialogVisible = true
       this.checkStrictly = true
       this.role = deepClone(scope.row)
-      this.getRoutes()
+      if(this.routes.length === 0) {
+        this.listLoading = true
+        await this.getRoutes()
+        this.listLoading = false
+      }
       getRoleResources({roleId: this.role.id}).then(res => {
         this.$nextTick(() => {
         const routes = Array.isArray(res.data.resources)? this.generateRoutes(res.data.resources): this.generateRoutes([])
