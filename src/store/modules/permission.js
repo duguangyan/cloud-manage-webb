@@ -1,5 +1,5 @@
 import { constantRoutes } from '@/router'
-import { getRoles } from '@/api/user'
+import { getRoles } from '@/api/upms/user'
 import Layout from '@/layout'
 
 const _import = require('@/router/_import_' + process.env.NODE_ENV) // 获取组件的方法

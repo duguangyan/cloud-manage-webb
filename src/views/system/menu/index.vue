@@ -241,7 +241,7 @@ import path from 'path'
 import { deepClone } from '@/utils'
 import waves from '@/directive/waves' // waves directive
 import { getMeanFirstRec, getMeanByPid, getResource, resourceDelete, updateUser, addResource, updateResource } from '@/api/upms/menu'
-import { getSystem } from '@/api/systemList'
+import { getSystem } from '@/api/upms/systemList'
 import Pagination from '@/components/Pagination'
 const defaultRole = {
   name: '',

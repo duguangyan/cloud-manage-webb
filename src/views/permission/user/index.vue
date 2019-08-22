@@ -147,8 +147,8 @@ import path from 'path'
 import { deepClone } from '@/utils'
 import waves from '@/directive/waves' // waves directive
 import { getUserList, updateUser, addUser, userDelete, lockUser, lockUsers, processUserRoleBatch } from '@/api/upms/manageUser'
-import { getRoleList } from '@/api/manageRole'
-import { getSystem } from '@/api/systemList'
+import { getRoleList } from '@/api/upms/manageRole'
+import { getSystem } from '@/api/upms/systemList'
 import Pagination from '@/components/Pagination'
 import { validTelphone } from '@/utils/validate'
 const defaultRole = {

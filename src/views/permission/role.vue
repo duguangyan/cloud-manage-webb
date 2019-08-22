@@ -85,7 +85,7 @@
 import path from 'path'
 import { deepClone } from '@/utils'
 import waves from '@/directive/waves' // waves directive
-import { getRoutes, getRoles, addRole, deleteRole, updateRole, getRoleList } from '@/api/manageRole'
+import { getRoutes, getRoles, addRole, deleteRole, updateRole, getRoleList } from '@/api/upms/manageRole'
 import Pagination from '@/components/Pagination'
 const defaultRole = {
   key: '',

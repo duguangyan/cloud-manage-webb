@@ -54,7 +54,7 @@
 
 <script>
     import { validUsername } from '@/utils/validate'
-    import { getSystem } from '@/api/systemList'
+    import { getSystem } from '@/api/upms/systemList'
 
 
     export default {
