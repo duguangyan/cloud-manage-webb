@@ -98,7 +98,7 @@
 import path from 'path'
 import { deepClone } from '@/utils'
 import waves from '@/directive/waves'
-import { getRoutes, getRoles, addRole, deleteRole, updateRole, getRoleList, addResourceBatch, getRoleResources, getRoleResourceTree } from '@/api/upms/manageRole'
+import { getRoles, addRole, deleteRole, updateRole, getRoleList, addResourceBatch, getRoleResources, getRoleResourceTree } from '@/api/upms/manageRole'
 import { getSystem } from '@/api/upms/systemList'
 import Pagination from '@/components/Pagination'
 const defaultRole = {
@@ -170,15 +170,6 @@ export default {
     handleFilter() {
       this.listQuery.pageIndex = 1
       this.getRoleList()
-    },
-    async getRoutes(scope) {
-      this.listLoading = true
-      const res = await getRoutes({ userId: this.$store.getters.userId })
-      if(Array.isArray(res.data)) {
-        this.serviceRoutes = res.data
-        this.routes = this.generateRoutes(res.data)
-      }
-      this.listLoading = false
     },
     async getRoles() {
       const res = await getRoles({id: 1})
@@ -255,12 +246,6 @@ export default {
       this.dialogVisible = true
       this.checkStrictly = true
       this.role = deepClone(scope.row)
-      // if(this.routes.length === 0) {
-      //   this.listLoading = true
-      //   await this.getRoutes()
-      //   this.listLoading = false
-      // }
-      // getRoleResources({roleId: this.role.id}).then(res => {
       getRoleResourceTree({roleId: this.role.id}).then(res => {
         this.serviceRoutes = res.data
         this.routes = this.generateRoutes(res.data)

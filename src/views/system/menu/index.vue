@@ -7,19 +7,19 @@
       状态：
       <el-select v-model="listQuery.status" class="mr10" placeholder="请选择">
         <el-option
-          v-for="item in statusData"
-          :key="item.id"
-          :label="item.name"
-          :value="item.id">
+          v-for="(val, key) in statusData"
+          :key="key"
+          :label="val"
+          :value="val">
         </el-option>
       </el-select>
       类型：
       <el-select v-model="listQuery.type" class="mr10" placeholder="请选择">
         <el-option
-          v-for="item in typeData"
-          :key="item.id"
-          :label="item.name"
-          :value="item.id">
+          v-for="(val, key) in typeData"
+          :key="key"
+          :label="val"
+          :value="val">
         </el-option>
       </el-select>
 
@@ -28,85 +28,6 @@
       <el-button v-waves class="filter-item" icon="el-icon-search" @click="handleAddResource">新增资源</el-button>
     </div>
 
-    <!-- <el-table 
-      ref="multipleTable" 
-      v-loading="listLoading"
-      :data="resourceData"
-      tooltip-effect="dark" 
-      @selection-change="handleSelectionChange"
-      :header-cell-style="{background: '#f3f3f3'}" 
-      style="width: 100%;margin-top:10px;">
-      <el-table-column align="center" label="名称" width="220">
-        <template slot-scope="scope">
-          {{ scope.row.name }}
-        </template>
-      </el-table-column>
-      <el-table-column align="center" label="类型" width="220">
-        <template slot-scope="scope">
-          <template v-if="scope.row.type === 0">
-            菜单
-          </template>
-          <template v-else-if="scope.row.type === 1">
-            按钮
-          </template>
-          <template v-else-if="scope.row.type === 2">
-            接口
-          </template>
-        </template>
-      </el-table-column>
-      <el-table-column align="center" label="链接地址" width="220">
-        <template slot-scope="scope">
-          {{ scope.row.url }}
-        </template>
-      </el-table-column>
-      <el-table-column align="center" label="状态" width="220">
-        <template slot-scope="scope">
-          <template v-if="scope.row.status === 0">
-          禁用
-          </template>
-          <template v-else-if="scope.row.status === 1">
-          启用
-          </template>
-        </template>
-      </el-table-column>
-      <el-table-column align="center" label="事件" width="220">
-        <template slot-scope="scope">
-          <template v-if="scope.row.operation === 0">
-          tab打开
-          </template>
-          <template v-else-if="scope.row.operation === 1">
-          窗口打开
-          </template>
-        </template>
-      </el-table-column>
-      <el-table-column align="center" label="授权" width="220">
-        <template slot-scope="scope">
-          <template v-if="scope.row.auth === -1">
-          禁止
-          </template>
-          <template v-else-if="scope.row.auth === 0">
-          不需要认证
-          </template>
-          <template v-else-if="scope.row.auth === 1">
-          已认证
-          </template>
-          <template v-else-if="scope.row.auth === 2">
-          角色
-          </template>
-        </template>
-      </el-table-column>
-      <el-table-column align="center" label="描述" width="220">
-        <template slot-scope="scope">
-         {{scope.row.remark}}
-        </template>
-      </el-table-column>
-      <el-table-column align="center" label="操作" min-width="220">
-        <template slot-scope="scope">
-          <el-button type="primary" size="small" @click="msgEdit(scope)">编辑</el-button>
-          <el-button type="danger" size="small" @click="handleDelete(scope)">删除</el-button>
-        </template>
-      </el-table-column>
-    </el-table> -->
     <el-table
       ref="treeTable"
       v-loading="listLoading"
@@ -169,8 +90,14 @@
       </el-table-column>
     </el-table>
 
-    <el-dialog :visible.sync="dialogVisible" :closeOnClickModal="false" :title="dialogType==='edit'?'分配权限':'新增角色'">
+    <el-dialog :visible.sync="dialogVisible" :closeOnClickModal="false" :title="dialogType==='edit'?'编辑':'新增资源'">
       <el-form v-loading="diaLoading" :model="role" label-width="80px" label-position="left">
+        <el-form-item label="父级">
+          <span v-if="checkParentName.length > 0" class="mr10">{{checkParentName}}</span>
+          <span v-else-if="role.parentName !== undefined && role.parentName !== ''" class="mr10">{{role.parentName}}</span>
+          <span v-else class="mr10">顶级</span>
+          <el-button v-waves class="filter-item" size="small" @click="selectParent">更改父级</el-button>
+        </el-form-item>
         <el-form-item label="名称">
           <el-input v-model="role.name" maxlength="64" placeholder="请输入名称" />
         </el-form-item>
@@ -228,8 +155,29 @@
         </el-form-item>
       </el-form>
       <div style="text-align:right;">
-        <el-button type="danger" @click="dialogVisible=false">取消</el-button>
+        <el-button type="danger" @click="dioCancle">取消</el-button>
         <el-button type="primary" @click="confirmRole" :disabled="diaDisable">确定</el-button>
+      </div>
+    </el-dialog>
+
+    <el-dialog :visible.sync="prarentDialogVisible" :closeOnClickModal="false" :title="'选择父级'">
+      <el-form :model="role" label-width="80px" label-position="left">
+        <el-form-item label="权限列表">
+          <el-tree
+            ref="parentTree"
+            :check-strictly="checkStrictly"
+            :data="routesData"
+            :props="defaultProps"
+            @check-change="handleCheckChange"
+            show-checkbox
+            node-key="id"
+            class="permission-tree"
+          />
+        </el-form-item>
+      </el-form>
+      <div style="text-align:right;">
+        <el-button type="danger" @click="parentCancle">取消</el-button>
+        <el-button type="primary" @click="confirmParent">确定</el-button>
       </div>
     </el-dialog>
 
@@ -242,6 +190,7 @@ import path from 'path'
 import { deepClone } from '@/utils'
 import waves from '@/directive/waves' // waves directive
 import { getMeanFirstRec, getMeanByPid, getResource, resourceDelete, updateUser, addResource, updateResource } from '@/api/upms/menu'
+import { getRoutes } from '@/api/upms/manageRole'
 import { getSystem } from '@/api/upms/systemList'
 import Pagination from '@/components/Pagination'
 const defaultRole = {
@@ -307,6 +256,7 @@ export default {
       rolesList: [],
       resourceData: [],
       dialogVisible: false,
+      prarentDialogVisible: false,
       dialogType: 'new',
       checkStrictly: false,
       defaultProps: {
@@ -321,6 +271,8 @@ export default {
         status: '',
         type: ''
       },
+      checkParentId: '',
+      checkParentName: '',
       multipleSelection: []
     }
   },
@@ -347,7 +299,8 @@ export default {
             let obj = {
               name: res.data[i].name,
               id: res.data[i].id,
-              pid: res.data[i].parentId,
+              parentId: res.data[i].parentId,
+              parentName: '',
               code: res.data[i].code,
               status: this.statusData[String(res.data[i].status)],
               operation: this.operaData[String(res.data[i].operation)],
@@ -360,7 +313,6 @@ export default {
           }
          
         }
-        console.log(this.meanData)
       })
     },
     load(tree, treeNode, resolve) {
@@ -375,7 +327,8 @@ export default {
             let obj = {
               name: res.data[i].name,
               id: res.data[i].id,
-              pid: res.data[i].pid,
+              parentId: res.data[i].parentId,
+              parentName: tree.name,
               code: res.data[i].code,
               status: this.statusData[String(res.data[i].status)],
               operation: this.operaData[String(res.data[i].operation)],
@@ -390,6 +343,15 @@ export default {
         resolve(data)
       })
     },
+    dioCancle() {
+      // 取消编辑
+      this.dialogVisible = false
+      this.checkParentName = ''
+    },
+    parentCancle() {
+      this.checkParentName = ''
+      this.prarentDialogVisible = false
+    },
     getResource() {
       this.listLoading = true
       getResource(this.listQuery).then(res => {
@@ -398,6 +360,48 @@ export default {
         this.total = res.data.total
         this.allPages = res.data.pages
       })
+    },
+    async getRoutes() {
+      this.listLoading = true
+      await getRoutes().then(res => {
+        if(Array.isArray(res.data)) {
+          // this.serviceRoutes = res.data
+          this.routes = this.generateRoutes(res.data, true)
+        }
+        this.listLoading = false
+      }).catch(err => {
+        this.listLoading = false
+      })
+      
+    },
+    generateRoutes(routes, type) {
+      // 路由生成
+      const res = []
+      if(type) {
+        res.push({
+          id: '',
+          title: '顶级'
+        })
+      }
+      for (let route of routes) {
+        // skip some route
+        if (route.hidden) { continue }
+        // const onlyOneShowingChild = this.onlyOneShowingChild(route.children, route)
+        const onlyOneShowingChild = false
+        if (route.children && onlyOneShowingChild && !route.alwaysShow) {
+          route = onlyOneShowingChild
+        }
+        const data = {
+          id: route.id,
+          title: route.name
+        }
+        // recursive child routes
+        if (route.children) {
+          data.children = this.generateRoutes(route.children, false)
+        }
+        res.push(data)
+      }
+      return res
     },
     getList(data) {
       // 分页事件
@@ -417,44 +421,6 @@ export default {
         type: ''
       },
       this.getResource()
-    },
-    async getRoutes(scope) {
-      const res = await getRoutes({id: scope.row.id})
-      this.serviceRoutes = res.data.resources
-      this.routes = this.generateRoutes(res.data)
-      console.log(routes)
-    },
-    async getRoles() {
-      const res = await getRoles({id: 1})
-      this.rolesList = res.data.resources
-    },
-    // Reshape the routes structure so that it looks the same as the sidebar
-    generateRoutes(routes, basePath = '/') {
-      const res = []
-
-      for (let route of routes) {
-        // skip some route
-        if (route.hidden) { continue }
-
-        const onlyOneShowingChild = this.onlyOneShowingChild(route.children, route)
-
-        if (route.children && onlyOneShowingChild && !route.alwaysShow) {
-          route = onlyOneShowingChild
-        }
-
-        const data = {
-          path: path.resolve(basePath, route.path),
-          title: route.meta && route.meta.title
-
-        }
-
-        // recursive child routes
-        if (route.children) {
-          data.children = this.generateRoutes(route.children, data.path)
-        }
-        res.push(data)
-      }
-      return res
     },
     generateArr(routes) {
       let data = []
@@ -479,23 +445,23 @@ export default {
       this.dialogVisible = true
       this.checkStrictly = true
       this.role = deepClone(row)
-      console.log(this.role)
     },
-    handleEdit(scope) {
-      this.dialogType = 'edit'
-      this.dialogVisible = true
-      this.checkStrictly = true
-      this.role = deepClone(scope.row)
-      this.role.routes = [
-        {id: 1, name: 'souye'},
-        {id: 2, name: 'caiwuye'}
-      ]
-      this.$nextTick(() => {
-        const routes = this.generateRoutes(this.role.routes)
-        this.$refs.tree.setCheckedNodes(this.generateArr(routes))
-        // set checked state of a node not affects its father and child nodes
-        this.checkStrictly = false
-      })
+    async selectParent() {
+      this.prarentDialogVisible = true
+      await this.getRoutes()
+    },
+    handleCheckChange (data, checked, indeterminate) {
+      /* 主要通过checked进行判断 */
+      if (checked) {
+        // console.log('id:', data.id)
+        // console.log('ck')
+        // console.log(data.title)
+        // console.log(data.id)
+        let arr = [data.id];
+        this.$refs.parentTree.setCheckedKeys(arr);
+        this.checkParentId = data.id
+        this.checkParentName = data.title
+      }
     },
     handleDelete( row, e ) {
       this.$confirm('确定要删除该资源?', 'Warning', {
@@ -503,10 +469,9 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(async() => {
-        console.log(row)
           await resourceDelete({id: row.id})
           this.$message({
-            type: '成功',
+            type: 'success',
             message: '删除成功!'
           })
           this.getMeanFirstRec()
@@ -531,14 +496,13 @@ export default {
     },
     async confirmRole() {
       const isEdit = this.dialogType === 'edit'
-      console.log('role')
-      console.log(this.role)
       if (isEdit) {
         this.diaDisable = true
         this.diaLoading = true
          await updateResource({
            id: this.role.id,
            name: this.role.name,
+           parentId: this.checkParentId,
            status: this.statusDataN[this.role.status],
            url: this.role.url,
            type: this.typeDataN[this.role.type],
@@ -564,7 +528,7 @@ export default {
         this.diaLoading = true
         const { data } = await addResource({
           name: this.role.name,
-          // status: this.role.status,
+          parentId: this.checkParentId,
           url: this.role.url,
           type: this.typeDataN[this.role.type],
           operation: this.operaDataN[this.role.operation],
@@ -578,7 +542,7 @@ export default {
         this.diaLoading = false
         this.getMeanFirstRec()
       }
-
+      this.checkParentName = ''
       const { name, url, remark } = this.role
       this.dialogVisible = false
       this.$notify({
@@ -591,6 +555,9 @@ export default {
           `,
         type: 'success'
       })
+    },
+    confirmParent() {
+      this.prarentDialogVisible = false
     },
     // reference: src/view/layout/components/Sidebar/SidebarItem.vue
     onlyOneShowingChild(children = [], parent) {

@@ -11,6 +11,7 @@
       v-loading="listLoading"
       draggable
       @node-drop="sort"
+      @node-click="nodeClick"
       @node-expand="nodeExpan"
       @node-collapse="nodeCols"
       :data="productData"
@@ -26,6 +27,7 @@
       <span class="custom-tree-node" slot-scope="{ node, data }">
         <!-- <span>{{ node.label }}</span> -->
         <span class="col-cont" v-html="showDate(node.label)" ></span>
+        <!-- <span v-html="showCount(data.id)"></span> -->
         <span class="more">
           <i class="el-icon-edit" title="修改名称" @click.stop="msgEdit(node, data)" />
           <i class="el-icon-remove-outline" 
@@ -101,6 +103,8 @@ export default {
               validator: validateName
           }]
       },
+      count: 0,
+      countCode: '',
       parentId: '',
       node: {},
       nodeData: {},
@@ -159,6 +163,22 @@ export default {
       if (!value) return true;
       return data.name.indexOf(value) !== -1;
     },
+    nodeClick(event, data, node, e) {
+      console.log('node')
+      console.log(node)
+      console.log(data)
+      console.log(event)
+ 
+      getProductNum({id: data.id}).then(res => {
+        this.showCount()
+        this.count = 555
+        return
+        if(res.data !== null) {
+          this.count = res.data
+        }
+        this.countCode = data.id
+      })
+    },
     nodeExpan(data, node, e) {
       this.keyArr.push(data.id)
     },
@@ -199,22 +219,38 @@ export default {
     },
     handleDelete(node, data) {
       // 删除
+      console.log('?')
         this.$confirm('此操作将永久删除该分类, 是否继续?', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
+          console.log('############')
+          // 判断删除类目下商品数量
           this.listLoading = true
-          deleteProduct({id: data.id}).then(response => {
-            this.$message({
-              type: 'success',
-              message: '删除成功!'
-            });
-            const parent = node.parent;
-            const children = parent.data.children || parent.data;
-            const index = children.findIndex(d => d.id === data.id);
-            children.splice(index, 1);
-            this.listLoading = false
+          console.log('-----')
+          console.log(data)
+          getProductNum({id: data.id}).then(res => {
+            if(res.data > 0) {
+              this.$message({
+                type: 'warning',
+                message: '该分类下面商品数量大于0，不能删除!'
+              })
+            } else {
+              deleteProduct({id: data.id}).then(response => {
+              this.$message({
+                type: 'success',
+                message: '删除成功!'
+              });
+                const parent = node.parent;
+                const children = parent.data.children || parent.data;
+                const index = children.findIndex(d => d.id === data.id);
+                children.splice(index, 1);
+                this.listLoading = false
+              }).catch(err => {
+                this.listLoading = false
+              })
+            }
           }).catch(err => {
             this.listLoading = false
           })
@@ -361,7 +397,7 @@ export default {
       } else {
       return val
       }
-   }
+   },
   }
 }
 </script>
