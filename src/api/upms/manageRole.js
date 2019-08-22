@@ -24,9 +24,9 @@ export function addRole(data) {
   })
 }
 
-export function getUserResourceTree(query) {
+export function getRoleResourceTree(query) {
   return request({
-    url: '/upms/resource/getUserAllResourceTree',
+    url: '/upms/resource/getRoleResourceTree',
     method: 'get',
     params: query
   })

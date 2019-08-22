@@ -11,43 +11,46 @@
       v-loading="listLoading"
       draggable
       @node-drop="sort"
-
+      @node-expand="nodeExpan"
+      @node-collapse="nodeCols"
       :data="productData"
       node-key="id"
       :props="defaultProps"
       :filter-node-method="filterNode"
       :allow-drop="allowDrop"
-      :expand-on-click-node="false"
+      :expand-on-click-node="true"
+      :default-expanded-keys="keyArr"
+      :auto-expand-parent="false"
       :highlight-current="true"
       ref="tree">
       <span class="custom-tree-node" slot-scope="{ node, data }">
         <!-- <span>{{ node.label }}</span> -->
         <span class="col-cont" v-html="showDate(node.label)" ></span>
         <span class="more">
-          <i class="el-icon-edit" title="修改名称" @click="msgEdit(node, data)" />
+          <i class="el-icon-edit" title="修改名称" @click.stop="msgEdit(node, data)" />
           <i class="el-icon-remove-outline" 
             type="text"
             size="mini"
             title="删除分类"
-            @click="() => handleDelete(node, data)" />
+            @click.stop="() => handleDelete(node, data)" />
           <i class="el-icon-circle-plus-outline" 
             type="text"
             size="mini"
             title="新增子集分类"
-            @click="() => append(node, data)" />
+            @click.stop="() => append(node, data)" />
         </span>
       </span>
     </el-tree>
 
     <el-dialog :visible.sync="dialogVisible" :closeOnClickModal="false" :title="dialogMsg">
-      <el-form ref="productForm" :model="role" label-width="80px" label-position="left" :rules="productRules">
+      <el-form v-loading="diaLoading" ref="productForm" :model="role" label-width="80px" label-position="left" :rules="productRules">
         <el-form-item label="分类名" prop="name">
           <el-input v-model="role.name" maxlength="20" placeholder="请输入分类名" />
         </el-form-item>
       </el-form>
       <div style="text-align:right;">
         <el-button type="danger" @click="dialogVisible=false">取消</el-button>
-        <el-button type="primary" @click="regFun">确定</el-button>
+        <el-button type="primary" :disabled="diaDisable" @click="regFun">确定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -79,6 +82,7 @@ export default {
       role: Object.assign({}, defaultRole),
       filterText: '',
       productData: [],
+      keyArr: [],
       listQuery: {
         name: '',
         pageIndex: 1,
@@ -105,7 +109,9 @@ export default {
       dialogVisible: false,
       checkStrictly: false,
       downloadLoading: false,
-      listLoading: false
+      listLoading: false,
+      diaLoading: false,
+      diaDisable: false
     }
   },
   watch: {
@@ -153,7 +159,18 @@ export default {
       if (!value) return true;
       return data.name.indexOf(value) !== -1;
     },
-
+    nodeExpan(data, node, e) {
+      this.keyArr.push(data.id)
+    },
+    nodeCols(data, node, e) {
+      let arr = []
+      for(let i = 0; i < this.keyArr.length; i++) {
+        if(data.id !== this.keyArr[i]) {
+          arr.push(this.keyArr[i])
+        }
+      }
+      this.keyArr = arr
+    },
     allowDrop(draggingNode, dropNode, type){
       if (draggingNode.level === dropNode.level) {
         if (draggingNode.data.aboveId === dropNode.data.aboveId) {
@@ -187,10 +204,6 @@ export default {
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          // getProductNum({ id: data.id}).then(res => {
-            
-          // })
-          // return
           this.listLoading = true
           deleteProduct({id: data.id}).then(response => {
             this.$message({
@@ -201,6 +214,8 @@ export default {
             const children = parent.data.children || parent.data;
             const index = children.findIndex(d => d.id === data.id);
             children.splice(index, 1);
+            this.listLoading = false
+          }).catch(err => {
             this.listLoading = false
           })
         }).catch(() => {
@@ -213,13 +228,9 @@ export default {
     sort(draggingNode, dropNode,type, event) {
       // dropNode.parent.childNodes =[] 拖拽之后的重新组合的数组
       let sort = 0
-      console.log('ddd')
-      console.log(dropNode)
       for(let i = 0; i < dropNode.parent.childNodes.length; i++) {
         if(dropNode.parent.childNodes[i].data.id === draggingNode.data.id) {
           if(i - 1 >= 0) {
-            console.log('----------------')
-            console.log(dropNode.parent.childNodes[i - 1].data)
             sort = parseInt(dropNode.parent.childNodes[i - 1].data.sort) + 1
           } else {
             sort = 1
@@ -234,13 +245,12 @@ export default {
         sort: sort
       }).then(res => {
         this.listLoading = false
+        this.getProductTree()
       }).catch(err => {
         this.listLoading = false
       })
     },
     sortArr(draggingNode, dropNode,type, event) {
-      console.log(draggingNode)
-      console.log(dropNode)
       if (draggingNode.data.aboveId === dropNode.data.aboveId) {
         let obj = {
           aboveId:'',
@@ -250,7 +260,6 @@ export default {
         for (let item of dropNode.parent.childNodes) {
           obj.arr.push(item.data.id)
         }
-        console.log(obj)
         this.updateOrderMe(obj)
       } else {
         let obj = {
@@ -289,32 +298,46 @@ export default {
     async confirmRole() {
       this.listLoading = true
       if (this.dialogType === 'edit') {
+        this.diaDisable = true
+        this.diaLoading = true
         await updateProduct({
         id: this.role.id,
         name: this.role.name
         }).catch(err => { 
-          this.listLoading = false
-          console.error(err)
+          this.diaDisable = false
+          this.diaLoading = false
         })
         this.nodeData.name = this.role.name
+        this.diaDisable = false
+        this.diaLoading = false
       } else if(this.dialogType === 'new') {
+        this.diaDisable = true
+        this.diaLoading = true
         const { data } = await insertProduct({
           parentId: this.nodeData.id,
           name: this.role.name
         }).catch(err => { 
-          this.listLoading = false
-          console.error(err)
+          this.diaDisable = false
+          this.diaLoading = false
         })
-        const newChild = { id: data.id, name: this.role.name, children: [] };
+        this.diaDisable = false
+        this.diaLoading = false
+        const newChild = { id: data.id, name: data.name, sort: data.sort, level: data.level, parentId: data.parentId, status: data.status, children: [] };
         if (!this.nodeData.children) {
           this.$set(this.nodeData, 'children', []);
         }
         this.nodeData.children.push(newChild);
         this.node.expanded = true
+        this.keyArr.push(this.nodeData.id)
       } else if(this.dialogType === 'root') {
-        this.listLoading = true
-        await insertRootProduct({ name: this.role.name })
-        this.listLoading = false
+        this.diaDisable = true
+        this.diaLoading = true
+        await insertRootProduct({ name: this.role.name }).catch(err => {
+          this.diaDisable = false
+          this.diaLoading = false
+        })
+        this.diaDisable = false
+        this.diaLoading = false
         this.getProductTree()
       }
       this.listLoading = false

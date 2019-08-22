@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container">
+  <div class="app-container"  v-loading="btnLoading">
 
     <div class="filter-container">
       <el-input v-model="listQuery.realName"  placeholder="请输入真实姓名" style="width: 200px;" class="filter-item mr10" @keyup.enter.native="handleFilter" />
@@ -85,6 +85,7 @@
     <el-dialog :visible.sync="dialogVisible" :closeOnClickModal="false" :title="dialogMsg">
       <template v-if="dialogType === 'role'">
         <el-table
+          v-loading="roleListLoading"
           ref="roleMmulTable"
           :data="roleTable"
           tooltip-effect="dark"
@@ -106,19 +107,19 @@
       <template v-else>
         <el-form ref="editForm" :model="role" label-width="80px" label-position="left" :rules="editRules">
         <el-form-item label="昵称">
-          <el-input v-model="role.nickName" placeholder="请输入昵称" />
+          <el-input v-model="role.nickName" maxlength="255" placeholder="请输入昵称" />
         </el-form-item>
          <el-form-item label="真实姓名">
-          <el-input v-model="role.realName" placeholder="请输入真实姓名" />
+          <el-input v-model="role.realName" maxlength="255" placeholder="请输入真实姓名" />
         </el-form-item>
          <el-form-item label="手机号码" prop="phone">
           <el-input v-model="role.phone" placeholder="请输入手机号码" />
         </el-form-item>
         <el-form-item label="账号">
-          <el-input v-model="role.username" placeholder="请输入账号" />
+          <el-input v-model="role.username" maxlength="32" placeholder="请输入账号" />
         </el-form-item>
         <el-form-item label="密码">
-          <el-input v-model="role.password" minlength="6" maxlength="32" placeholder="请输入密码" />
+          <el-input v-model="role.password" minlength="6" maxlength="255" placeholder="请输入密码" />
         </el-form-item>
         <el-form-item label="系统">
           <el-select v-model="role.systemId" placeholder="请选择">
@@ -134,7 +135,7 @@
       </template>
       <div style="text-align:right;">
         <el-button type="danger" @click="dialogVisible=false">取消</el-button>
-        <el-button type="primary" @click="regFun">确定</el-button>
+        <el-button type="primary" :disabled="diaDisable" @click="regFun">确定</el-button>
       </div>
     </el-dialog>
 
@@ -173,6 +174,9 @@ export default {
       role: Object.assign({}, defaultRole),
       roleTable: [],
       listLoading: false,
+      roleListLoading: false,
+      diaDisable: false,
+      btnLoading: false,
       systemData: [],
       editRules: {
         phone: [{
@@ -224,7 +228,6 @@ export default {
   },
   created() {
     this.getUserList() 
-    this.getSystem()
   },
   methods: {
     roleSelectFun(val, row) {
@@ -268,7 +271,10 @@ export default {
       })
     },
     async getRoleList() {
-      const { data } = await  getRoleList(this.roleListQuery).catch(err => {})
+      this.roleListLoading = true
+      const { data } = await  getRoleList(this.roleListQuery).catch(err => {
+        this.roleListLoading = false
+      })
       this.roleTotal = data.total
       this.addLen = 0
       if(Array.isArray(data.records)) {
@@ -282,12 +288,16 @@ export default {
           }
           
         })
-       
       }
+      this.roleListLoading = false
     },
-    getSystem() {
-      getSystem().then(res => {
+    async getSystem() {
+      this.listLoading = true
+      await getSystem().then(res => {
+        this.listLoading = false
         this.systemData = res.data.records
+      }).catch(err => {
+        this.listLoading =false
       })
     },
     getList(data) {
@@ -299,68 +309,17 @@ export default {
       this.listQuery.pageIndex = 1
       this.getUserList()
     },
-    async getRoutes(scope) {
-      const res = await getRoutes({id: scope.row.id})
-      this.serviceRoutes = res.data.resources
-      this.routes = this.generateRoutes(res.data)
-    },
-    async getRoles() {
-      const res = await getRoles({id: 1})
-      this.rolesList = res.data.resources
-    },
-    // Reshape the routes structure so that it looks the same as the sidebar
-    generateRoutes(routes, basePath = '/') {
-      const res = []
-
-      for (let route of routes) {
-        // skip some route
-        if (route.hidden) { continue }
-
-        const onlyOneShowingChild = this.onlyOneShowingChild(route.children, route)
-
-        if (route.children && onlyOneShowingChild && !route.alwaysShow) {
-          route = onlyOneShowingChild
-        }
-
-        const data = {
-          path: path.resolve(basePath, route.path),
-          title: route.meta && route.meta.title
-
-        }
-
-        // recursive child routes
-        if (route.children) {
-          data.children = this.generateRoutes(route.children, data.path)
-        }
-        res.push(data)
-      }
-      return res
-    },
-    generateArr(routes) {
-      let data = []
-      routes.forEach(route => {
-        data.push(route)
-        if (route.children) {
-          const temp = this.generateArr(route.children)
-          if (temp.length > 0) {
-            data = [...data, ...temp]
-          }
-        }
-      })
-      return data
-    },
-    handleAddRole() {
+    async handleAddRole() {
       // 新增角色
+      await this.getSystem()
       this.role = Object.assign({}, defaultRole)
       this.dialogType = 'new'
       this.dialogMsg = '新增角色'
       this.dialogVisible = true
     },
-    msgEdit(scope) {
+    async msgEdit(scope) {
       // 编辑角色
-      if(this.systemData.length === 0) {
-        this.getSystem()
-      }
+      await this.getSystem()
       this.dialogType = 'edit'
       this.dialogMsg = '编辑角色'
       this.dialogVisible = true
@@ -369,11 +328,15 @@ export default {
     },
     handleLock({ $index, row }) {
       // 锁定、解锁角色
-      console.log('row', row)
       this.listLoading = true
       lockUser({ id: row.id, status: row.status===0? 1: 0 }).then(res => {
         this.listLoading = false
         this.userData[$index].status = this.userData[$index].status === 0? 1: 0
+        this.$notify({
+          title: '操作成功',
+          dangerouslyUseHTMLString: true,
+          type: 'success'
+        })
       }).catch(err => {
         this.listLoading = false
       })
@@ -384,9 +347,9 @@ export default {
       this.dialogMsg = '分配角色'
       this.role = deepClone(scope.row)
       this.roleListQuery.userId = this.role.id
-      this.getRoleList()
       this.dialogVisible = true
       this.checkStrictly = true
+      this.getRoleList()
     },
     handleLockMul() {
       // 批量锁定用户
@@ -398,7 +361,7 @@ export default {
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          this.listLoading = true
+          this.btnLoading = true
           let ids = ''
           for(let i = 0; i < this.userMulSelect.length; i++) {
             if(i != this.userMulSelect.length - 1) {
@@ -417,8 +380,16 @@ export default {
                 }
               }
             }
+            this.$notify({
+              title: '批量锁定成功',
+              dangerouslyUseHTMLString: true,
+              type: 'success'
+            })
+            this.getUserList()
+          }).catch(err => {
+            this.btnLoading = false
           })
-          this.listLoading = false
+          this.btnLoading = false
         })
       }
     },
@@ -428,7 +399,11 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(async() => {
-          await userDelete({id: row.id})
+          this.listLoading = true
+          await userDelete({id: row.id}).catch(err => {
+            this.listLoading = false
+          })
+          this.listLoading = false
           this.userData.splice($index, 1)
           this.$message({
             type: '成功',
@@ -439,23 +414,6 @@ export default {
           }
           this.getUserList()
         }).catch(err => { console.error(err) })
-    },
-    generateTree(routes, basePath = '/', checkedKeys) {
-      const res = []
-
-      for (const route of routes) {
-        const routePath = path.resolve(basePath, route.path)
-
-        // recursive child routes
-        if (route.children) {
-          route.children = this.generateTree(route.children, routePath, checkedKeys)
-        }
-
-        if (checkedKeys.includes(routePath) || (route.children && route.children.length >= 1)) {
-          res.push(route)
-        }
-      }
-      return res
     },
     regFun () {
       if(this.dialogType === 'role') {
@@ -471,6 +429,8 @@ export default {
     },
     async confirmRole() {
       if ( this.dialogType === 'edit') {
+        this.diaDisable = true
+        this.roleListLoading = true
          await updateUser({
            systemId: this.role.systemId,
            id: this.role.id,
@@ -480,9 +440,11 @@ export default {
            password: this.role.password,
            phone: this.role.phone
          }).catch(err => { 
+           this.diaDisable = false
           this.listLoading = false
-          console.error(err)
         })
+        this.diaDisable = false
+        this.roleListLoading = false
         for (const v of this.userData) {
             if (v.id === this.role.id) {
               const index = this.userData.indexOf(v)
@@ -491,17 +453,21 @@ export default {
             }
         }
       } else if (this.dialogType === 'new'){
+        this.diaDisable = true
+        this.roleListLoading = true
         const { data } = await addUser({
           systemId: '553ebb6cad7440c99d5f89b26ef4fd2c',
           nickName: this.role.nickName,
           username: this.role.username,
           realName: this.role.realName,
           phone: this.role.phone,
-          password: this.role.pass
+          password: this.role.password
         }).catch(err => { 
-          this.listLoading = false
-          console.error(err)
+          this.diaDisable = false
+          this.roleListLoading = false
         })
+        this.diaDisable = false
+        this.roleListLoading = false
         this.getUserList()
       } else if(this.dialogType === 'role') {
         // let roleIds = ''
@@ -524,14 +490,18 @@ export default {
 
           deleteIds += deleteIds.length === 0? item: ',' + item
         })
+        this.diaDisable = true
+        this.roleListLoading = true
         const { data } = await processUserRoleBatch({
           userId: this.role.id,
           roleIds: addIds,
           delRoleIds: deleteIds
         }).catch(err => { 
-          this.listLoading = false
-          console.error(err)
+          this.diaDisable = false
+          this.roleListLoading = false
         })
+        this.diaDisable = false
+        this.roleListLoading = false
         this.roleListQuery.pageIndex = 1
         this.getRoleList()
       }

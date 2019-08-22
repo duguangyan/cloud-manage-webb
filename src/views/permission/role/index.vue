@@ -43,18 +43,29 @@
     </el-table>
 
     <el-dialog :visible.sync="dialogVisible" :closeOnClickModal="false" :title="dialogTitle">
-      <el-form :model="role" label-width="80px" label-position="left">
+      <el-form v-loading="diaLoading" :model="role" label-width="80px" label-position="left">
         <template v-if="dialogType ==='edit' || dialogType === 'new'">
          <el-form-item label="角色名称">
-            <el-input v-model="role.name" placeholder="请输入角色名称" />
+            <el-input v-model="role.name" maxlength="64" placeholder="请输入角色名称" />
           </el-form-item>
           <el-form-item label="备注">
             <el-input
               v-model="role.remark"
               :autosize="{ minRows: 2, maxRows: 4}"
               type="textarea"
+              maxlength="255"
               placeholder="请输入备注"
             />
+          </el-form-item>
+          <el-form-item label="系统">
+          <el-select v-model="role.systemId" placeholder="请选择">
+            <el-option
+              v-for="item in systemData"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id">
+            </el-option>
+          </el-select>
           </el-form-item>
         </template>
         <template v-else>
@@ -76,7 +87,7 @@
       </el-form>
       <div style="text-align:right;">
         <el-button type="danger" @click="dialogVisible=false">取消</el-button>
-        <el-button type="primary" @click="confirmRole">确定</el-button>
+        <el-button type="primary" :disabled="diaDisable" @click="confirmRole">确定</el-button>
       </div>
     </el-dialog>
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageIndex" :limit.sync="listQuery.pageSize"  @pagination="getList" />
@@ -87,7 +98,8 @@
 import path from 'path'
 import { deepClone } from '@/utils'
 import waves from '@/directive/waves'
-import { getRoutes, getRoles, addRole, deleteRole, updateRole, getRoleList, addResourceBatch, getRoleResources, getUserResourceTree } from '@/api/upms/manageRole'
+import { getRoutes, getRoles, addRole, deleteRole, updateRole, getRoleList, addResourceBatch, getRoleResources, getRoleResourceTree } from '@/api/upms/manageRole'
+import { getSystem } from '@/api/upms/systemList'
 import Pagination from '@/components/Pagination'
 const defaultRole = {
   key: '',
@@ -103,7 +115,10 @@ export default {
     return {
       role: Object.assign({}, defaultRole),
       listLoading: false,
+      diaLoading: false,
+      diaDisable: false,
       routes: [],
+      systemData: [],
       rolesList: [],
       rolesData: [],
       dialogVisible: false,
@@ -207,7 +222,17 @@ export default {
       })
       return data
     },
-    handleAddRole() {
+    async getSystem() {
+      this.listLoading = true
+      await getSystem().then(res => {
+        this.listLoading = false
+        this.systemData = res.data.records
+      }).catch(err => {
+        this.listLoading =false
+      })
+    },
+    async handleAddRole() {
+      await this.getSystem()
       this.dialogTitle = '新增角色'
       this.role = Object.assign({}, defaultRole)
       if (this.$refs.tree) {
@@ -216,7 +241,8 @@ export default {
       this.dialogType = 'new'
       this.dialogVisible = true
     },
-    msgEdit(scope) {
+    async msgEdit(scope) {
+      await this.getSystem()
       this.dialogTitle = '编辑'
       this.dialogType = 'edit'
       this.dialogVisible = true
@@ -235,7 +261,7 @@ export default {
       //   this.listLoading = false
       // }
       // getRoleResources({roleId: this.role.id}).then(res => {
-      getUserResourceTree({userId: this.role.id}).then(res => {
+      getRoleResourceTree({roleId: this.role.id}).then(res => {
         this.serviceRoutes = res.data
         this.routes = this.generateRoutes(res.data)
         this.$nextTick(() => {
@@ -253,18 +279,21 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(async() => {
-          await deleteRole({id: row.id})
-          this.rolesData.splice($index, 1)
-          this.$message({
-            type: '成功',
-            message: '角色删除成功!'
-          })
-          if(this.rolesData.length === 0 && this.allPages - 1 > 0) {
-            --this.listQuery.pageIndex
-          }
-          this.getRoleList()
+        this.listLoading = true
+        await deleteRole({id: row.id}).catch(err => {
+          this.listLoading = false
         })
-        .catch(err => { console.error(err) })
+        this.listLoading = false
+        this.rolesData.splice($index, 1)
+        this.$message({
+          type: '成功',
+          message: '角色删除成功!'
+        })
+        if(this.rolesData.length === 0 && this.allPages - 1 > 0) {
+          --this.listQuery.pageIndex
+        }
+        this.getRoleList()
+      }).catch(err => { console.error(err) })
     },
     generateTree(routes, basePath = '/', checkedKeys) {
       const res = []
@@ -285,10 +314,16 @@ export default {
     },
     async confirmRole() {
       if (this.dialogType === 'edit') {
+         this.diaDisable = true
+         this.diaLoading = true
          await updateRole({
            name: this.role.name,
            remark: this.role.remark,
-           id: this.role.id
+           id: this.role.id,
+           systemId: this.role.systemId
+         }).catch(err => {
+           this.diaDisable = false
+           this.diaLoading = false
          })
         for (const v of this.rolesData) {
           if (v.id === this.role.id) {
@@ -297,19 +332,35 @@ export default {
             break
           }
         }
+        this.diaDisable = false
+        this.diaLoading = false
       } else if (this.dialogType === 'new') {
+        this.diaDisable = true
+        this.diaLoading = true
         const { data } = await addRole({
-          systemId: '592b138f23894630b549af231677e5fe',
+          systemId: this.role.systemId,
           name: this.role.name,
           remark: this.role.remark
+        }).catch(err => {
+          this.diaDisable = false
+          this.diaLoading = false
         })
+        this.diaDisable = false
+        this.diaLoading = false
         this.getRoleList()
       } else {
+        this.diaDisable = true
+        this.diaLoading = true
         const checkedKeysId = this.$refs.tree.getCheckedKeys().concat(this.$refs.tree.getHalfCheckedKeys()).join(',')
         await addResourceBatch({
            roleId: this.role.id,
            resourceIds: checkedKeysId
+        }).catch(err => {
+          this.diaDisable = false
+          this.diaLoading = false
         })
+        this.diaDisable = false
+        this.diaLoading = false
       }
 
       const { description, key, name } = this.role
@@ -318,7 +369,6 @@ export default {
         title: '成功',
         dangerouslyUseHTMLString: true,
         message: `
-            <div>Role Key: ${key}</div>
             <div>Role Nmae: ${name}</div>
             <div>Description: ${description}</div>
           `,

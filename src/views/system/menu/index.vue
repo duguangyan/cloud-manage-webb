@@ -170,9 +170,9 @@
     </el-table>
 
     <el-dialog :visible.sync="dialogVisible" :closeOnClickModal="false" :title="dialogType==='edit'?'分配权限':'新增角色'">
-      <el-form :model="role" label-width="80px" label-position="left">
+      <el-form v-loading="diaLoading" :model="role" label-width="80px" label-position="left">
         <el-form-item label="名称">
-          <el-input v-model="role.name" placeholder="请输入名称" />
+          <el-input v-model="role.name" maxlength="64" placeholder="请输入名称" />
         </el-form-item>
         <el-form-item label="类型">
           <el-select v-model="role.type" placeholder="请选择">
@@ -185,7 +185,7 @@
           </el-select>
         </el-form-item>
          <el-form-item label="链接地址">
-          <el-input v-model="role.code" placeholder="请输入链接地址" />
+          <el-input v-model="role.code" maxlength="255" placeholder="请输入链接地址" />
         </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="role.status" placeholder="请选择">
@@ -222,13 +222,14 @@
             v-model="role.remark"
             :autosize="{ minRows: 2, maxRows: 4}"
             type="textarea"
+            maxlength="255"
             placeholder="请输入描述内容"
           />
         </el-form-item>
       </el-form>
       <div style="text-align:right;">
         <el-button type="danger" @click="dialogVisible=false">取消</el-button>
-        <el-button type="primary" @click="confirmRole">确定</el-button>
+        <el-button type="primary" @click="confirmRole" :disabled="diaDisable">确定</el-button>
       </div>
     </el-dialog>
 
@@ -260,6 +261,8 @@ export default {
     return {
       role: Object.assign({}, defaultRole),
       listLoading: false,
+      diaLoading: false,
+      diaDisable: false,
       systemData: [],
       meanData: [],
       statusData: {
@@ -531,6 +534,8 @@ export default {
       console.log('role')
       console.log(this.role)
       if (isEdit) {
+        this.diaDisable = true
+        this.diaLoading = true
          await updateResource({
            id: this.role.id,
            name: this.role.name,
@@ -540,7 +545,12 @@ export default {
            operation: this.operaDataN[this.role.operation],
            auth: this.authDataN[this.role.auth],
            remark: this.role.remark
+         }).catch(err => {
+           this.diaDisable = false
+          this.diaLoading = false
          })
+         this.diaDisable = false
+         this.diaLoading = false
         // for (const v of this.resourceData) {
         //     if (v.id === this.role.id) {
         //       const index = this.resourceData.indexOf(v)
@@ -550,6 +560,8 @@ export default {
         // }
         this.getMeanFirstRec()
       } else {
+        this.diaDisable = true
+        this.diaLoading = true
         const { data } = await addResource({
           name: this.role.name,
           // status: this.role.status,
@@ -558,7 +570,12 @@ export default {
           operation: this.operaDataN[this.role.operation],
           auth: this.authDataN[this.role.auth],
           remark: this.role.remark
+        }).catch(err => {
+          this.diaDisable = false
+          this.diaLoading = false
         })
+        this.diaDisable = false
+        this.diaLoading = false
         this.getMeanFirstRec()
       }
 

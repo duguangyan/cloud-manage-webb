@@ -54,9 +54,9 @@
     </el-table>
 
   <el-dialog :visible.sync="dialogVisible" :closeOnClickModal="false" :title="dialogType==='edit'?'编辑字典':'添加字典'">
-      <el-form :model="role" label-width="80px" label-position="left">
+      <el-form v-loading="diaLoading" :model="role" label-width="80px" label-position="left">
         <el-form-item label="字典名">
-          <el-input v-model="role.name" placeholder="请输入字典名" />
+          <el-input v-model="role.name" maxlength="64" placeholder="请输入字典名" />
         </el-form-item>
         <el-form-item label="状态" v-if="dialogType==='edit'">
           <el-select v-model="role.status" placeholder="请选择">
@@ -69,20 +69,21 @@
           </el-select>
         </el-form-item>
         <el-form-item label="字典值">
-          <el-input v-model="role.value" placeholder="请输入字典值" />
+          <el-input v-model="role.value" maxlength="255" placeholder="请输入字典值" />
         </el-form-item>
          <el-form-item label="备注">
           <el-input
             v-model="role.remark"
             :autosize="{ minRows: 2, maxRows: 4}"
             type="textarea"
+            maxlength="255"
             placeholder="请输入备注内容"
           />
         </el-form-item>
       </el-form>
       <div style="text-align:right;">
         <el-button type="danger" @click="dialogVisible=false">取消</el-button>
-        <el-button type="primary" @click="confirmRole">确定</el-button>
+        <el-button type="primary" :disabled="diaDisable" @click="confirmRole">确定</el-button>
       </div>
     </el-dialog>
 </div>
@@ -108,6 +109,8 @@ export default {
     return {
       role: Object.assign({}, defaultRole),
       listLoading: false,
+      diaLoading: false,
+      diaDisable: false,
       dictData: [],
       tableData: [],
       statusData: [
@@ -265,20 +268,28 @@ export default {
       const isEdit = this.dialogType === 'edit'
       console.log(this.role)
       if (isEdit) {
-         await updateDict({
-          id: this.role.id,
-          name: this.role.name,
-          status: (this.role.status === '启用'? 1: 0),
-          value: this.role.value,
-          remark: this.role.remark
-         })
-         this.$set(this.$refs.treeTable.store.states.lazyTreeNodeMap, this.role.id, {
-          id: this.role.id,
-          name: this.role.name,
-          status: this.role.status,
-          value: this.role.value,
-          remark: this.role.remark
-         })
+        this.diaDisable = true
+        this.diaLoading = true
+        await updateDict({
+        id: this.role.id,
+        name: this.role.name,
+        status: (this.role.status === '启用'? 1: 0),
+        value: this.role.value,
+        remark: this.role.remark
+        }).catch(err => {
+          this.diaDisable = false
+          this.diaLoading = false
+        })
+        // this.$set(this.$refs.treeTable.store.states.lazyTreeNodeMap, this.role.id, {
+        //   id: this.role.id,
+        //   name: this.role.name,
+        //   status: this.role.status,
+        //   value: this.role.value,
+        //   remark: this.role.remark
+        // })
+        this.diaDisable = false
+        this.diaLoading = false
+        this.getDictById()
       } else {
         // console.log('id:', this.changeId)
         // console.log(this.maps)
@@ -288,15 +299,20 @@ export default {
         // console.log(tree)
         // console.log(treeNode)
         // return
-        this.listLoading = true
+        this.diaDisable = true
+        this.diaLoading = true
         const { data } = await addDict({
           parentId: this.changeId,
           name: this.role.name,
           value: this.role.value,
           // status: this.role.status,
           remark: this.role.remark
+        }).catch(err => {
+          this.diaDisable = false
+          this.diaLoading = false
         })
-        this.listLoading = false
+        this.diaDisable = false
+        this.diaLoading = false
         // console.log('pid:', this.changeId)
         // console.log(this.maps)
         // console.log(this.maps.get(this.changeId))

@@ -59,19 +59,26 @@
 
 
     <el-dialog :title="textMap[dialogStatus]" :closeOnClickModal="false" :visible.sync="dialogFormVisible">
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
+      <el-form v-loading="diaLoading" ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
         <el-form-item label="系统名">
-          <el-input v-model="temp.name" />
+          <el-input v-model="temp.name" maxlength="64" />
         </el-form-item>
         <el-form-item label="备注">
-          <el-input v-model="temp.remark" />
+          <el-input
+            v-model="temp.remark"
+            maxlength="255"
+            :autosize="{ minRows: 2, maxRows: 4}"
+            type="textarea"
+            placeholder="请输入备注内容"
+          />
         </el-form-item>
+        
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">
           取消
         </el-button>
-        <el-button type="primary" @click="dialogStatus==='create'?createData():updateData()">
+        <el-button type="primary" :disabled="diaDisable" @click="dialogStatus==='create'?createData():updateData()">
           确定
         </el-button>
       </div>
@@ -102,7 +109,9 @@ export default {
   data() {
     return {
       list: null,
-      listLoading: true,
+      listLoading: false,
+      diaLoading: false,
+      diaDisable: false,
       total: 0,
       allPages: 0,
       listQuery: {
@@ -141,6 +150,8 @@ export default {
         this.total = res.data.total
         this.allPages = res.data.pages
         this.listLoading = false
+      }).catch(err => {
+        this.listLoading = false
       })
     },
     resetTemp() {
@@ -167,8 +178,11 @@ export default {
       // 添加
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
+          this.diaDisable = true
+          this.diaLoading = true
           addSystem({name: this.temp.name, remark: this.temp.remark}).then(() => {
-            // this.list.unshift(this.temp)
+            this.diaDisable = false
+            this.diaLoading = false
             this.dialogFormVisible = false
             this.$notify({
               title: '成功',
@@ -180,6 +194,9 @@ export default {
               this.fetchData()
             }, 2000)
             
+          }).catch(err => {
+            this.diaDisable = false
+            this.diaLoading = false
           })
         }
       })
@@ -193,7 +210,11 @@ export default {
       // 编辑
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
+          this.diaDisable = true
+          this.diaLoading = true
           updateSystem({id: this.temp.id, name: this.temp.name, remark: this.temp.remark}).then(response => {
+            this.diaDisable = false
+            this.diaLoading = false
             this.dialogFormVisible = false
             for (const v of this.list) {
               if (v.id === this.temp.id) {
@@ -208,9 +229,10 @@ export default {
               type: 'success',
               duration: 2000
             })
+          }).catch(err => {
+            this.diaDisable = false
+            this.diaLoading = false
           })
-          // tempData.timestamp = +new Date(tempData.timestamp) // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
-         
         }
       })
       
@@ -231,7 +253,9 @@ export default {
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
+          this.listLoading = true
           deleteSystem({id: data.id}).then(response => {
+            this.listLoading = false
             for (const v of this.list) {
               if (v.id === data.id) {
                 const index = this.list.indexOf(v)
@@ -249,6 +273,8 @@ export default {
               --this.listQuery.pageIndex
             }
             this.fetchData()
+          }).catch(err => {
+            this.listLoading = false
           })
         }).catch(() => {
           this.$message({
