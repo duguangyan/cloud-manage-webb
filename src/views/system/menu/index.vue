@@ -273,6 +273,7 @@ export default {
       },
       checkParentId: '',
       checkParentName: '',
+      parentShowId: '',
       multipleSelection: []
     }
   },
@@ -368,7 +369,17 @@ export default {
       await getRoutes().then(res => {
         if(Array.isArray(res.data)) {
           // this.serviceRoutes = res.data
-          this.routes = this.generateRoutes(res.data, true)
+          const pData = [
+              {
+              id: '',
+              name: '顶级',
+              parentId: '',
+              children: res.data
+            }
+          ]
+          this.routes = this.generateRoutes(pData)
+          let arr = [this.parentShowId];
+          this.$refs.parentTree.setCheckedKeys(arr);
         }
         this.listLoading = false
       }).catch(err => {
@@ -376,15 +387,9 @@ export default {
       })
       
     },
-    generateRoutes(routes, type) {
+    generateRoutes(routes) {
       // 路由生成
       const res = []
-      if(type) {
-        res.push({
-          id: '',
-          title: '顶级'
-        })
-      }
       for (let route of routes) {
         // skip some route
         if (route.hidden) { continue }
@@ -399,7 +404,7 @@ export default {
         }
         // recursive child routes
         if (route.children) {
-          data.children = this.generateRoutes(route.children, false)
+          data.children = this.generateRoutes(route.children)
         }
         res.push(data)
       }
@@ -437,15 +442,22 @@ export default {
       })
       return data
     },
-    handleAddResource() {
+    async handleAddResource() {
+      if(this.role.parentId !== null) {
+        this.parentShowId = this.role.parentId
+      }
       this.role = Object.assign({}, defaultRole)
       this.dialogType = 'new'
+      this.checkStrictly = true
       this.dialogVisible = true
     },
     msgEdit(row) {
       this.dialogType = 'edit'
       this.dialogVisible = true
       this.checkStrictly = true
+      if(row.parentId !== null) {
+         this.parentShowId = row.parentId
+      }
       this.role = deepClone(row)
     },
     async selectParent() {
@@ -474,13 +486,17 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(async() => {
+          this.listLoading = true
           await resourceDelete({id: row.id})
+          this.listLoading = false
           this.$message({
             type: 'success',
             message: '删除成功!'
           })
           this.getMeanFirstRec()
-        }).catch(err => { console.error(err) })
+        }).catch(err => {
+            this.listLoading = false
+         })
     },
     generateTree(routes, basePath = '/', checkedKeys) {
       const res = []
