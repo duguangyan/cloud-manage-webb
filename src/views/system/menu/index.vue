@@ -347,9 +347,11 @@ export default {
       // 取消编辑
       this.dialogVisible = false
       this.checkParentName = ''
+      this.checkParentId = ''
     },
     parentCancle() {
       this.checkParentName = ''
+      this.checkParentId = ''
       this.prarentDialogVisible = false
     },
     getResource() {
@@ -461,6 +463,9 @@ export default {
         this.$refs.parentTree.setCheckedKeys(arr);
         this.checkParentId = data.id
         this.checkParentName = data.title
+      } else {
+        this.checkParentId = ''
+        this.checkParentName = ''
       }
     },
     handleDelete( row, e ) {
@@ -502,7 +507,7 @@ export default {
          await updateResource({
            id: this.role.id,
            name: this.role.name,
-           parentId: this.checkParentId,
+           parentId: this.checkParentName.length > 0? this.checkParentId: this.role.parentId,
            status: this.statusDataN[this.role.status],
            url: this.role.url,
            type: this.typeDataN[this.role.type],
@@ -543,6 +548,7 @@ export default {
         this.getMeanFirstRec()
       }
       this.checkParentName = ''
+      this.checkParentId = ''
       const { name, url, remark } = this.role
       this.dialogVisible = false
       this.$notify({
