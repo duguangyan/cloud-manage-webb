@@ -96,7 +96,7 @@
           <span v-if="checkParentName.length > 0" class="mr10">{{checkParentName}}</span>
           <span v-else-if="role.parentName !== undefined && role.parentName !== ''" class="mr10">{{role.parentName}}</span>
           <span v-else class="mr10">顶级</span>
-          <el-button v-waves class="filter-item" size="small" @click="selectParent">更改父级</el-button>
+          <el-button v-waves class="filter-item" size="small" @click="selectParent">选择父级</el-button>
         </el-form-item>
         <el-form-item label="名称">
           <el-input v-model="role.name" maxlength="64" placeholder="请输入名称" />
@@ -116,6 +116,10 @@
         </el-form-item>
          <el-form-item label="链接地址">
           <el-input v-model="role.code" maxlength="255" placeholder="请输入链接地址" />
+        </el-form-item>
+        <el-form-item label="图标">
+          <svg-icon v-if="role && role.icon" :icon-class="role.icon" class="mr10" />
+          <el-button v-waves class="filter-item" size="small" @click="selectIcon">选择图标</el-button>
         </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="role.status" placeholder="请选择">
@@ -184,6 +188,23 @@
       </div>
     </el-dialog>
 
+    <el-dialog class="icon-box" :visible.sync="iconDialogVisible" :closeOnClickModal="false" :title="'选择图标'">
+        <el-tabs type="border-card">
+          <el-tab-pane label="Icons">
+            <div v-for="item of svgIcons" :key="item" @click="handleClipboard(item, $event)">
+              <!-- <el-tooltip placement="top"> -->
+                <!-- <div slot="content">
+                  {{ generateIconCode(item) }}
+                </div> -->
+                <div class="icon-item">
+                  <svg-icon :icon-class="item" class-name="disabled" />
+                  <span>{{ item }}</span>
+                </div>
+              <!-- </el-tooltip> -->
+            </div>
+          </el-tab-pane>
+        </el-tabs>
+    </el-dialog>
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageIndex" :limit.sync="listQuery.pageSize"  @pagination="getList" />
   </div>
 </template>
@@ -196,6 +217,7 @@ import { getMeanFirstRec, getMeanByPid, getResource, resourceDelete, updateUser,
 import { getRoutes } from '@/api/upms/manageRole'
 import { getSystem } from '@/api/upms/systemList'
 import Pagination from '@/components/Pagination'
+import svgIcons from './svg-icons'
 const defaultRole = {
   name: '',
   status: '',
@@ -212,6 +234,7 @@ export default {
   data() {
     return {
       role: Object.assign({}, defaultRole),
+      svgIcons,
       listLoading: false,
       diaLoading: false,
       diaDisable: false,
@@ -260,6 +283,7 @@ export default {
       resourceData: [],
       dialogVisible: false,
       prarentDialogVisible: false,
+      iconDialogVisible: false,
       dialogType: 'new',
       checkStrictly: false,
       defaultProps: {
@@ -276,6 +300,7 @@ export default {
       },
       checkParentId: '',
       checkParentName: '',
+      iconShow: '',
       parentShowId: '',
       multipleSelection: []
     }
@@ -290,6 +315,9 @@ export default {
     this.getMeanFirstRec()
   },
   methods: {
+    generateIconCode(symbol) {
+      return `<svg-icon icon-class="${symbol}" />`
+    },
     handleSelectionChange(val) {
       // 多选事件
     },
@@ -306,6 +334,7 @@ export default {
               parentId: res.data[i].parentId,
               parentName: '',
               code: res.data[i].code,
+              icon: res.data[i].icon,
               sort: typeof(res.data[i].sort) === 'number'? res.data[i].sort: 0,
               status: this.statusData[String(res.data[i].status)],
               operation: this.operaData[String(res.data[i].operation)],
@@ -335,6 +364,7 @@ export default {
               parentId: res.data[i].parentId,
               parentName: tree.name,
               code: res.data[i].code,
+              icon: res.data[i].icon,
                sort: typeof(res.data[i].sort) === 'number'? res.data[i].sort: 0,
               status: this.statusData[String(res.data[i].status)],
               operation: this.operaData[String(res.data[i].operation)],
@@ -355,6 +385,10 @@ export default {
       this.checkParentName = ''
       this.checkParentId = ''
       this.routes = []
+    },
+    handleClipboard(text, event) {
+      this.iconDialogVisible = false
+      this.role.icon = text
     },
     parentCancle() {
       this.checkParentName = ''
@@ -470,6 +504,10 @@ export default {
       this.prarentDialogVisible = true
       await this.getRoutes()
     },
+    selectIcon() {
+      // 选择图标
+      this.iconDialogVisible = true
+    },
     handleCheckChange (data, checked, indeterminate) {
       /* 主要通过checked进行判断 */
       if (checked) {
@@ -520,6 +558,8 @@ export default {
     },
     async confirmRole() {
       const isEdit = this.dialogType === 'edit'
+      console.log('row')
+      console.log(this.role)
       if (isEdit) {
         this.diaDisable = true
         this.diaLoading = true
@@ -527,6 +567,7 @@ export default {
            id: this.role.id,
            name: this.role.name,
            sort: this.role.sort,
+           icon: this.role.icon,
            parentId: this.checkParentName.length > 0? this.checkParentId: this.role.parentId,
            status: this.statusDataN[this.role.status],
            url: this.role.url,
@@ -554,6 +595,7 @@ export default {
         const { data } = await addResource({
           name: this.role.name,
           sort: this.role.sort,
+          icon: this.role.icon,
           parentId: this.checkParentId,
           url: this.role.url,
           type: this.typeDataN[this.role.type],
@@ -612,6 +654,28 @@ export default {
 
 <style lang="scss" scoped>
 .app-container {
+  .icon-box{
+     .icon-item {
+        margin: 10px;
+        height: 85px;
+        text-align: center;
+        width: 100px;
+        float: left;
+        font-size: 30px;
+        color: #24292e;
+        cursor: pointer;
+      }
+
+      span {
+        display: block;
+        font-size: 16px;
+        margin-top: 10px;
+      }
+
+      .disabled {
+        pointer-events: none;
+      }
+  }
   .mr10{
     margin-right: 10px;
   }
