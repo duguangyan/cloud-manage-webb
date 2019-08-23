@@ -5,39 +5,52 @@ import Layout from '@/layout'
 const _import = require('@/router/_import_' + process.env.NODE_ENV) // 获取组件的方法
 // const _import = require('@/router/_import_development') // 获取组件的方法
 
-function filterAsyncRouter(asyncRouterMap) { // 遍历后台传来的路由字符串，转换为组件对象
+function filterAsyncRouter(asyncRouterMap, index) { // 遍历后台传来的路由字符串，转换为组件对象
   const accessedRouters = asyncRouterMap.filter(route => {
+    // route.alwaysShow = true
+    console.log('--------------------')
+    console.log('--------------------')
+    console.log(route.name)
+    console.log(route.url)
+    console.log('---------------------')
+    console.log('--------------------')
     if (route.url) {
+      route.meta = {
+        title: route.name,
+        icon: route.icon
+      }
       if (route.url === 'Layout') { // Layout组件特殊处理
-        console.log('route Layout:', route.url)
-        console.log(route.name)
+        // console.log('route Layout:', route.url)
+        // console.log(route.name)
         route.component = Layout
-        route.path = '/' + route.children[0].url.split('/')[0]
-        route.meta = {
-          title: route.name,
-          icon: route.icon
+        if (index === 0) {
+          if (route.children !== null) {
+            route.path = '/' + route.children[0].url.split('/')[0]
+            route.name = route.children[0].url.split('/')[0]
+            console.log('x', route.name)
+          } else {
+            route.path = route.url.split('/')[0]
+          }
+        } else {
+          route.path = route.children[0].url.split('/')[0]
+          route.name = route.children[0].url.split('/')[0]
+          console.log('name', route.name)
         }
       } else {
         // if(IsURL(route.url)) {
         //   console.log('route http:', route.url)
         //   route.path = route.url
         // } else {
-          console.log('route Component:', route.url)
-          route.component = _import(route.url)
-          route.target = route.operation === 0? '': '_blank'
-          route.meta = {
-            title: route.name,
-            icon: route.icon
-          }
-          let name = route.url.split('/')[route.url.split('/').length - 2]
-          route.path = '/' + name
-          route.name = name
+        // console.log('route Component:', route.url)
+        route.component = _import(route.url)
+        route.target = route.operation === 0 ? '' : '_blank'
+        route.path = route.url.split('/')[1]
+        route.name = name
         // }
-        
       }
     }
-    if (route.children && route.children.length) {
-      route.children = filterAsyncRouter(route.children)
+    if (route.children && route.children.length > 0) {
+      route.children = filterAsyncRouter(route.children, 1)
     } else {
       route.children = []
     }
@@ -75,6 +88,8 @@ const mutations = {
   SET_ROUTES: (state, routes) => {
     state.addRoutes = routes
     state.routes = constantRoutes.concat(routes)
+    console.log('routes')
+    console.log(state.routes)
   }
 }
 
@@ -83,9 +98,7 @@ const actions = {
     return new Promise((resolve, reject) => {
       let accessedRouters = []
       getRoles({ userId: this.getters.userId }).then(res => {
-        accessedRouters = filterAsyncRouter(res.data)
-        console.log('accc')
-        console.log(accessedRouters)
+        accessedRouters = filterAsyncRouter(res.data, 0)
         commit('SET_ROUTES', accessedRouters)
         resolve()
       })

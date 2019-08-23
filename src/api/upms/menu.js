@@ -27,15 +27,6 @@ export function getMeanByPid(query) {
   })
 }
 
-// 根据手机号码获取用户
-// export function getByPhone(query) {
-//   return request({
-//     url: '/upms/user/getByPhone',
-//     method: 'get',
-//     params: query
-//   })
-// }
-
 // 删除资源
 export function resourceDelete(query) {
   return request({
@@ -60,6 +51,15 @@ export function updateResource(data) {
     url: '/upms/resource/update',
     method: 'post',
     data
+  })
+}
+
+// 根据id获取所有用户拥有的按钮权限
+export function getUserBtnByPId(query) {
+  return request({
+    url: '/upms/resource/getUserBtnByParentId',
+    method: 'get',
+    params: query
   })
 }
 

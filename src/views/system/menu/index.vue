@@ -189,8 +189,7 @@
     </el-dialog>
 
     <el-dialog class="icon-box" :visible.sync="iconDialogVisible" :closeOnClickModal="false" :title="'选择图标'">
-        <el-tabs type="border-card">
-          <el-tab-pane label="Icons">
+      
             <div v-for="item of svgIcons" :key="item" @click="handleClipboard(item, $event)">
               <!-- <el-tooltip placement="top"> -->
                 <!-- <div slot="content">
@@ -202,8 +201,7 @@
                 </div>
               <!-- </el-tooltip> -->
             </div>
-          </el-tab-pane>
-        </el-tabs>
+            <div class="clear"></div>
     </el-dialog>
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageIndex" :limit.sync="listQuery.pageSize"  @pagination="getList" />
   </div>
@@ -213,7 +211,7 @@
 import path from 'path'
 import { deepClone } from '@/utils'
 import waves from '@/directive/waves' // waves directive
-import { getMeanFirstRec, getMeanByPid, getResource, resourceDelete, updateUser, addResource, updateResource } from '@/api/upms/menu'
+import { getMeanFirstRec, getMeanByPid, getResource, resourceDelete, updateUser, addResource, updateResource, getUserBtnByPId } from '@/api/upms/menu'
 import { getRoutes } from '@/api/upms/manageRole'
 import { getSystem } from '@/api/upms/systemList'
 import Pagination from '@/components/Pagination'
@@ -312,9 +310,13 @@ export default {
     }
   },
   created() {
+    this.getUserBtnByPId()
     this.getMeanFirstRec()
   },
   methods: {
+    getUserBtnByPId() {
+      getUserBtnByPId({ parentId: this.$store.getters.userId })
+    },
     generateIconCode(symbol) {
       return `<svg-icon icon-class="${symbol}" />`
     },
@@ -655,26 +657,29 @@ export default {
 <style lang="scss" scoped>
 .app-container {
   .icon-box{
-     .icon-item {
-        margin: 10px;
-        height: 85px;
-        text-align: center;
-        width: 100px;
-        float: left;
-        font-size: 30px;
-        color: #24292e;
-        cursor: pointer;
-      }
+    .clear{
+      clear: both;
+    }
+    .icon-item {
+      margin: 10px;
+      height: 85px;
+      text-align: center;
+      width: 95px;
+      float: left;
+      font-size: 30px;
+      color: #24292e;
+      cursor: pointer;
+    }
 
-      span {
-        display: block;
-        font-size: 16px;
-        margin-top: 10px;
-      }
+    span {
+      display: block;
+      font-size: 16px;
+      margin-top: 10px;
+    }
 
-      .disabled {
-        pointer-events: none;
-      }
+    .disabled {
+      pointer-events: none;
+    }
   }
   .mr10{
     margin-right: 10px;
