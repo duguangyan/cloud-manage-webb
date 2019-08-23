@@ -71,8 +71,8 @@
         align="center">
       </el-table-column>
       <el-table-column
-        prop="描述"
-        label="remark"
+        prop="sort"
+        label="排序"
         align="center">
       </el-table-column>
       <el-table-column label="操作" align="center" width="300" class-name="small-padding fixed-width">
@@ -100,6 +100,9 @@
         </el-form-item>
         <el-form-item label="名称">
           <el-input v-model="role.name" maxlength="64" placeholder="请输入名称" />
+        </el-form-item>
+        <el-form-item label="排序">
+          <el-input v-model="role.sort" maxlength="11" placeholder="请输入排序" />
         </el-form-item>
         <el-form-item label="类型">
           <el-select v-model="role.type" placeholder="请选择">
@@ -303,6 +306,7 @@ export default {
               parentId: res.data[i].parentId,
               parentName: '',
               code: res.data[i].code,
+              sort: typeof(res.data[i].sort) === 'number'? res.data[i].sort: 0,
               status: this.statusData[String(res.data[i].status)],
               operation: this.operaData[String(res.data[i].operation)],
               auth: this.authData[String(res.data[i].auth)],
@@ -331,6 +335,7 @@ export default {
               parentId: res.data[i].parentId,
               parentName: tree.name,
               code: res.data[i].code,
+               sort: typeof(res.data[i].sort) === 'number'? res.data[i].sort: 0,
               status: this.statusData[String(res.data[i].status)],
               operation: this.operaData[String(res.data[i].operation)],
               auth: this.authData[String(res.data[i].auth)],
@@ -457,8 +462,6 @@ export default {
       this.role = deepClone(row)
     },
     async selectParent() {
-      console.log('role')
-      console.log(this.role)
       if(this.role && this.role.parentId) {
         this.parentShowId = this.role.parentId
       } else {
@@ -523,6 +526,7 @@ export default {
          await updateResource({
            id: this.role.id,
            name: this.role.name,
+           sort: this.role.sort,
            parentId: this.checkParentName.length > 0? this.checkParentId: this.role.parentId,
            status: this.statusDataN[this.role.status],
            url: this.role.url,
@@ -549,6 +553,7 @@ export default {
         this.diaLoading = true
         const { data } = await addResource({
           name: this.role.name,
+          sort: this.role.sort,
           parentId: this.checkParentId,
           url: this.role.url,
           type: this.typeDataN[this.role.type],

@@ -7,12 +7,33 @@ const _import = require('@/router/_import_' + process.env.NODE_ENV) // 获取组
 
 function filterAsyncRouter(asyncRouterMap) { // 遍历后台传来的路由字符串，转换为组件对象
   const accessedRouters = asyncRouterMap.filter(route => {
-    if (route.component) {
-      if (route.component === 'Layout') { // Layout组件特殊处理
+    if (route.url) {
+      if (route.url === 'Layout') { // Layout组件特殊处理
+        console.log('route Layout:', route.url)
+        console.log(route.name)
         route.component = Layout
+        route.path = '/' + route.children[0].url.split('/')[0]
+        route.meta = {
+          title: route.name,
+          icon: route.icon
+        }
       } else {
-        route.component = _import(route.component)
-        route.path = '/' + route.path
+        // if(IsURL(route.url)) {
+        //   console.log('route http:', route.url)
+        //   route.path = route.url
+        // } else {
+          console.log('route Component:', route.url)
+          route.component = _import(route.url)
+          route.target = route.operation === 0? '': '_blank'
+          route.meta = {
+            title: route.name,
+            icon: route.icon
+          }
+          let name = route.url.split('/')[route.url.split('/').length - 2]
+          route.path = '/' + name
+          route.name = name
+        // }
+        
       }
     }
     if (route.children && route.children.length) {
@@ -22,8 +43,27 @@ function filterAsyncRouter(asyncRouterMap) { // 遍历后台传来的路由字�
     }
     return true
   })
-
   return accessedRouters
+}
+
+function IsURL(str_url){
+  var strRegex = "^((https|http|ftp|rtsp|mms)?://)"
+      + "?(([0-9a-z_!~*'().&=+$%-]+: )?[0-9a-z_!~*'().&=+$%-]+@)?" //ftp的user@
+      + "(([0-9]{1,3}\.){3}[0-9]{1,3}" // IP形式的URL- 199.194.52.184
+      + "|" // 允许IP和DOMAIN（域名）
+      + "([0-9a-z_!~*'()-]+\.)*" // 域名- www.
+      + "([0-9a-z][0-9a-z-]{0,61})?[0-9a-z]\." // 二级域名
+      + "[a-z]{2,6})" // first level domain- .com or .museum
+      + "(:[0-9]{1,4})?" // 端口- :80
+      + "((/?)|" // 如果没有文件名，则不需要斜杠
+      + "(/[0-9a-z_!~*'().;?:@&=+$,%#-]+)+/?)$";
+  var re=new RegExp(strRegex);
+  //re.test()
+  if (re.test(str_url)){
+      return (true);
+  }else{
+      return (false);
+  }
 }
 
 const state = {
@@ -44,6 +84,8 @@ const actions = {
       let accessedRouters = []
       getRoles({ userId: this.getters.userId }).then(res => {
         accessedRouters = filterAsyncRouter(res.data)
+        console.log('accc')
+        console.log(accessedRouters)
         commit('SET_ROUTES', accessedRouters)
         resolve()
       })

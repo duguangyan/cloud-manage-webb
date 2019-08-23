@@ -17,7 +17,8 @@ export default {
     const vnodes = []
 
     if (icon) {
-      vnodes.push(<svg-icon icon-class={icon}/>)
+      // vnodes.push(<svg-icon icon-class={icon}/>)
+      vnodes.push(<img src={icon} class='img-icon'/>)
     }
 
     if (title) {
@@ -27,3 +28,13 @@ export default {
   }
 }
 </script>
+<style scoped>
+.img-icon {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.15em;
+  fill: currentColor;
+  overflow: hidden;
+  margin-right: 16px;
+}
+</style>

@@ -49,6 +49,7 @@ export default {
       return variables
     },
     isCollapse() {
+      console.log('is close', this.sidebar)
       return !this.sidebar.opened
     }
   }

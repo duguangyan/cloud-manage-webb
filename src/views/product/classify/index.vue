@@ -29,6 +29,7 @@
         <span class="col-cont" v-html="showDate(node.label)" ></span>
         <!-- <span v-html="showCount(data.id)"></span> -->
         <span class="more">
+          <i :ref="data.id">{{node.label}}</i>
           <i class="el-icon-edit" title="修改名称" @click.stop="msgEdit(node, data)" />
           <i class="el-icon-remove-outline" 
             type="text"
@@ -163,15 +164,22 @@ export default {
       if (!value) return true;
       return data.name.indexOf(value) !== -1;
     },
-    nodeClick(event, data, node, e) {
+    nodeClick(data, node, dom) {
       console.log('node')
-      console.log(node)
-      console.log(data)
-      console.log(event)
+
+      const id = data.id
+      console.log(id)
+      console.log(this.$refs.id)
+      console.log(dom.$children[0])
+      console.log(dom.$children[0].$el.childNodes[2].childNodes[0].innerHtml)
+      this.$nextTick(() => {
+        dom.$children[0].$el.childNodes[2].childNodes[0].innerHtml = 'SSS'
+      })
+      
+      return
  
       getProductNum({id: data.id}).then(res => {
-        this.showCount()
-        this.count = 555
+      
         return
         if(res.data !== null) {
           this.count = res.data
