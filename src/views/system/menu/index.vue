@@ -349,6 +349,7 @@ export default {
       this.dialogVisible = false
       this.checkParentName = ''
       this.checkParentId = ''
+      this.routes = []
     },
     parentCancle() {
       this.checkParentName = ''
@@ -369,6 +370,7 @@ export default {
       await getRoutes().then(res => {
         if(Array.isArray(res.data)) {
           // this.serviceRoutes = res.data
+          this.routes = []
           const pData = [
               {
               id: '',
@@ -443,9 +445,6 @@ export default {
       return data
     },
     async handleAddResource() {
-      if(this.role.parentId !== null) {
-        this.parentShowId = this.role.parentId
-      }
       this.role = Object.assign({}, defaultRole)
       this.dialogType = 'new'
       this.checkStrictly = true
@@ -455,12 +454,16 @@ export default {
       this.dialogType = 'edit'
       this.dialogVisible = true
       this.checkStrictly = true
-      if(row.parentId !== null) {
-         this.parentShowId = row.parentId
-      }
       this.role = deepClone(row)
     },
     async selectParent() {
+      console.log('role')
+      console.log(this.role)
+      if(this.role && this.role.parentId) {
+        this.parentShowId = this.role.parentId
+      } else {
+        this.parentShowId = ''
+      }
       this.prarentDialogVisible = true
       await this.getRoutes()
     },
@@ -475,9 +478,6 @@ export default {
         this.$refs.parentTree.setCheckedKeys(arr);
         this.checkParentId = data.id
         this.checkParentName = data.title
-      } else {
-        this.checkParentId = ''
-        this.checkParentName = ''
       }
     },
     handleDelete( row, e ) {
@@ -617,7 +617,7 @@ export default {
     margin-top: 30px;
   }
   .permission-tree {
-    margin-bottom: 30px;
+    margin: 7px 0 30px 0;
   }
 }
 </style>
