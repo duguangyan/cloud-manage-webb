@@ -107,7 +107,7 @@
         <el-form-item label="排序">
           <el-input v-model="role.sort" maxlength="11" placeholder="请输入排序" />
         </el-form-item>
-        <el-form-item label="按钮code">
+        <el-form-item v-if="role.type !== '菜单' && role.type !== '接口'" label="按钮code">
           <el-input v-model="role.code" maxlength="11" placeholder="请输入按钮code" />
         </el-form-item>
         <el-form-item label="类型">
@@ -121,9 +121,9 @@
           </el-select>
         </el-form-item>
          <el-form-item label="链接地址">
-          <el-input v-model="role.url" maxlength="255" placeholder="请输入链接地址" />
+          <el-input v-if="role.type !== '按钮'" v-model="role.url" maxlength="255" placeholder="请输入链接地址" />
         </el-form-item>
-        <el-form-item label="图标">
+        <el-form-item v-if="role.type !== '接口'" label="图标">
           <svg-icon v-if="role && role.icon" :icon-class="role.icon" class="mr10" />
           <el-button v-waves class="filter-item" size="small" @click="selectIcon">选择图标</el-button>
         </el-form-item>
@@ -137,7 +137,7 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="事件">
+        <el-form-item v-if="role.type !== '接口' && role.type !== '按钮'" label="事件">
           <el-select v-model="role.operation" placeholder="请选择">
             <el-option
               v-for="(val, key) in operaData"
@@ -147,7 +147,7 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="授权">
+        <el-form-item v-if="role.type !== '菜单' && role.type !=='按钮'" label="授权">
           <el-select v-model="role.auth" placeholder="请选择">
             <el-option
               v-for="(val, key) in authData"
