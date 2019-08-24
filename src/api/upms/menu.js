@@ -27,6 +27,15 @@ export function getMeanByPid(query) {
   })
 }
 
+// 搜索资源树
+export function resourceSearch(query) {
+  return request({
+    url: '/upms/resource/search',
+    method: 'get',
+    params: query
+  })
+}
+
 // 删除资源
 export function resourceDelete(query) {
   return request({

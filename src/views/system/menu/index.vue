@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container">
+  <div v-loading="searchLoading" class="app-container">
 
     <div class="filter-container">
       <template v-if="btnsPermission.search.auth">
@@ -32,6 +32,7 @@
     </div>
 
     <el-table
+      v-if="isLazy"
       ref="treeTable"
       v-loading="listLoading"
       :data="meanData"
@@ -80,12 +81,73 @@
       </el-table-column>
       <el-table-column label="操作" align="center" width="300" class-name="small-padding fixed-width">
         <template slot-scope="{ row }">
+          <el-button type="primary" size="mini" @click="msgAdd(row)">
+            添加
+          </el-button>
           <el-button type="primary" size="mini" @click="msgEdit(row)">
             编辑
           </el-button>
-          <!-- <el-button type="primary" size="mini" @click="msgAdd(row)">
+          <el-button v-if="row.status!='deleted'" size="mini" type="danger" @click="handleDelete(row, $event)">
+            删除
+          </el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+
+     <el-table
+        v-show="!isLazy"
+        rel="searchTree"
+        :data="searchData"
+        style="width: 100%;margin-bottom: 20px;"
+        row-key="id"
+        border
+        default-expand-all
+       >
+      <el-table-column
+        prop="name"
+        label="名称"
+        >
+      </el-table-column>
+      <el-table-column
+        prop="type"
+        label="类型"
+        align="center"
+        width="180">
+      </el-table-column>
+      <el-table-column
+        prop="url"
+        label="链接地址"
+        align="center"
+        width="400">
+      </el-table-column>
+      <el-table-column
+        prop="status"
+        label="状态"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="operation"
+        label="事件"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="auth"
+        label="授权"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="sort"
+        label="排序"
+        align="center">
+      </el-table-column>
+      <el-table-column label="操作" align="center" width="300" class-name="small-padding fixed-width">
+        <template slot-scope="{ row }">
+          <el-button type="primary" size="mini" @click="msgAdd(row)">
             添加
-          </el-button> -->
+          </el-button>
+          <el-button type="primary" size="mini" @click="msgEdit(row)">
+            编辑
+          </el-button>
           <el-button v-if="row.status!='deleted'" size="mini" type="danger" @click="handleDelete(row, $event)">
             删除
           </el-button>
@@ -107,9 +169,6 @@
         <el-form-item label="排序">
           <el-input v-model="role.sort" maxlength="11" placeholder="请输入排序" />
         </el-form-item>
-        <el-form-item v-if="role.type !== '菜单' && role.type !== '接口'" label="按钮code">
-          <el-input v-model="role.code" maxlength="11" placeholder="请输入按钮code" />
-        </el-form-item>
         <el-form-item label="类型">
           <el-select v-model="role.type" placeholder="请选择">
             <el-option
@@ -120,8 +179,11 @@
             </el-option>
           </el-select>
         </el-form-item>
-         <el-form-item label="链接地址">
-          <el-input v-if="role.type !== '按钮'" v-model="role.url" maxlength="255" placeholder="请输入链接地址" />
+        <el-form-item v-if="role.type !== '菜单' && role.type !== '接口'" label="按钮code">
+          <el-input v-model="role.code" maxlength="11" placeholder="请输入按钮code" />
+        </el-form-item>
+         <el-form-item v-if="role.type !== '按钮'" v-model="role.url" label="链接地址">
+          <el-input maxlength="255" placeholder="请输入链接地址" />
         </el-form-item>
         <el-form-item v-if="role.type !== '接口'" label="图标">
           <svg-icon v-if="role && role.icon" :icon-class="role.icon" class="mr10" />
@@ -210,7 +272,6 @@
             </div>
             <div class="clear"></div>
     </el-dialog>
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageIndex" :limit.sync="listQuery.pageSize"  @pagination="getList" />
   </div>
 </template>
 
@@ -218,7 +279,7 @@
 import path from 'path'
 import { deepClone } from '@/utils'
 import waves from '@/directive/waves' // waves directive
-import { getMeanFirstRec, getMeanByPid, getResource, resourceDelete, updateUser, addResource, updateResource, getUserBtnByPId } from '@/api/upms/menu'
+import { getMeanFirstRec, getMeanByPid, resourceDelete, updateUser, addResource, updateResource, getUserBtnByPId, resourceSearch } from '@/api/upms/menu'
 import { getRoutes } from '@/api/upms/manageRole'
 import { getSystem } from '@/api/upms/systemList'
 import Pagination from '@/components/Pagination'
@@ -240,12 +301,15 @@ export default {
     return {
       role: Object.assign({}, defaultRole),
       svgIcons,
+      isLazy: true,
       listLoading: false,
       diaLoading: false,
       diaDisable: false,
+      searchLoading: false,
       systemData: [],
       meanData: [],
-      keyArr: [1],
+      searchData: [],
+      keyArr: [''],
       btnsPermission: {
         search: {
           name: '搜索',
@@ -275,10 +339,12 @@ export default {
         '接口': 2
       },
       operaData: {
-        '0': 'tab打开',
-        '1': '窗口打开',
+        '0': '--',
+        '1': 'tab打开',
+        '2': '窗口打开',
       },
       operaDataN: {
+        '--': '',
         'tab打开': 0,
         '窗口打开': 1
       },
@@ -309,8 +375,7 @@ export default {
       total: 0,
       allPages: 0,
       listQuery: {
-        pageIndex: 1,
-        pageSize: 10,
+        name: '',
         status: '',
         type: ''
       },
@@ -375,7 +440,6 @@ export default {
             }
             this.meanData.push(obj)
           }
-         
         }
       })
     },
@@ -426,15 +490,6 @@ export default {
       this.checkParentId = ''
       this.prarentDialogVisible = false
     },
-    getResource() {
-      this.listLoading = true
-      getResource(this.listQuery).then(res => {
-        this.listLoading = false
-        this.resourceData = res.data.records
-        this.total = res.data.total
-        this.allPages = res.data.pages
-      })
-    },
     async getRoutes() {
       this.listLoading = true
       await getRoutes().then(res => {
@@ -482,24 +537,56 @@ export default {
       }
       return res
     },
-    getList(data) {
-      // 分页事件
-      this.listQuery.pageIndex = data.page
-      this.getResource()
-    },
     handleFilter() {
-      this.listQuery.pageIndex = 1
-      this.getResource()
+      this.searchLoading = true
+      resourceSearch({
+        name: this.listQuery.name,
+        type: this.typeDataN[this.listQuery.type],
+        status: this.statusDataN[this.listQuery.status]
+      }).then(res => {
+        this.searchLoading = false
+        this.meanData = []
+        this.isLazy = false
+        console.log(this.isLazy)
+        if(Array.isArray(res.data)) {
+          this.searchData = this.filterData(res.data)
+          // for(var i=0;i<this.$refs.searchTree.store._getAllNodes().length;i++){
+          //   this.$refs.searchTree.store._getAllNodes()[i].expanded= true;
+          // }
+        }
+      }).catch(err => {
+        this.searchLoading = false
+      })
+    },
+    filterData(data) {
+      const result = data.filter(val => {
+        if(val.status != null) {
+          val.status = this.statusData[val.status]
+        }
+        if(val.type != null) {
+          val.type = this.typeData[val.type]
+        }
+        if(val.operation != null) {
+          val.operation = this.operaData[val.operation]
+        }
+        if(val.auth != null) {
+          val.auth = this.authData[val.auth]
+        }
+        if(val.children && val.children.length > 0) {
+          val.children = this.filterData(val.children)
+        }
+        return true
+      })
+      return result
     },
     resetResource() {
       // 重置事件
+      this.isLazy = true
       this.listQuery = {
-        pageIndex: 1,
-        pageSize: 10,
-        status: '',
-        type: ''
-      },
-      this.getResource()
+        name: ''
+      }
+      this.searchData = []
+      this.getMeanFirstRec()
     },
     generateArr(routes) {
       let data = []
@@ -516,6 +603,7 @@ export default {
     },
     async handleAddResource() {
       this.role = Object.assign({}, defaultRole)
+      this.role.operation = '--'
       this.dialogType = 'new'
       this.checkStrictly = true
       this.dialogVisible = true
@@ -525,6 +613,18 @@ export default {
       this.dialogVisible = true
       this.checkStrictly = true
       this.role = deepClone(row)
+    },
+    msgAdd(row) {
+      const pName = row.name
+      const pId = row.id
+      this.role = Object.assign({}, defaultRole)
+      this.role.operation = '--'
+      this.role.parentName = pName
+      this.role.parentId = pId
+      this.checkParentId = pId
+      this.dialogType = 'new'
+      this.dialogVisible = true
+      this.checkStrictly = true
     },
     async selectParent() {
       if(this.role && this.role.parentId) {
@@ -589,8 +689,6 @@ export default {
     },
     async confirmRole() {
       const isEdit = this.dialogType === 'edit'
-      console.log('row')
-      console.log(this.role)
       if (isEdit) {
         this.diaDisable = true
         this.diaLoading = true

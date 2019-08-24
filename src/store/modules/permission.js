@@ -27,18 +27,13 @@ function filterAsyncRouter(asyncRouterMap, index) { // 遍历后台传来的路�
   const accessedRouters = asyncRouterMap.filter(route => {
     let exsit = true
     if (route.url) {
-      // console.log(route.url)
-      // console.log(moduleSource.indexOf(route.url) > -1)
       if (moduleSource.indexOf(route.url) > -1) {
         route.component = _import(route.url)
         route.path = route.url.split('/')[1]
-        // console.log('vue')
-        // console.log(route.url)
       } else if (httpReg.test(route.url)) {
         route.component = Layout
         route.path = route.url
-        // console.log('http')
-        // console.log(route.url)
+        route.operation = 0
       } else if (srcReg.test(route.url)) {
         route.component = Layout
         if (index === 0) {
@@ -46,8 +41,6 @@ function filterAsyncRouter(asyncRouterMap, index) { // 遍历后台传来的路�
         } else {
           route.path = route.url
         }
-        // console.log('layout')
-        // console.log(route.path)
       } else {
         exsit = false
       }
