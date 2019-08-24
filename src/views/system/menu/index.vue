@@ -46,6 +46,10 @@
         prop="name"
         label="名称"
         >
+        <template slot-scope="{ row }">
+            <svg-icon v-if="row.icon" :icon-class="row.icon" />
+            <span>{{row.name}}</span>
+        </template>
       </el-table-column>
       <el-table-column
         prop="type"
@@ -57,7 +61,7 @@
         prop="code"
         label="链接地址"
         align="center"
-        width="400">
+        width="200">
       </el-table-column>
       <el-table-column
         prop="status"
@@ -107,6 +111,10 @@
         prop="name"
         label="名称"
         >
+        <template slot-scope="{ row }">
+            <svg-icon v-if="row.icon" :icon-class="row.icon" />
+            <span>{{row.name}}</span>
+        </template>
       </el-table-column>
       <el-table-column
         prop="type"
@@ -118,7 +126,7 @@
         prop="url"
         label="链接地址"
         align="center"
-        width="400">
+        width="200">
       </el-table-column>
       <el-table-column
         prop="status"
