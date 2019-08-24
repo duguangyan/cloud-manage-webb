@@ -19,17 +19,15 @@
       :props="defaultProps"
       :filter-node-method="filterNode"
       :allow-drop="allowDrop"
-      :expand-on-click-node="true"
+      :expand-on-click-node="false"
       :default-expanded-keys="keyArr"
       :auto-expand-parent="false"
       :highlight-current="true"
       ref="tree">
       <span class="custom-tree-node" slot-scope="{ node, data }">
-        <!-- <span>{{ node.label }}</span> -->
-        <span class="col-cont" v-html="showDate(node.label)" ></span>
-        <!-- <span v-html="showCount(data.id)"></span> -->
+        <span class="col-cont" v-html="showFilter(node.label)" ></span>
         <span class="more">
-          <i :ref="data.id">{{node.label}}</i>
+          <i class="product-num" :ref="data.id"></i>
           <i class="el-icon-edit" title="修改名称" @click.stop="msgEdit(node, data)" />
           <i class="el-icon-remove-outline" 
             type="text"
@@ -104,8 +102,6 @@ export default {
               validator: validateName
           }]
       },
-      count: 0,
-      countCode: '',
       parentId: '',
       node: {},
       nodeData: {},
@@ -165,26 +161,16 @@ export default {
       return data.name.indexOf(value) !== -1;
     },
     nodeClick(data, node, dom) {
-      console.log('node')
-
-      const id = data.id
-      console.log(id)
-      console.log(this.$refs.id)
-      console.log(dom.$children[0])
-      console.log(dom.$children[0].$el.childNodes[2].childNodes[0].innerHtml)
-      this.$nextTick(() => {
-        dom.$children[0].$el.childNodes[2].childNodes[0].innerHtml = 'SSS'
-      })
-      
-      return
- 
+      this.listLoading = true
       getProductNum({id: data.id}).then(res => {
-      
-        return
+        this.listLoading = false
+        let num = 0
         if(res.data !== null) {
-          this.count = res.data
+          num = res.data
         }
-        this.countCode = data.id
+        this.$refs[data.id].innerHTML = '(' + num + ')'
+      }).catch(err => {
+        this.listLoading = false
       })
     },
     nodeExpan(data, node, e) {
@@ -398,7 +384,7 @@ export default {
       })
     },
     // 筛选变色
-   showDate(val) {
+   showFilter(val) {
       val = val + '';
       if (val.indexOf(this.filterText) !== -1 && this.filterText !== '') {
       return val.replace(this.filterText, '<font color="#FF0000">' + this.filterText + '</font>')
@@ -414,6 +400,9 @@ export default {
   .more{
     visibility: hidden;
     margin-left: 20px;
+    .product-num{
+      font-style: normal;
+    }
     i{
       margin-left: 10px;
       &:hover{
