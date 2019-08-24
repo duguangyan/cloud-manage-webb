@@ -1,18 +1,18 @@
 <template>
   <div class="app-container"  v-loading="btnLoading">
 
-    <div class="filter-container">
+    <div v-if="btnsPermission.search.auth" class="filter-container">
       <el-input v-model="listQuery.realName"  placeholder="请输入真实姓名" style="width: 200px;" class="filter-item mr10" @keyup.enter.native="handleFilter" />
       账号：
       <el-input v-model="listQuery.username"  placeholder="请输入用户账号" style="width: 200px;" class="filter-item mr10" @keyup.enter.native="handleFilter" />
       手机号码：
       <el-input v-model="listQuery.phone"  placeholder="请输入手机号码" style="width: 200px;" class="filter-item mr10" @keyup.enter.native="handleFilter" />
-      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">搜索</el-button>
-      <el-button v-waves class="filter-item" icon="el-icon-search" @click="resetSearch">重置</el-button>
+      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">{{btnsPermission.search.name}}</el-button>
+      <el-button v-waves class="filter-item" @click="resetSearch">重置</el-button>
     </div>
 
-    <el-button type="primary" size="small" @click="handleAddRole">新增角色</el-button>
-    <el-button size="small" @click="handleLockMul" >批量锁定</el-button>
+    <el-button v-if="btnsPermission.add.auth" type="primary" size="small" @click="handleAddRole">{{btnsPermission.add.name}}</el-button>
+    <el-button v-if="btnsPermission.lock.auth" size="small" @click="handleLockMul" >{{btnsPermission.lock.name}}</el-button>
 
     <el-table 
       v-loading="listLoading"
@@ -147,6 +147,7 @@
 import path from 'path'
 import { deepClone } from '@/utils'
 import waves from '@/directive/waves' // waves directive
+import { getUserBtnByPId } from '@/api/upms/menu'
 import { getUserList, updateUser, addUser, userDelete, lockUser, lockUsers, processUserRoleBatch } from '@/api/upms/manageUser'
 import { getRoleList } from '@/api/upms/manageRole'
 import { getSystem } from '@/api/upms/systemList'
@@ -178,6 +179,20 @@ export default {
       diaDisable: false,
       btnLoading: false,
       systemData: [],
+      btnsPermission: {
+        search: {
+          name: '搜索',
+          auth: false
+        },
+        add: {
+          name: '添加',
+          auth: false
+        },
+        lock: {
+          name: '批量锁定',
+          auth: false
+        }
+      },
       editRules: {
         phone: [{
             required: false,
@@ -228,6 +243,20 @@ export default {
   },
   created() {
     this.getUserList() 
+  },
+  mounted() {
+    getUserBtnByPId({ parentId: this.$route.meta.id }).then(res => {
+      if(Array.isArray(res.data)) {
+        res.data.map((val) => {
+          console.log(val)
+          if(this.btnsPermission.hasOwnProperty(val.code)) {
+            this.btnsPermission[val.code].auth = val.checked === 1
+            this.btnsPermission[val.code].name = val.name
+          }
+          
+        })
+      }
+    })
   },
   methods: {
     roleSelectFun(val, row) {

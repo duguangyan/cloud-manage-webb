@@ -1,15 +1,15 @@
 <template>
   <div class="app-container">
 
-    <div class="filter-container">
+    <div v-if="btnsPermission.search.auth" class="filter-container">
       角色名称：
       <el-input v-model="listQuery.name"  placeholder="请输入角色名" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
-      搜索
+      {{btnsPermission.search.name}}
       </el-button>
     </div>
 
-    <el-button type="primary" size="small" @click="handleAddRole">新增角色</el-button>
+    <el-button v-if="btnsPermission.add.auth" type="primary" size="small" @click="handleAddRole">{{btnsPermission.add.name}}</el-button>
 
     <el-table 
       v-loading="listLoading"
@@ -98,6 +98,7 @@
 import path from 'path'
 import { deepClone } from '@/utils'
 import waves from '@/directive/waves'
+import { getUserBtnByPId } from '@/api/upms/menu'
 import { getRoles, addRole, deleteRole, updateRole, getRoleList, addResourceBatch, getRoleResources, getRoleResourceTree } from '@/api/upms/manageRole'
 import { getSystem } from '@/api/upms/systemList'
 import Pagination from '@/components/Pagination'
@@ -121,6 +122,16 @@ export default {
       systemData: [],
       rolesList: [],
       rolesData: [],
+      btnsPermission: {
+        search: {
+          name: '搜索',
+          auth: false
+        },
+        add: {
+          name: '添加',
+          auth: false
+        }
+      },
       dialogVisible: false,
       roleDialogVisible: false,
       dialogType: 'new',
@@ -149,6 +160,19 @@ export default {
   },
   created() {
     this.getRoleList() 
+  },
+  mounted() {
+    getUserBtnByPId({ parentId: this.$route.meta.id }).then(res => {
+      if(Array.isArray(res.data)) {
+        res.data.map((val) => {
+          if(this.btnsPermission.hasOwnProperty(val.code)) {
+            this.btnsPermission[val.code].auth = val.checked === 1
+            this.btnsPermission[val.code].name = val.name
+          }
+          
+        })
+      }
+    })
   },
   methods: {
     getRoleList() {

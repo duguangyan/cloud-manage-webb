@@ -45,7 +45,6 @@ export default {
       return this.$store.state.tagsView.visitedViews
     },
     routes() {
-      console.log(this.$store.state)
       return this.$store.state.permission.routes
     }
   },

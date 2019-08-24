@@ -1,12 +1,12 @@
 <template>
   <div class="app-container">
     <div class="filter-container" style="padding-bottom: 10px">
-      <el-input v-model="listQuery.name" placeholder="系统名" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
-        查询
+      <el-input v-if="btnsPermission.search.auth" v-model="listQuery.name" placeholder="系统名" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-button v-if="btnsPermission.search.auth" v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+        {{btnsPermission.search.name}}
       </el-button>
-      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
-        添加
+      <el-button v-if="btnsPermission.add.auth" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
+        {{btnsPermission.add.name}}
       </el-button>
     </div>
 
@@ -87,6 +87,7 @@
 </template>
 
 <script>
+import { getUserBtnByPId } from '@/api/upms/menu'
 import { getSystem, updateSystem, addSystem, deleteSystem } from '@/api/upms/systemList'
 import Pagination from '@/components/Pagination'
 import waves from '@/directive/waves' // waves directive
@@ -118,6 +119,16 @@ export default {
         pageIndex: 1,
         pageSize: 10
       },
+      btnsPermission: {
+        search: {
+          name: '查询',
+          auth: false
+        },
+        add: {
+          name: '添加',
+          auth: false
+        }
+      },
       temp: {
         id: '',
         name: '',
@@ -140,6 +151,20 @@ export default {
   components: { Pagination },
   created() {
     this.fetchData()
+  },
+  mounted() {
+    getUserBtnByPId({ parentId: this.$route.meta.id }).then(res => {
+      if(Array.isArray(res.data)) {
+        res.data.map((val) => {
+          console.log(val)
+          if(this.btnsPermission.hasOwnProperty(val.code)) {
+            this.btnsPermission[val.code].auth = val.checked === 1
+            this.btnsPermission[val.code].name = val.name
+          }
+          
+        })
+      }
+    })
   },
   methods: {
     fetchData() {

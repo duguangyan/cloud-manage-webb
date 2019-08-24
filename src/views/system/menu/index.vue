@@ -2,30 +2,33 @@
   <div class="app-container">
 
     <div class="filter-container">
-      名称：
-      <el-input v-model="listQuery.name"  placeholder="请输入用户姓名" style="width: 200px;" class="filter-item mr10" @keyup.enter.native="handleFilter" />
-      状态：
-      <el-select v-model="listQuery.status" class="mr10" placeholder="请选择">
-        <el-option
-          v-for="(val, key) in statusData"
-          :key="key"
-          :label="val"
-          :value="val">
-        </el-option>
-      </el-select>
-      类型：
-      <el-select v-model="listQuery.type" class="mr10" placeholder="请选择">
-        <el-option
-          v-for="(val, key) in typeData"
-          :key="key"
-          :label="val"
-          :value="val">
-        </el-option>
-      </el-select>
+      <template v-if="btnsPermission.search.auth">
+        名称：
+        <el-input v-model="listQuery.name"  placeholder="请输入用户姓名" style="width: 200px;" class="filter-item mr10" @keyup.enter.native="handleFilter" />
+        状态：
+        <el-select v-model="listQuery.status" class="mr10" placeholder="请选择">
+          <el-option
+            v-for="(val, key) in statusData"
+            :key="key"
+            :label="val"
+            :value="val">
+          </el-option>
+        </el-select>
+        类型：
+        <el-select v-model="listQuery.type" class="mr10" placeholder="请选择">
+          <el-option
+            v-for="(val, key) in typeData"
+            :key="key"
+            :label="val"
+            :value="val">
+          </el-option>
+        </el-select>
+      </template>
+      
 
-      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">搜索</el-button>
-      <el-button v-waves class="filter-item" icon="el-icon-search" @click="resetResource">重置</el-button>
-      <el-button v-waves class="filter-item" icon="el-icon-search" @click="handleAddResource">新增资源</el-button>
+      <el-button v-if="btnsPermission.search.auth" v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">{{btnsPermission.search.name}}</el-button>
+      <el-button v-if="btnsPermission.search.auth" v-waves class="filter-item" @click="resetResource">重置</el-button>
+      <el-button v-if="btnsPermission.add.auth" v-waves class="filter-item" @click="handleAddResource">{{btnsPermission.add.name}}</el-button>
     </div>
 
     <el-table
@@ -104,6 +107,9 @@
         <el-form-item label="排序">
           <el-input v-model="role.sort" maxlength="11" placeholder="请输入排序" />
         </el-form-item>
+        <el-form-item label="按钮code">
+          <el-input v-model="role.code" maxlength="11" placeholder="请输入按钮code" />
+        </el-form-item>
         <el-form-item label="类型">
           <el-select v-model="role.type" placeholder="请选择">
             <el-option
@@ -172,6 +178,7 @@
         <el-form-item label="权限列表">
           <el-tree
             ref="parentTree"
+            :default-expanded-keys="keyArr"
             :check-strictly="checkStrictly"
             :data="routesData"
             :props="defaultProps"
@@ -238,6 +245,17 @@ export default {
       diaDisable: false,
       systemData: [],
       meanData: [],
+      keyArr: [1],
+      btnsPermission: {
+        search: {
+          name: '搜索',
+          auth: false
+        },
+        add: {
+          name: '添加',
+          auth: false
+        }
+      },
       statusData: {
         '0': '禁止',
         '1': '启用',
@@ -310,13 +328,22 @@ export default {
     }
   },
   created() {
-    this.getUserBtnByPId()
     this.getMeanFirstRec()
   },
+  mounted() {
+    getUserBtnByPId({ parentId: this.$route.meta.id }).then(res => {
+      if(Array.isArray(res.data)) {
+        res.data.map((val) => {
+          if(this.btnsPermission.hasOwnProperty(val.code)) {
+            this.btnsPermission[val.code].auth = val.checked === 1
+            this.btnsPermission[val.code].name = val.name
+          }
+          
+        })
+      }
+    })
+  },
   methods: {
-    getUserBtnByPId() {
-      getUserBtnByPId({ parentId: this.$store.getters.userId })
-    },
     generateIconCode(symbol) {
       return `<svg-icon icon-class="${symbol}" />`
     },
@@ -572,6 +599,7 @@ export default {
            name: this.role.name,
            sort: this.role.sort,
            icon: this.role.icon,
+           code: this.role.code,
            parentId: this.checkParentName.length > 0? this.checkParentId: this.role.parentId,
            status: this.statusDataN[this.role.status],
            url: this.role.url,
@@ -600,6 +628,7 @@ export default {
           name: this.role.name,
           sort: this.role.sort,
           icon: this.role.icon,
+          code: this.role.code,
           parentId: this.checkParentId,
           url: this.role.url,
           type: this.typeDataN[this.role.type],
