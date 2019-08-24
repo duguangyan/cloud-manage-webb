@@ -115,7 +115,7 @@
           </el-select>
         </el-form-item>
          <el-form-item label="链接地址">
-          <el-input v-model="role.code" maxlength="255" placeholder="请输入链接地址" />
+          <el-input v-model="role.url" maxlength="255" placeholder="请输入链接地址" />
         </el-form-item>
         <el-form-item label="图标">
           <svg-icon v-if="role && role.icon" :icon-class="role.icon" class="mr10" />
@@ -337,6 +337,7 @@ export default {
               parentName: '',
               code: res.data[i].code,
               icon: res.data[i].icon,
+              url: res.data[i].url,
               sort: typeof(res.data[i].sort) === 'number'? res.data[i].sort: 0,
               status: this.statusData[String(res.data[i].status)],
               operation: this.operaData[String(res.data[i].operation)],
@@ -367,6 +368,7 @@ export default {
               parentName: tree.name,
               code: res.data[i].code,
               icon: res.data[i].icon,
+              url: res.data[i].url,
                sort: typeof(res.data[i].sort) === 'number'? res.data[i].sort: 0,
               status: this.statusData[String(res.data[i].status)],
               operation: this.operaData[String(res.data[i].operation)],
