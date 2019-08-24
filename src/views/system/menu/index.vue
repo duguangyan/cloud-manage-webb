@@ -55,17 +55,18 @@
         prop="type"
         label="类型"
         align="center"
-        width="180">
+        width="60">
       </el-table-column>
       <el-table-column
         prop="code"
         label="链接地址"
         align="center"
-        width="200">
+        width="250">
       </el-table-column>
       <el-table-column
         prop="status"
         label="状态"
+        width="60"
         align="center">
       </el-table-column>
       <el-table-column
@@ -76,11 +77,13 @@
       <el-table-column
         prop="auth"
         label="授权"
+          width="100"
         align="center">
       </el-table-column>
       <el-table-column
         prop="sort"
         label="排序"
+        width="100"
         align="center">
       </el-table-column>
       <el-table-column label="操作" align="center" width="300" class-name="small-padding fixed-width">
@@ -120,17 +123,18 @@
         prop="type"
         label="类型"
         align="center"
-        width="180">
+        width="60">
       </el-table-column>
       <el-table-column
         prop="url"
         label="链接地址"
         align="center"
-        width="200">
+        width="250">
       </el-table-column>
       <el-table-column
         prop="status"
         label="状态"
+          width="60"
         align="center">
       </el-table-column>
       <el-table-column
@@ -141,11 +145,13 @@
       <el-table-column
         prop="auth"
         label="授权"
+          width="100"
         align="center">
       </el-table-column>
       <el-table-column
         prop="sort"
         label="排序"
+        width="100"
         align="center">
       </el-table-column>
       <el-table-column label="操作" align="center" width="300" class-name="small-padding fixed-width">
@@ -555,12 +561,8 @@ export default {
         this.searchLoading = false
         this.meanData = []
         this.isLazy = false
-        console.log(this.isLazy)
         if(Array.isArray(res.data)) {
           this.searchData = this.filterData(res.data)
-          // for(var i=0;i<this.$refs.searchTree.store._getAllNodes().length;i++){
-          //   this.$refs.searchTree.store._getAllNodes()[i].expanded= true;
-          // }
         }
       }).catch(err => {
         this.searchLoading = false
@@ -650,10 +652,6 @@ export default {
     handleCheckChange (data, checked, indeterminate) {
       /* 主要通过checked进行判断 */
       if (checked) {
-        // console.log('id:', data.id)
-        // console.log('ck')
-        // console.log(data.title)
-        // console.log(data.id)
         let arr = [data.id];
         this.$refs.parentTree.setCheckedKeys(arr);
         this.checkParentId = data.id
