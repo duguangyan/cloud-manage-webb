@@ -7,6 +7,7 @@ const moduleSource = [
   'product/classify/index',
   'product/unit/index',
   'product/list/index',
+  'product/list/release/index',
   'stat/analyze/index',
   'order/sellOrder/index',
   'activity/banner/index',
@@ -17,6 +18,14 @@ const moduleSource = [
   'permission/user/index',
   'system/config/index'
 ]
+// 重定向路由
+const redirectSource = {
+  product: 'product/classify',
+  stat: 'stat/analyze',
+  order: 'order/sellOrder',
+  acitvity: 'activity/banner',
+  system: 'system/menu'
+}
 const _import = require('@/router/_import_' + process.env.NODE_ENV) // 获取组件的方法
 // const _import = require('@/router/_import_development') // 获取组件的方法
 
@@ -27,15 +36,24 @@ function filterAsyncRouter(asyncRouterMap, index) { // 遍历后台传来的路�
   const accessedRouters = asyncRouterMap.filter(route => {
     let exsit = true
     if (route.url) {
+      route.hidden = false
       if (moduleSource.indexOf(route.url) > -1) {
         route.component = _import(route.url)
-        route.path = route.url.split('/')[1]
+        const urlArr = route.url.split('/')
+        route.path = urlArr[urlArr.length - 2]
+        if (route.url === moduleSource[3]) {
+          console.log(route.url)
+          route.hidden = true
+        }
       } else if (httpReg.test(route.url)) {
         route.component = Layout
         route.path = route.url
         route.operation = 0
       } else if (srcReg.test(route.url)) {
         route.component = Layout
+        if (redirectSource[route.url]) {
+          route.redirect = redirectSource[route.url]
+        }
         if (index === 0) {
           route.path = '/' + route.url
         } else {
@@ -74,6 +92,8 @@ const mutations = {
   SET_ROUTES: (state, routes) => {
     state.addRoutes = routes
     state.routes = constantRoutes.concat(routes)
+    console.log('route')
+    console.log(state.routes)
   }
 }
 
