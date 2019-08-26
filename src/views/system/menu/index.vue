@@ -58,7 +58,7 @@
         width="60">
       </el-table-column>
       <el-table-column
-        prop="code"
+        prop="url"
         label="链接地址"
         align="center"
         width="250">
@@ -196,8 +196,8 @@
         <el-form-item v-if="role.type !== '菜单' && role.type !== '接口'" label="按钮code">
           <el-input v-model="role.code" maxlength="11" placeholder="请输入按钮code" />
         </el-form-item>
-         <el-form-item v-if="role.type !== '按钮'" v-model="role.url" label="链接地址">
-          <el-input maxlength="255" placeholder="请输入链接地址" />
+         <el-form-item v-if="role.type !== '按钮'" label="链接地址">
+          <el-input v-model="role.url" maxlength="255" placeholder="请输入链接地址" />
         </el-form-item>
         <el-form-item v-if="role.type !== '接口'" label="图标">
           <svg-icon v-if="role && role.icon" :icon-class="role.icon" class="mr10" />
@@ -619,6 +619,7 @@ export default {
       this.dialogVisible = true
     },
     msgEdit(row) {
+      console.log(row)
       this.dialogType = 'edit'
       this.dialogVisible = true
       this.checkStrictly = true
