@@ -17,7 +17,8 @@ const moduleSource = [
   'system/menu/index',
   'system/dict/index',
   'permission/user/index',
-  'system/config/index'
+  'system/config/index',
+  'system/strict/index'
 ]
 // 重定向路由
 const redirectSource = {
