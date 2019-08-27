@@ -9,6 +9,7 @@ const moduleSource = [
   'product/list/index',
   'product/list/release/index',
   'product/list/detail/index',
+  'product/list/add/index',
   'stat/analyze/index',
   'order/sellOrder/index',
   'activity/banner/index',
@@ -42,7 +43,7 @@ function filterAsyncRouter(asyncRouterMap, index) { // 遍历后台传来的路�
         route.component = _import(route.url)
         const urlArr = route.url.split('/')
         route.path = urlArr[urlArr.length - 2]
-        if (route.url === moduleSource[3] || route.url === moduleSource[4]) {
+        if (route.url === moduleSource[3] || route.url === moduleSource[4] || route.url === moduleSource[5]) {
           console.log(route.url)
           route.hidden = true
         }

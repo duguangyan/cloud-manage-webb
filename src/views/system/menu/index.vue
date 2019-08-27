@@ -729,6 +729,9 @@ export default {
       } else {
         this.diaDisable = true
         this.diaLoading = true
+        console.log('row -------------')
+        console.log(this.role)
+        console.log(this.role.sort)
         const { data } = await addResource({
           name: this.role.name,
           sort: this.role.sort,

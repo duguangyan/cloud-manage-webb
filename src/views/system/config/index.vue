@@ -137,8 +137,8 @@ export default {
       dialogStatus: '',
       dialogFormVisible: false,
       textMap: {
-        update: 'Edit',
-        create: 'Create'
+        update: '编辑',
+        create: '新增系统'
       },
       rules: {
         type: [{ required: true, message: 'type is required', trigger: 'change' }],

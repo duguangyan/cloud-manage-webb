@@ -4,13 +4,21 @@
     <!-- <el-cascader :options="options" :props="props"></el-cascader>
     <el-cascader :options="optionss" @active-item-change="getNodes" :props="propss"></el-cascader> -->
     <el-cascader-panel :options="options2"></el-cascader-panel>
+    <div class="next-box">
+      <el-button v-waves @click="back" class="filter-item">返回</el-button>
+      <router-link :to="{ path: 'add'}">
+        <el-button v-waves class="filter-item">下一步</el-button>
+      </router-link>
+    </div>
   </div>
 </template>
 
 <script>
+import waves from '@/directive/waves'
 let id = 0;
 export default {
   name: 'release',
+  directives: { waves },
   data() {
     return {
       options2: [{
@@ -314,6 +322,9 @@ export default {
     // console.log(this.$route)
   },
   methods: {
+    back() {
+      this.$router.back(-1)
+    },
     lazyLoad (node, resolve) {
       console.log(node)
 
@@ -381,5 +392,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
+  .next-box{
+    text-align: center;
+    padding-top: 20px;
+  }
 </style>
