@@ -1,73 +1,28 @@
 import request from '@/utils/request'
 
-// 获取商品分类树
-export function getProductTree() {
+// 获取商品列表
+export function getList(query) {
   return request({
-    url: '/goods/category/getCategoryTreeNode',
-    method: 'get'
-  })
-}
-
-// 插入一级分类
-export function insertRootProduct(data) {
-  return request({
-    url: '/goods/category/insertRoot',
-    method: 'post',
-    data
-  })
-}
-
-// 插入分类
-export function insertProduct(data) {
-  return request({
-    url: '/goods/category/insert',
-    method: 'post',
-    data
-  })
-}
-
-// 修改分类
-export function updateProduct(data) {
-  return request({
-    url: '/goods/category/update',
-    method: 'post',
-    data
-  })
-}
-
-// 排序
-export function moveProduct(query) {
-  return request({
-    url: '/goods/category/move',
+    url: '/goods/goods/pageGoods',
     method: 'get',
     params: query
   })
 }
 
-// 删除分类
-export function deleteProduct(query) {
+// 根据ID获取商品列表
+export function getGoodsByIds(query) {
   return request({
-    url: '/goods/category/delete',
+    url: '/goods/goods/getGoodsByIds',
     method: 'get',
     params: query
   })
 }
 
-// 获取该分类下商品数量
-export function getProductNum(query) {
+// 批量上下架商品
+export function handlerGoods(query) {
   return request({
-    url: '/goods/category/getGoodsNum',
+    url: '/goods/goods/handlerGoods',
     method: 'get',
     params: query
   })
 }
-
-// 搜索分类
-export function searchProduct(query) {
-  return request({
-    url: '/goods/category/search',
-    method: 'get',
-    params: query
-  })
-}
-

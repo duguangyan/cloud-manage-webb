@@ -675,7 +675,7 @@ export default {
           this.getMeanFirstRec()
         }).catch(err => {
             this.listLoading = false
-         })
+      })
     },
     generateTree(routes, basePath = '/', checkedKeys) {
       const res = []
