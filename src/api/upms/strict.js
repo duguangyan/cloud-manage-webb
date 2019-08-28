@@ -14,4 +14,18 @@ module.exports = {
       params
     });
   },
-}
+  editAd(params) {
+    return request({
+      url: '/upms/area/update',
+      method: 'post',
+      params
+    });
+  },
+  delAd(params) {
+    return request({
+      url: '/upms/area/update',
+      method: 'post',
+      params
+    });
+  }
+};
