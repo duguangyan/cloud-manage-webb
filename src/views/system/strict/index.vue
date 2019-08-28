@@ -103,6 +103,8 @@ var vm = {
           if (+vm.status === 0) {
             // 新增
             let level = vm.curData.level;
+            let data = {...vm.strict};
+            delete data.id;
             insertAd(
               Object.assign(vm.strict, {
                 level: ++level,
