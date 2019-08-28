@@ -12,13 +12,7 @@
 
     <!-- 编辑 -->
     <el-dialog title="地区编辑" :visible.sync="isShow" width="60%">
-      <el-form
-        :model="strict"
-        :rules="rules"
-        ref="strict"
-        label-width="100px"
-        class="demo-ruleForm"
-      >
+      <el-form :model="strict" :rules="rules" ref="strict" label-width="100px">
         <el-form-item label="名称" prop="name">
           <el-input v-model="strict.name"></el-input>
         </el-form-item>
@@ -49,6 +43,7 @@
 
 <script>
 import { getAd, insertAd, editAd, delAd } from "@/api/upms/strict";
+import { debuglog } from "util";
 
 var vm = {
   name: "strict",
@@ -82,6 +77,7 @@ var vm = {
           message: "请输入简称"
         },
         pinyin: {
+          required: true,
           message: "请输入拼音"
         },
         telCode: {
@@ -95,21 +91,9 @@ var vm = {
         }
       },
       curData: {},
+      curNode: {},
       status: ""
     };
-  },
-  mounted() {
-    getAd({
-      parentId: ""
-    }).then(res => {
-      let data = res.data[0];
-      try {
-        res.data.forEach(item => {
-          vm.$set(item, "children", []);
-          vm.grandParent.push(data);
-        });
-      } catch (e) {}
-    });
   },
   methods: {
     // 提交表单
@@ -118,26 +102,22 @@ var vm = {
         if (valid) {
           if (+vm.status === 0) {
             // 新增
-            debugger
+            let level = vm.curData.level;
             insertAd(
               Object.assign(vm.strict, {
-                level: ++vm.curData.level,
-                parentId: vm.curData.parentId
+                level: ++level,
+                parentId: vm.curData.id
               })
             )
-            .then(res => {
-              // 手动更新节点
-              const newChild = Object.assign(res.data,{children: []});
-              vm.curData.children.push(newChild);
-              // vm.$message.success({
-              //   type: 'success',
-              //   message: '地区信息将会在刷新后更改'
-              // });
-              
-            })
-            .catch(res => {
-              vm.$message.error(res.response.data.message);
-            });
+              .then(res => {
+                // 手动更新节点
+                const newChild = Object.assign(res.data, { children: [] });
+                vm.$set(vm.curData, "children", []);
+                vm.curData.children.push({ ...newChild });
+              })
+              .catch(res => {
+                vm.$message.error(res.response.data.message);
+              });
           } else {
             // 编辑
             editAd(
@@ -147,15 +127,15 @@ var vm = {
                 id: vm.curData.id
               })
             )
-            .then(res => {
-              // 手动更新节点
-              // vm.$message.success('地区信息将会在刷新后更改');
-              vm.curData = Object.assign(vm.curData,res.data);
-            })
-            .catch(res => {
-              vm.$message.error(res.msg);
-            });
+              .then(res => {
+                // 手动更新节点
+                vm.curData = Object.assign(vm.curData, vm.strict);
+              })
+              .catch(res => {
+                vm.$message.error(res.msg);
+              });
           }
+          vm.isShow = false;
         } else {
           return vm.$message.error("请正确填写表单！");
         }
@@ -167,55 +147,74 @@ var vm = {
       vm.$refs[formName].resetFields();
     },
 
-    // 获取地区
-    getChildren(data) {
-      getAd({
-        pId: data.id
-      }).then(res => {
-        vm.$set(data, "children", res.data.concat(data.children || []));
-      });
-    },
-
     // 加载节点
     loadNode(node, resolve) {
-      if (node.level === 0) {
-        return resolve([]);
-      }
-      // if (node.level > 1) return resolve([]);
-
       getAd({
-        parentId: node.data.id
+        parentId: node.data.id || ""
       }).then(res => {
+        if (node.level > 0) {
+          vm.$set(node.data, "children", res.data);
+        } else {
+          res.data.map(item => {
+            vm.$set(item, "children", []);
+            return item;
+          });
+        }
         resolve(res.data);
       });
     },
 
     // 预新增地域(弹窗)
     // status 0:新增, 1:编辑
-    preAppend(status) {
+    preDo(node, data, status) {
       vm.isShow = true;
       vm.status = status;
+      vm.curData = data;
+      vm.curNode = node;
+      +status === 1 && (vm.strict = { ...data });
     },
 
-    remove(node, data) {
-      const parent = node.parent;
-      const children = parent.data.children || parent.data;
-      const index = children.findIndex(d => d.id === data.id);
-      children.splice(index, 1);
+    preRemove(node, data) {
+      vm.$confirm("此操作将永久删除该区域, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(() => {
+          // 确定删除
+          delAd({
+            id: data.id
+          })
+            .then(res => {
+              vm.$message({
+                type: "success",
+                message: "删除成功"
+              });
+              const parent = node.parent;
+              const children = parent.data.children || parent.data;
+              const index = children.findIndex(d => d.id === data.id);
+              children.splice(index, 1);
+              node.parent.childNodes.splice(index, 1);
+            })
+            .catch(res => {
+              vm.$message.error(res.response.data.msg);
+            });
+        })
+        .catch(() => {
+          return false;
+        });
     },
 
     renderContent(h, { node, data, store }) {
       return (
-        <span class="custom-tree-node" >
+        <span class="custom-tree-node">
           <span>{data.name}&emsp;</span>
-
           <el-tooltip content="编辑地域" placement="top">
             <el-button
               size="medium"
               type="text"
               on-click={() => {
-                vm.curData = data;
-                vm.preEdit(1);
+                vm.preDo(node, data, 1);
               }}
             >
               <i class="el-icon-edit"></i>
@@ -227,8 +226,7 @@ var vm = {
               size="medium"
               type="text"
               on-click={() => {
-                vm.curData = data;
-                vm.preAppend(0);
+                vm.preDo(node, data, 0);
               }}
             >
               <i class="el-icon-circle-plus-outline"></i>
@@ -240,8 +238,7 @@ var vm = {
               size="medium"
               type="text"
               on-click={() => {
-                vm.curData = data;
-                vm.preRemove(node, data)
+                vm.preRemove(node, data);
               }}
             >
               <i class="el-icon-delete"></i>

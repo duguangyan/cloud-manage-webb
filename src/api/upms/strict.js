@@ -1,4 +1,4 @@
-import request from '@/utils/request';
+import request from '@/utils/request'
 
 module.exports = {
   insertAd(params) {
@@ -6,26 +6,26 @@ module.exports = {
       url: '/upms/area/insert',
       method: 'post',
       params
-    });
+    })
   },
   getAd(params) {
     return request({
       url: '/upms/area/getChildrenByPId',
       params
-    });
+    })
   },
   editAd(params) {
     return request({
       url: '/upms/area/update',
       method: 'post',
       params
-    });
+    })
   },
   delAd(params) {
     return request({
-      url: '/upms/area/update',
+      url: '/upms/area/delete',
       method: 'post',
       params
-    });
+    })
   }
-};
+}

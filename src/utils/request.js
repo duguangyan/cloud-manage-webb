@@ -6,8 +6,8 @@ import QS from 'qs'
 
 // create an axios instance
 const service = axios.create({
-  baseURL: 'http://192.168.0.202:8000',
-  // baseURL: process.env.VUE_APP_BASE_API,
+  // baseURL: 'http://192.168.0.202:8000',
+  baseURL: process.env.VUE_APP_BASE_API,
   timeout: 5000 // request timeout
 })
 
