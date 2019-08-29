@@ -20,6 +20,8 @@ service.interceptors.request.use(
       config.data = QS.stringify({
         ...config.data // 将参数变成  a=xx&b=xx&c=xx这样的参数列表
       })
+      debugger
+      console.log(config.data)
     }
     // do something before request is sent
     if (store.getters.token) {

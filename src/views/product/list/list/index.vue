@@ -20,9 +20,19 @@
       <el-button v-if="btnsPermission.add.auth" @click="jump" v-waves class="filter-item add-btn">{{btnsPermission.add.name}}</el-button>
     </div>
     <div class="mb20">
-      上架时间：
+      <template v-if="saleType === '3'">
+        上架时间：
+      </template>
+      <template v-if="saleType === '1'">
+        创建时间
+      </template>
+      <template v-if="saleType === '4'">
+        下架时间：
+      </template>
+      
       <el-date-picker
-        v-model="value2"
+        v-model="dateValue"
+        value-format="yyyy-MM-dd"
         type="daterange"
         align="right"
         size="small"
@@ -30,7 +40,8 @@
         range-separator="至"
         start-placeholder="开始日期"
         end-placeholder="结束日期"
-        :picker-options="pickerOptions">
+        :picker-options="pickerOptions"
+        @change="dateChange">
       </el-date-picker>
     </div>
     <el-tabs v-model="saleType" @tab-click="handleClick">
@@ -127,7 +138,7 @@
       <el-table-column
         v-if="saleType === '4'"
         align="center"
-        prop="sellTime"
+        prop="downTime"
         label="下架时间"
         width="160">
       </el-table-column>
@@ -166,6 +177,12 @@ export default {
         }
       },
       listQuery: {
+        createTimeStart: '',
+        createTimeEnd: '',
+        downTimeStart: '',
+        downTimeEnd: '',
+        sellTimeStart: '',
+        sellTimeEnd: '',
         categoryId: '',
         keywords: '',
         pageIndex: 1,
@@ -207,7 +224,7 @@ export default {
           }
         }]
       },
-      value2: '',
+      dateValue: '',
       saleType: "3",
       tableData: [],
       multipleSelection: [],
@@ -294,7 +311,7 @@ export default {
         }
       }
       
-      this.$confirm(msg, 'Warning', {
+      this.$confirm(msg, '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
@@ -316,6 +333,19 @@ export default {
           })
         })
     },
+    dateChange(data) {
+      // 日期选择
+      if(this.saleType === '3') {
+        this.listQuery.sellTimeStart = data[0]
+        this.listQuery.sellTimeEnd = data[1]
+      } else if(this.saleType === '1') {
+        this.listQuery.createTimeStart = data[0]
+        this.listQuery.createTimeEnd = data[1]
+      } else if(this.saleType === '4') {
+        this.listQuery.downTimeStart = data[0]
+        this.listQuery.downTimeEnd = data[1]
+      }
+    },
     handleFilter() {
       // 搜索
       this.getList()
@@ -323,6 +353,12 @@ export default {
     resetList() {
       // 重置
       this.listQuery = {
+        createTimeStart: '',
+        createTimeEnd: '',
+        downTimeStart: '',
+        downTimeEnd: '',
+        sellTimeStart: '',
+        sellTimeEnd: '',
         categoryId: '',
         keywords: '',
         pageIndex: 1,
@@ -331,6 +367,7 @@ export default {
         sortType: 0,
         status: 3
       }
+      this.dateValue = ''
       this.treeValue = ''
       this.saleType = '3'
       this.getList()
@@ -338,6 +375,13 @@ export default {
     handleClick(tab, event) {
       // 已上架、待上架、已下架切换
       this.listQuery.status = tab.name
+      this.listQuery.sellTimeStart = ''
+      this.listQuery.sellTimeEnd = ''
+      this.listQuery.createTimeStart = ''
+      this.listQuery.createTimeEnd = ''
+      this.listQuery.downTimeStart = ''
+      this.listQuery.downTimeEnd = ''
+      this.dateValue = ''
       this.getList()
     },
     handleSelectionChange(val) {

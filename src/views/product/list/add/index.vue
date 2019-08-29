@@ -3,8 +3,9 @@
   <div class="app-container">
     <el-card class="box-card">
       <div class="text item">
-        当前分类： 农产品-蔬菜-红薯-烟薯25号
+        {{productTitle}}
         <el-button type="primary" size="medium" v-waves class="filter-item">切换分类</el-button>
+        <!-- <el-cascader :options="addressOptions" :props="addressProps"></el-cascader> -->
       </div>
     </el-card>
     <el-form v-loading="diaLoading" ref="addData" :rules="rules" :model="addForm" label-position="right" label-width="70px" style="">
@@ -19,10 +20,10 @@
         <el-form-item v-for="(item, index) in baseData" :key="index" :label="item.name" :prop="'generate.' + index + '.value'">
           <template v-if="item.inputType === 0">
             <el-cascader
-              v-model="treeValue"
-              :options="item.valueSet"
-              :props="treeProps"
-              placeholder="请选择品种"
+              v-model="addForm.generate[index].value"
+              placeholder="请选择产地"
+              :options="addressOptions"
+              :props="addressProps"
               style="width: 200px;" 
               class="filter-item mr20"
               @change="selectChange"
@@ -50,47 +51,6 @@
             <el-input class="long-input" v-model="addForm.generate[index].value" size="medium" maxlength="64" placeholder="" />
           </template>
         </el-form-item>
-        <!-- <el-form-item label="产地">
-          <el-select v-model="value" size="medium" maxlength="64" placeholder="请选择">
-          <el-option
-            v-for="item in addForm.options"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value">
-          </el-option>
-        </el-select>
-        </el-form-item>
-        <el-form-item label="口感">
-          <el-radio-group v-model="addForm.taste" size="small">
-            <el-radio label="1" border>糯</el-radio>
-            <el-radio label="2" border>粉</el-radio>
-            <el-radio label="2" border>面</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="署皮颜色">
-          <el-radio-group v-model="addForm.color" size="small">
-            <el-radio label="1" border>红皮</el-radio>
-            <el-radio label="2" border>黄皮</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="署心颜色">
-          <el-radio-group v-model="addForm.heart" size="small">
-            <el-radio label="1" border>红心</el-radio>
-            <el-radio label="2" border>白心</el-radio>
-            <el-radio label="3" border>黑心</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="单个重">
-          <el-input class="short-input" v-model="addForm.weight" size="medium" maxlength="30" /><span style="margin-left: 10px;">两以上</span>
-        </el-form-item>
-        <el-form-item label="用途">
-          <el-checkbox-group 
-            v-model="addForm.user"
-            >
-            <el-checkbox v-for="city in cities" :label="city" :key="city">{{city}}</el-checkbox>
-            <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">全选</el-checkbox>
-          </el-checkbox-group>
-        </el-form-item> -->
       </div>
     </el-card>
     <el-card class="box-card">
@@ -148,6 +108,7 @@
           <el-upload
             action="https://jsonplaceholder.typicode.com/posts/"
             list-type="picture-card"
+            :http-request="uploadImg"
             :on-preview="handlePictureCardPreview"
             :on-remove="handleRemove">
             <i class="el-icon-plus"></i>
@@ -253,6 +214,8 @@
 <script>
 import waves from '@/directive/waves'
 import { getByCategoryId, getUnit } from '@/api/goods/list'
+import { getAd } from '@/api/upms/strict'
+import { fileUpload } from '@/api/goods/upload'
 let id = 0;
 export default {
   name: 'addProduct',
@@ -265,8 +228,25 @@ export default {
       boxData: [],
       treeProps: {},
       treeValue: '',
+      productTitle: '',
       id: '',
       eid: '',
+      addressOptions: [],
+      addressProps: {
+        lazy: true,
+        lazyLoad (node, resolve) {
+          getAd({ parentId: node.value == undefined ? 0 : node.value }).then( res => {
+            if(Array.isArray(res.data)) {
+              res.data.map((item) => {
+                item.leaf = item.haveChild === 0
+              });
+              resolve(res.data);
+            }
+          })
+        },
+        value: "id",
+        label: "name",
+      },
       addForm: {
         stair: [{
           number: '',
@@ -309,7 +289,11 @@ export default {
     console.log('add page')
     console.log(this.$route)
     this.getByCategoryId(this.$route.query.id)
+    this.$route.query.des.forEach((item) => {
+      this.productTitle += this.productTitle.length === 0 ? item : '-' + item
+    })
     this.getUnit(this.$route.query.id)
+    // this.getAddress()
   },
   methods: {
     getByCategoryId(id) {
@@ -349,6 +333,55 @@ export default {
           this.sellData = res.data
         }
       })
+    },
+    uploadImg(file) {
+      console.log('zi ding yi')
+      console.log(file)
+      fileUpload({ file: file })
+    },
+    getAddress() {
+      // 获取产地信息
+      getAd({ parentId: 0 }).then(res => {
+        this.addressOptions = res.data
+      })
+    },
+    getNodes(val) {
+      console.log('node')
+       console.log('val', val)
+      // 获取城市（二级）
+      if (val.length === 1) {
+        this.getCityList(val[0]);
+        // 获取地区 （三级）
+      } else if (val.length === 2) {
+        this.getAreaList(val[0], val[1]);
+      }
+    },
+     async getCityList(provinceId) {
+      const { data } = await getAd({ parentId: provinceId });
+      data.map(item => {
+        this.$set(item, "name", item.cityName);
+        this.$set(item, "children", []);
+      });
+      this.addressOptions.map((item, i) => {
+        if (item.id === provinceId) {
+          item.children = data;
+        }
+      });
+    },
+    // 获取地区
+    async getAreaList(provinceId, cityId) {
+      const { code, data } = await getAd({ parentId: cityId });
+      data.map(item => {
+        this.$set(item, "name", item.areaName);
+        // this.$set(item, "children", []);
+      });
+      this.addressOptions.map((item, i) => {
+        if (item.id === provinceId) {
+          item.children.map((city, idx) => {
+            city.children = data;
+          });
+        }
+      });
     },
     unitChange(val) {
       this.showStyle = this.showAble[val]
