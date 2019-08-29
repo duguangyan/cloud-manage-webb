@@ -44,3 +44,12 @@ export function getUnit(query) {
     params: query
   })
 }
+
+// 发布新商品
+export function saveGoods(data) {
+  return request({
+    url: '/goods/goods/saveGoods',
+    method: 'post',
+    data
+  })
+}

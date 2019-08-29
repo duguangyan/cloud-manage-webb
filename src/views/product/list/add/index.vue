@@ -213,7 +213,7 @@
 
 <script>
 import waves from '@/directive/waves'
-import { getByCategoryId, getUnit } from '@/api/goods/list'
+import { getByCategoryId, getUnit, saveGoods } from '@/api/goods/list'
 import { getAd } from '@/api/upms/strict'
 import { fileUpload } from '@/api/goods/upload'
 let id = 0;
@@ -335,6 +335,7 @@ export default {
       })
     },
     uploadImg(file) {
+      // 图片上传
       console.log('zi ding yi')
       console.log(file)
       fileUpload({ file: file.file })
@@ -345,49 +346,13 @@ export default {
         this.addressOptions = res.data
       })
     },
-    getNodes(val) {
-      console.log('node')
-       console.log('val', val)
-      // 获取城市（二级）
-      if (val.length === 1) {
-        this.getCityList(val[0]);
-        // 获取地区 （三级）
-      } else if (val.length === 2) {
-        this.getAreaList(val[0], val[1]);
-      }
-    },
-     async getCityList(provinceId) {
-      const { data } = await getAd({ parentId: provinceId });
-      data.map(item => {
-        this.$set(item, "name", item.cityName);
-        this.$set(item, "children", []);
-      });
-      this.addressOptions.map((item, i) => {
-        if (item.id === provinceId) {
-          item.children = data;
-        }
-      });
-    },
-    // 获取地区
-    async getAreaList(provinceId, cityId) {
-      const { code, data } = await getAd({ parentId: cityId });
-      data.map(item => {
-        this.$set(item, "name", item.areaName);
-        // this.$set(item, "children", []);
-      });
-      this.addressOptions.map((item, i) => {
-        if (item.id === provinceId) {
-          item.children.map((city, idx) => {
-            city.children = data;
-          });
-        }
-      });
-    },
     unitChange(val) {
+      // 计量单位选择
       this.showStyle = this.showAble[val]
       console.log(this.showStyle)
     },
     addStair(index) {
+      // 添加阶梯价
       const currentNum = this.addForm.stair[index].number
       const currentPrice = this.addForm.stair[index].price
       if(currentNum && currentPrice) {
@@ -416,10 +381,12 @@ export default {
       this.stairArr.push({})
     },
     removeStair(index) {
+      // 删除阶梯价
       this.addForm.stair.splice(index, 1)
       this.stairArr.splice(index, 1)
     },
     addBox(index) {
+      // 添加箱
       const currentNum = this.addForm.box[index].number
       const currentPrice = this.addForm.box[index].price
       const currentName = this.addForm.box[index].name
@@ -441,13 +408,16 @@ export default {
       }
     },
     removeBox(index) {
+      // 删除箱
       this.addForm.box.splice(index, 1)
       this.boxArr.splice(index, 1)
     },
     preView() {
+      // 预览
       this.previewDialog = true
     },
     onSale() {
+      // 上架
       console.log(this.addForm)
     },
     selectChange() {
@@ -457,14 +427,17 @@ export default {
 
     },
     handleCheckAllChange(val, index) {
+      // 全选
       this.checkAll = val
       this.addForm.generate[index].value = val ? this.checkboxObj[index] : [];
       this.isIndeterminate = false;
     },
     handleRemove(file, fileList) {
+      // 删除图片
       console.log(file, fileList);
     },
     handlePictureCardPreview(file) {
+      // 图片预览
       this.dialogImageUrl = file.url;
       this.dialogVisible = true;
     }
