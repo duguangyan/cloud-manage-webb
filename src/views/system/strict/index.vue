@@ -150,10 +150,11 @@ var vm = {
                 vm.$message.error(res.msg);
               });
           }
-          vm.isShow = false;
+
         } else {
-          return vm.$message.error("请正确填写表单！");
+          vm.$message.error("请正确填写表单！");
         }
+        vm.isShow = false;
       });
     },
 
@@ -196,6 +197,9 @@ var vm = {
         type: "warning"
       })
         .then(() => {
+          if(+data.haveChild === 1){
+            return vm.$message.error('请先删除所有子项');
+          }
           // 确定删除
           delAd({
             id: data.id
