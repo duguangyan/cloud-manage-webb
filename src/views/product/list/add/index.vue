@@ -20,7 +20,7 @@
         <el-form-item v-for="(item, index) in baseData" :key="index" :label="item.name" :prop="'generate.' + index + '.value'">
           <template v-if="item.inputType === 0">
             <el-cascader
-              v-model="addForm.generate[index].value"
+              v-model="addForm.generate[index][item.id]"
               placeholder="请选择产地"
               :options="addressOptions"
               :props="addressProps"
@@ -32,23 +32,23 @@
             </el-cascader>
           </template>
           <template v-else-if="item.inputType === 1">
-            <el-radio-group v-model="addForm.generate[index].value" size="small">
-              <el-radio v-for="(radioItem, radioIndex) in item.valueSet" :key="radioIndex" :label="radioItem.id" border>{{radioItem.value}}</el-radio>
+            <el-radio-group v-model="addForm.generate[index][item.id]" size="small">
+              <el-radio v-for="(radioItem, radioIndex) in item.valueSet" :key="radioIndex" :label="radioItem.value" border>{{radioItem.value}}</el-radio>
             </el-radio-group>
           </template>
           <template v-else-if="item.inputType === 2">
-            <el-checkbox-group v-model="addForm.generate[index].value">
-              <el-checkbox v-for="(checkboxItem, checkboxIndex) in item.valueSet" :label="checkboxItem.id" :key="checkboxIndex">{{checkboxItem.value}}</el-checkbox>
-              <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="((val) => handleCheckAllChange(val, index))">全选</el-checkbox>
+            <el-checkbox-group v-model="addForm.generate[index][item.id]">
+              <el-checkbox v-for="(checkboxItem, checkboxIndex) in item.valueSet" :label="checkboxItem.value" :key="checkboxIndex">{{checkboxItem.value}}</el-checkbox>
+              <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="((val) => handleCheckAllChange(val, index, item.id))">全选</el-checkbox>
             </el-checkbox-group>
           </template>
           <template v-else-if="item.inputType === 3">
-            <el-select v-model="addForm.generate[index].value" size="medium" maxlength="64" placeholder="请选择">
+            <el-select v-model="addForm.generate[index][item.id]" size="medium" maxlength="64" placeholder="请选择">
               <el-option v-for="(selectItem, selectIndex) in item.valueSet" :key="selectIndex" :label="selectItem.id" :value="selectItem.value"></el-option>
             </el-select>
           </template>
           <template v-else-if="item.inputType === 4">
-            <el-input class="long-input" v-model="addForm.generate[index].value" size="medium" maxlength="64" placeholder="" />
+            <el-input class="long-input" v-model="addForm.generate[index][item.id]" size="medium" maxlength="64" placeholder="" />
           </template>
         </el-form-item>
       </div>
@@ -222,6 +222,7 @@ export default {
   directives: { waves },
   data() {
     return {
+      categoryId: '',
       baseData: [],
       sellData: [],
       addData: [],
@@ -267,6 +268,7 @@ export default {
       boxArr: [
         {}
       ],
+      imgsBox: [],
       showAble: {},
       showStyle: '',
       checkboxObj: {},
@@ -288,7 +290,8 @@ export default {
   created() {
     console.log('add page')
     console.log(this.$route)
-    this.getByCategoryId(this.$route.query.id)
+    this.categoryId = this.$route.query.id 
+    this.getByCategoryId(this.categoryId)
     this.$route.query.des.forEach((item) => {
       this.productTitle += this.productTitle.length === 0 ? item : '-' + item
     })
@@ -305,16 +308,19 @@ export default {
         this.listLoading = false
         if(Array.isArray(res.data)) {
           res.data.forEach((item, index) => {
-            console.log(item)
+            let itemId = item.id
+            let obj = {}
             if(item.inputType === 2) {
+              obj[itemId] = []
               this.checkboxObj[index] = item.valueSet.map((item) => {
-                return item.id
+                return item.value
               })
+            } else {
+              obj[itemId] = ''
             }
-            this.addForm.generate.push({
-              value: item.inputType === 2 ? [] : ''
-            })
+            this.addForm.generate.push(obj)
           });
+          console.log(this.addForm)
           this.baseData = res.data
         }
       })
@@ -335,10 +341,14 @@ export default {
       })
     },
     uploadImg(file) {
-      // 图片上传
-      console.log('zi ding yi')
-      console.log(file)
-      fileUpload({ file: file.file })
+      let formData = new FormData()
+      formData.append('file', file.file)
+      fileUpload(formData).then(res => {
+        this.imgsBox.push({
+          imgUrl: res.data,
+          type: 1
+        })
+      })
     },
     getAddress() {
       // 获取产地信息
@@ -418,7 +428,38 @@ export default {
     },
     onSale() {
       // 上架
+      let goodsVO = {}
+      goodsVO.categoryId = this.categoryId
+      goodsVO.name = this.addForm.title
+      goodsVO.goodsAttrList = this.addForm.generate.map((item, index) => {
+        let obj = {}
+        obj.categoryAttrId = index
+        obj.goodsAttrValueList = item
+        return obj
+      })
+      goodsVO.goodsSkuList = this.addForm.stair.map((item, index) => {
+        let obj = {}
+        obj.price = item.price
+        obj.startNum = item.number
+        return obj
+      })
+      goodsVO.goodsSpecList = this.sellData.map((item, index) => {
+        let obj = {}
+        obj.categorySpecId = index
+        obj.goodsSpecValueList = [{
+          id: this.addForm.unit,
+          value: '斤'
+        }]
+        return obj
+      })
+      goodsVO.goodsImgList = this.imgsBox
+      console.log('goodsvo')
+      console.log(goodsVO)
       console.log(this.addForm)
+      return
+      saveGoods({
+        goodsVO: goodsVO
+      })
     },
     selectChange() {
 
@@ -426,11 +467,12 @@ export default {
     focus() {
 
     },
-    handleCheckAllChange(val, index) {
+    handleCheckAllChange(val, index, id) {
       // 全选
       this.checkAll = val
-      this.addForm.generate[index].value = val ? this.checkboxObj[index] : [];
+      this.addForm.generate[index][id] = val ? this.checkboxObj[index] : [];
       this.isIndeterminate = false;
+      console.log(this.addForm.generate[index][id])
     },
     handleRemove(file, fileList) {
       // 删除图片

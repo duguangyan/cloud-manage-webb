@@ -361,6 +361,7 @@ export default {
       // 商品类型选择
       if (val.length === 4) {
         const arr = this.$refs['cascaderAddr'].getCheckedNodes()
+       
         this.treeDes[3] = arr[0].label
         this.treeDes[2] = arr[0].parent.label
         this.treeDes[1] = arr[0].parent.parent.label
