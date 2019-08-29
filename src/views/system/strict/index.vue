@@ -1,5 +1,7 @@
 <template>
   <div class="strict">
+    <el-button class="topest" type="primary" size="small" @click="createTopest">创建顶级</el-button>
+
     <!-- 地区树 -->
     <el-tree
       :data="grandParent"
@@ -92,30 +94,41 @@ var vm = {
       },
       curData: {},
       curNode: {},
-      status: ""
+      status: /* 0:新增,1:编辑 */ 0,
+      isTopest: /* 类型 */ false
     };
   },
   methods: {
+    createTopest() {
+      vm.isShow = true;
+      vm.isTopest = true;
+    },
     // 提交表单
     submitForm(formName) {
       this.$refs[formName].validate(valid => {
         if (valid) {
           if (+vm.status === 0) {
             // 新增
-            let level = vm.curData.level;
-            let data = {...vm.strict};
+            let level = vm.isTopest ? -2 : vm.curData.level,
+                data = { ...vm.strict };
             delete data.id;
             insertAd(
               Object.assign(vm.strict, {
                 level: ++level,
-                parentId: vm.curData.id
+                parentId: vm.curData.id || ""
               })
             )
               .then(res => {
                 // 手动更新节点
-                const newChild = Object.assign(res.data, { children: [] });
-                vm.$set(vm.curData, "children", []);
-                vm.curData.children.push({ ...newChild });
+                if(vm.isTopest){
+                  vm.$set(res.data, 'children', []);
+                  vm.grandParent.push(res.data);
+                }else{
+                  const newChild = Object.assign(res.data, { children: [] });
+                  vm.$set(vm.curData, "children", []);
+                  vm.curData.children.push({ ...newChild });
+                }
+                vm.isTopest = false;
               })
               .catch(res => {
                 vm.$message.error(res.response.data.message);
@@ -254,5 +267,8 @@ var vm = {
 export default vm;
 </script>
 
-<style>
+<style lang="scss" scoped>
+.topest {
+  margin: 15px;
+}
 </style>
