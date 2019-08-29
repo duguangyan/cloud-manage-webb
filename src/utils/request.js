@@ -17,9 +17,13 @@ service.interceptors.request.use(
     // 将请求类型改为普通的表单类型
     config.headers['Content-Type'] = 'application/x-www-form-urlencoded'
     if (config.method === 'post') {
-      config.data = QS.stringify({
-        ...config.data // 将参数变成  a=xx&b=xx&c=xx这样的参数列表
-      })
+      if (config.type === 'upload') {
+        config.headers['Content-Type'] = 'application/multipart/form-data'
+      } else {
+        config.data = QS.stringify({
+          ...config.data // 将参数变成  a=xx&b=xx&c=xx这样的参数列表
+        })
+      }
     }
     // do something before request is sent
     if (store.getters.token) {
