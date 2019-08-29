@@ -335,9 +335,9 @@ export default {
       })
     },
     uploadImg(file) {
-      console.log('zi ding yi')
-      console.log(file)
-      fileUpload({ file: file.file })
+      let formData = new FormData()
+      formData.append('file',file.file)
+      fileUpload(formData)
     },
     getAddress() {
       // 获取产地信息
