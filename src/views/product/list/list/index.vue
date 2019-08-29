@@ -2,14 +2,22 @@
   <div class="app-container">
     <div class="filter-container mb20">
       商品ID/标题：
-      <el-input v-model="listQuery.keywords"  placeholder="请输入商品ID/标题" style="width: 200px;" class="filter-item mr10" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.keywords"  placeholder="请输入商品ID/标题" style="width: 200px;" class="filter-item mr20" @keyup.enter.native="handleFilter" />
       品种：
-      <el-input v-model="listQuery.categoryId"  placeholder="请输入品种" style="width: 200px;" class="filter-item mr10" @keyup.enter.native="handleFilter" />
+      <el-cascader
+        v-model="treeValue"
+        :options="treeOptions"
+        :props="treeProps"
+        placeholder="请选择品种"
+        style="width: 200px;" 
+        class="filter-item mr20"
+        @change="selectChange"
+        @focus="focus"
+        @keyup.enter.native="handleFilter">
+      </el-cascader>
       <el-button v-if="btnsPermission.search.auth" v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">{{btnsPermission.search.name}}</el-button>
       <el-button v-if="btnsPermission.search.auth" v-waves class="filter-item" @click="resetList">重置</el-button>
-      <router-link :to="{ path: 'list/release'}">
-        <el-button v-if="btnsPermission.add.auth" v-waves class="filter-item">{{btnsPermission.add.name}}</el-button>
-      </router-link>
+      <el-button v-if="btnsPermission.add.auth" @click="jump" v-waves class="filter-item add-btn">{{btnsPermission.add.name}}</el-button>
     </div>
     <div class="mb20">
       上架时间：
@@ -72,37 +80,56 @@
       </el-table-column>
       <el-table-column
         align="center"
-        sortable="minprice"
+        sortable="custom"
+        prop="min_price"
         label="单价"
         width="120">
         <template slot-scope="scope">{{ scope.row.minprice }}</template>
       </el-table-column>
       <el-table-column
         align="center"
-        sortable="spuSalesNum"
+        sortable="custom"
+        prop="spu_sales_num"
         label="销量"
         width="120">
         <template slot-scope="scope">{{ scope.row.spuSalesNum }}</template>
       </el-table-column>
       <el-table-column
         align="center"
-        sortable="hits"
+        sortable="custom"
+        prop="hits"
         label="浏览量"
         width="120">
         <template slot-scope="scope">{{ scope.row.hits }}</template>
       </el-table-column>
       <el-table-column
         align="center"
-        sortable="totalStock"
+        sortable="custom"
+        prop="total_stock"
         label="库存"
         width="120">
         <template slot-scope="scope">{{ scope.row.totalStock }}</template>
       </el-table-column>
       <el-table-column
+        v-if="saleType === '3'"
         align="center"
         prop="sellTime"
         label="上架时间"
-        width="120">
+        width="160">
+      </el-table-column>
+      <el-table-column
+        v-if="saleType === '1'"
+        align="center"
+        prop="createTime"
+        label="创建时间"
+        width="160">
+      </el-table-column>
+      <el-table-column
+        v-if="saleType === '4'"
+        align="center"
+        prop="sellTime"
+        label="下架时间"
+        width="160">
       </el-table-column>
       <el-table-column align="center" label="操作" min-width="300">
         <template slot-scope="scope">
@@ -120,6 +147,8 @@
 import waves from '@/directive/waves'
 import Pagination from '@/components/Pagination'
 import { getList, handlerGoods } from '@/api/goods/list'
+import { getProductTree } from '@/api/goods/product'
+
 
 export default {
   name: 'list',
@@ -139,12 +168,18 @@ export default {
       listQuery: {
         categoryId: '',
         keywords: '',
-        page: 1,
-        size: 20,
+        pageIndex: 1,
+        pageSize: 10,
         sortColumn: 'min_price',
         sortType: 0,
         status: 3
       },
+      treeOptions: [],
+      treeProps: {
+        label: 'name',
+        value: 'id'
+      },
+      treeValue: '',
       pickerOptions: {
         shortcuts: [{
           text: '最近一周',
@@ -184,11 +219,15 @@ export default {
 
   },
   created() {
-    console.log('cretate')
     this.getList()
   },
   methods: {
+    jump() {
+      // 新增商品
+      this.$router.push({path: 'list/release'})
+    },
     getList() {
+      // 获取商品列表
       this.listLoading = true
       getList(this.listQuery).then(res => {
         if(Array.isArray(res.data.records)) {
@@ -201,29 +240,32 @@ export default {
       })
     },
     msgEdit(scope) {
-      this.$router.push({path: 'list/add', params:{ id: 5}})
+      // 编辑商品
+      if(scope.row.id.length > 0) {
+        this.$router.push({path: 'list/add', query:{ eid: scope.row.id}})
+      }
     },
-    handleDelete({ $index, row }) {
-      this.$confirm('确定要删除该角色?', 'Warning', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(async() => {
-        this.listLoading = true
-        await deleteRole({id: row.id}).catch(err => {
-          this.listLoading = false
-        })
+    selectChange(val) {
+      // 品种选择
+      this.listQuery.categoryId = val.length === 4 ? val[3] : ''
+    },
+    focus(val) {
+      // 获取品种树
+      if(this.treeOptions.length === 0) {
+        this.getProductTree()
+      }
+    },
+    getProductTree() {
+      // 品种树接口
+      this.listLoading = true
+      getProductTree().then(res => {
         this.listLoading = false
-        this.rolesData.splice($index, 1)
-        this.$message({
-          type: '成功',
-          message: '角色删除成功!'
-        })
-        if(this.rolesData.length === 0 && this.allPages - 1 > 0) {
-          --this.listQuery.pageIndex
+        if(Array.isArray(res.data)) {
+          this.treeOptions = res.data
         }
-        this.getRoleList()
-      }).catch(err => { console.error(err) })
+      }).catch(err => {
+        this.listLoading = false
+      })
     },
     saleChange(isOne, type, scope) {
       // 上下架
@@ -275,87 +317,62 @@ export default {
         })
     },
     handleFilter() {
+      // 搜索
       this.getList()
-      // this.searchLoading = true
-      // resourceSearch({
-      //   name: this.listQuery.name,
-      //   type: this.typeDataN[this.listQuery.type],
-      //   status: this.statusDataN[this.listQuery.status]
-      // }).then(res => {
-      //   this.searchLoading = false
-      //   this.meanData = []
-      //   this.isLazy = false
-      //   if(Array.isArray(res.data)) {
-      //     this.searchData = this.filterData(res.data)
-      //   }
-      // }).catch(err => {
-      //   this.searchLoading = false
-      // })
-    },
-    resetResource() {
-      // 重置事件
-      this.isLazy = true
-      this.listQuery = {
-        name: ''
-      }
-      this.searchData = []
-      this.getMeanFirstRec()
     },
     resetList() {
+      // 重置
       this.listQuery = {
         categoryId: '',
         keywords: '',
-        page: 1,
-        size: 20,
+        pageIndex: 1,
+        pageSize: 10,
         sortColumn: 'min_price',
         sortType: 0,
-        status: 1
+        status: 3
       }
+      this.treeValue = ''
+      this.saleType = '3'
       this.getList()
     },
-    async handleAddResource() {
-      this.role = Object.assign({}, defaultRole)
-      this.role.operation = '--'
-      this.dialogType = 'new'
-      this.checkStrictly = true
-      this.dialogVisible = true
-    },
     handleClick(tab, event) {
+      // 已上架、待上架、已下架切换
       this.listQuery.status = tab.name
       this.getList()
     },
-    toggleSelection(rows) {
-      if (rows) {
-        rows.forEach(row => {
-          this.$refs.multipleTable.toggleRowSelection(row);
-        });
-      } else {
-        this.$refs.multipleTable.clearSelection();
-      }
-    },
     handleSelectionChange(val) {
+      // 列表商品多选
       this.multipleSelection = val;
     },
     getPage(data) {
-      分页事件
+     // 分页事件
       this.listQuery.page = data.page
       this.getList()
     },
-    sortChange(column, prop, order) {
-      console.log('column')
-      console.log(column)
-      console.log('prop')
-      console.log(prop)
-      console.log('order')
-      console.log(order)  
+    sortChange(data) {
+      // 排序
+      this.listQuery.sortColumn = data.prop
+      this.listQuery.sortType = data.order === 'descending' ? 0 : 1
+      this.getList()
     }
   }
 }
 </script>
 
 <style lang="scss" scoped>
+  .add-btn{
+    color: #ff9933;
+    border-color: #ff9933;
+    &:hover{
+      color: #fff;
+      background-color: #ff9933;
+    }
+  }
   .mb10{
     margin-bottom: 10px;
+  }
+  .mr20{
+    margin-right: 20px;
   }
   .mb20{
     margin-bottom: 20px;

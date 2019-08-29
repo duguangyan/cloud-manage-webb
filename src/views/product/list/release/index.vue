@@ -1,26 +1,35 @@
 <template>
   <!-- <div class="app-container"> -->
-  <div class="app-container">
+  <div v-loading="listLoading" class="app-container">
     <!-- <el-cascader :options="options" :props="props"></el-cascader>
     <el-cascader :options="optionss" @active-item-change="getNodes" :props="propss"></el-cascader> -->
-    <el-cascader-panel :options="options2"></el-cascader-panel>
+    <el-cascader-panel :props="treeProps" :options="treeOptions" @change="selectChange"></el-cascader-panel>
     <div class="next-box">
       <el-button v-waves @click="back" class="filter-item">返回</el-button>
-      <router-link :to="{ path: 'add'}">
-        <el-button v-waves class="filter-item">下一步</el-button>
-      </router-link>
+      <el-button v-if="!next" type="info" disabled="" v-waves class="filter-item">下一步</el-button>
+      <el-button v-if="next" @click="nextJump" type="primary" v-waves class="filter-item">下一步</el-button>
+  
     </div>
   </div>
 </template>
 
 <script>
 import waves from '@/directive/waves'
+import { getProductTree } from '@/api/goods/product'
 let id = 0;
 export default {
   name: 'release',
   directives: { waves },
   data() {
     return {
+      treeOptions: [],
+      treeProps: {
+        label: 'name',
+        value: 'id'
+      },
+      listLoading: false,
+      next: false,
+      chooseId: '',
       options2: [{
           value: 'zhinan',
           label: '指南',
@@ -319,11 +328,40 @@ export default {
 
   },
   created() {
-    // console.log(this.$route)
+    this.getProductTree()
   },
   methods: {
     back() {
+      // 返回
       this.$router.back(-1)
+    },
+    nextJump() {
+      // 下一步
+      if(this.chooseId.length > 0) {
+        this.$router.push({path: 'add', query: {id: this.chooseId}})
+      }
+    },
+    getProductTree() {
+      // 商品树接口
+      this.listLoading = true
+      getProductTree().then(res => {
+        this.listLoading = false
+        if(Array.isArray(res.data)) {
+          this.treeOptions = res.data
+        }
+      }).catch(err => {
+        this.listLoading = false
+      })
+    },
+    selectChange(val) {
+      // 商品类型选择
+      if (val.length === 4) {
+        this.chooseId = val[3]
+        this.next = true
+      } else {
+        this.chooseId = ''
+        this.next = false
+      }
     },
     lazyLoad (node, resolve) {
       console.log(node)

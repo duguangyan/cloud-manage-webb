@@ -44,7 +44,6 @@ function filterAsyncRouter(asyncRouterMap, index) { // 遍历后台传来的路�
         const urlArr = route.url.split('/')
         route.path = urlArr[urlArr.length - 2]
         if (route.url === moduleSource[3] || route.url === moduleSource[4] || route.url === moduleSource[5]) {
-          console.log(route.url)
           route.hidden = true
         }
       } else if (httpReg.test(route.url)) {

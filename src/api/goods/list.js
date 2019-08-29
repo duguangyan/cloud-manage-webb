@@ -26,3 +26,21 @@ export function handlerGoods(query) {
     params: query
   })
 }
+
+// 根据分类获取规格模板
+export function getByCategoryId(query) {
+  return request({
+    url: '/goods/categoryAttr/getByCategoryId',
+    method: 'get',
+    params: query
+  })
+}
+
+// 根据分类获取规格
+export function getUnit(query) {
+  return request({
+    url: '/goods/categorySpec/getByCategoryId',
+    method: 'get',
+    params: query
+  })
+}

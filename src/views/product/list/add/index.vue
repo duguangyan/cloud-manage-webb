@@ -15,9 +15,42 @@
       <div  class="text item">
         <el-form-item label="标题">
           <el-input class="long-input" v-model="addForm.title" size="medium" maxlength="64" placeholder="请输入名称，如：品种+口感+产地+用途等" />
-          <!-- <div><span>100</span>/100</div> -->
         </el-form-item>
-        <el-form-item label="产地">
+        <el-form-item v-for="(item, index) in baseData" :key="index" :label="item.name" :prop="'generate.' + index + '.value'">
+          <template v-if="item.inputType === 0">
+            <el-cascader
+              v-model="treeValue"
+              :options="item.valueSet"
+              :props="treeProps"
+              placeholder="请选择品种"
+              style="width: 200px;" 
+              class="filter-item mr20"
+              @change="selectChange"
+              @focus="focus"
+              @keyup.enter.native="handleFilter">
+            </el-cascader>
+          </template>
+          <template v-else-if="item.inputType === 1">
+            <el-radio-group v-model="addForm.generate[index].value" size="small">
+              <el-radio v-for="(radioItem, radioIndex) in item.valueSet" :key="radioIndex" :label="radioItem.id" border>{{radioItem.value}}</el-radio>
+            </el-radio-group>
+          </template>
+          <template v-else-if="item.inputType === 2">
+            <el-checkbox-group v-model="addForm.generate[index].value">
+              <el-checkbox v-for="(checkboxItem, checkboxIndex) in item.valueSet" :label="checkboxItem.id" :key="checkboxIndex">{{checkboxItem.value}}</el-checkbox>
+              <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange()">全选</el-checkbox>
+            </el-checkbox-group>
+          </template>
+          <template v-else-if="item.inputType === 3">
+            <el-select v-model="addForm.generate[index].value" size="medium" maxlength="64" placeholder="请选择">
+              <el-option v-for="(selectItem, selectIndex) in item.valueSet" :key="selectIndex" :label="selectItem.id" :value="selectItem.value"></el-option>
+            </el-select>
+          </template>
+          <template v-else-if="item.inputType === 4">
+            <el-input class="long-input" v-model="addForm.generate[index].value" size="medium" maxlength="64" placeholder="" />
+          </template>
+        </el-form-item>
+        <!-- <el-form-item label="产地">
           <el-select v-model="value" size="medium" maxlength="64" placeholder="请选择">
           <el-option
             v-for="item in addForm.options"
@@ -57,7 +90,7 @@
             <el-checkbox v-for="city in cities" :label="city" :key="city">{{city}}</el-checkbox>
             <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">全选</el-checkbox>
           </el-checkbox-group>
-        </el-form-item>
+        </el-form-item> -->
       </div>
     </el-card>
     <el-card class="box-card">
@@ -66,24 +99,44 @@
       </div>
       <div  class="text item">
         <el-form-item label="计量单位">
-          <el-select v-model="value" size="medium" maxlength="64" placeholder="请选择">
-            <el-option
-              v-for="item in addForm.unit"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value">
-            </el-option>
+          <el-select v-model="addForm.unit" size="medium" maxlength="64" placeholder="请选择" @change="unitChange">
+            <el-option v-for="(item, index) in sellData" :key="index" :label="item.name" :value="item.id"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="库存">
-            <el-input class="short-input" v-model="addForm.weight" size="medium" maxlength="30" />
+        <el-form-item v-if="showStyle === '1'" label="库存">
+            <el-input class="short-input" v-model="addForm.stairStore" size="medium" maxlength="30" />
         </el-form-item>
-        <div class="unit-box">
-          <span class="mr40">阶梯1</span>
-          <span class="mr5">起批数</span><el-input class="short-input mr40" v-model="addForm.weight" size="medium" maxlength="30" />
-          <span class="mr5">单价</span><el-input class="short-input mr5" v-model="addForm.weight" size="medium" maxlength="30" /><span class="mr20">元</span><span class="mr10 unit-delete">删除</span><span class="unit-add">新增阶梯</span>
+        <div v-if="showStyle === '1'">
+          <div v-for="(stairItem, stairIndex) in stairArr" :key="stairIndex" class="unit-box">
+            <span class="mr40">阶梯{{stairIndex + 1}}</span>
+            <span class="mr5">起批数</span><el-input class="table-input mr40" v-model="addForm.stair[stairIndex].number" size="small" maxlength="30" />
+            <span class="mr5">单价</span><el-input class="table-input mr5" v-model="addForm.stair[stairIndex].price" size="small" maxlength="30" /><span class="mr20">元</span><span class="mr10 unit-delete" @click="removeStair(stairIndex)">删除</span><span class="unit-add" v-show="stairIndex === stairArr.length - 1" @click="addStair(stairIndex)">新增阶梯</span>
+          </div>
         </div>
-        
+        <div v-else-if="showStyle === '0'">
+          <table class="table-box">
+            <thead>
+              <tr>
+                <td>规格名称</td>
+                <td>起批量</td>
+                <td>单价</td>
+                <td>库存</td>
+                <td></td>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(boxItem, boxIndex) in boxArr" :key="boxIndex">
+                <td><span class="mr5">每箱</span><el-input class="table-input" v-model="addForm.box[boxIndex].name" size="small" maxlength="30" /></td>
+                <td><el-input class="table-input" v-model="addForm.box[boxIndex].number" size="small" maxlength="30" /></td>
+                <td><el-input class="table-input mr5" v-model="addForm.box[boxIndex].price" size="small" maxlength="30" /><span>元</span></td>
+                <td><el-input class="table-input" v-model="addForm.box[boxIndex].store" size="small" maxlength="30" /></td>
+                <td>
+                  <span class="mr10 unit-delete" @click="removeBox(boxIndex)">删除</span><span v-show="boxIndex === boxArr.length - 1" class="unit-add" @click="addBox(boxIndex)">新增规格</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </el-card>
     <el-card class="box-card">
@@ -137,63 +190,65 @@
   </el-form>
     <div class="bottom-box">
       <div>
-        <el-button v-waves class="filter-item">预览</el-button>
+        <el-button v-waves class="filter-item" @click="preView">预览</el-button>
         <el-button v-waves class="filter-item">保存待上架</el-button>
-        <el-button type="primary" v-waves class="filter-item">上架出售</el-button>
+        <el-button type="primary" v-waves class="filter-item" @click="onSale">上架出售</el-button>
       </div>
     </div>
+    <el-dialog title="" :visible.sync="previewDialog">
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="previewDialog = false">取 消</el-button>
+        </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import waves from '@/directive/waves'
+import { getByCategoryId, getUnit } from '@/api/goods/list'
 let id = 0;
 export default {
   name: 'addProduct',
   directives: { waves },
   data() {
     return {
-      addData: [],
+      baseData: [],
       sellData: [],
+      addData: [],
       boxData: [],
+      treeProps: {},
+      treeValue: '',
+      id: '',
+      eid: '',
       addForm: {
-        options: [{
-          value: '选项1',
-          label: '黄金糕'
-        }, {
-          value: '选项2',
-          label: '双皮奶'
-        }, {
-          value: '选项3',
-          label: '蚵仔煎'
-        }, {
-          value: '选项4',
-          label: '龙须面'
-        }, {
-          value: '选项5',
-          label: '北京烤鸭'
+        stair: [{
+          number: '',
+          price: ''
         }],
-        unit: [{
-          value: 1,
-          label: '斤'
-        }, {
-          value: 2,
-          label: '公斤'
-        }, {
-          value: 3,
-          label: '箱'
-        }, {
-          value: 4,
-          label: '吨'
+        stairStore: '',
+        box: [{
+          number: '',
+          price: '',
+          name: '',
+          store: ''
         }],
-        user: []
+        generate: [],
       },
+      stairArr: [
+        {}
+      ],
+      boxArr: [
+        {}
+      ],
+      showAble: {},
+      showStyle: '',
+      checkboxObj: {},
       checkedCities: [],
       checkAll: false,
-      cities: ['烤薯', '煮薯', '薯片', '鲜食', '成品'],
       isIndeterminate: false,
       rules: {},
       value: '',
+      previewDialog: false,
       diaLoading: false,
       dialogImageUrl: '',
       dialogVisible: false
@@ -204,15 +259,127 @@ export default {
 
   },
   created() {
-    // console.log(this.$route)
+    console.log('add page')
+    console.log(this.$route)
+    this.getByCategoryId(this.$route.query.id)
+    this.getUnit(this.$route.query.id)
   },
   methods: {
-    handleCheckAllChange(val) {
+    getByCategoryId(id) {
+      // 通过ID获取规格模板
+      this.listLoading = true
+      getByCategoryId({
+        categoryId : id
+      }).then(res => {
+        this.listLoading = false
+        if(Array.isArray(res.data)) {
+          res.data.forEach(item => {
+            if(item.inputType === 2) {
+              this.checkboxObj[item.id] = item.valueSet
+            }
+            this.addForm.generate.push({
+              value: item.inputType === 2 ? [] : ''
+            })
+          });
+          this.baseData = res.data
+        }
+      })
+    },
+    getUnit(id) {
+      // 通过ID获取规格模板
+      this.listLoading = true
+      getUnit({
+        categoryId : id
+      }).then(res => {
+        this.listLoading = false
+        if(Array.isArray(res.data)) {
+          res.data.forEach(item => {
+            this.showAble[item.id] = item.showStyle
+          });
+          this.sellData = res.data
+        }
+      })
+    },
+    unitChange(val) {
+      this.showStyle = this.showAble[val]
+      console.log(this.showStyle)
+    },
+    addStair(index) {
+      const currentNum = this.addForm.stair[index].number
+      const currentPrice = this.addForm.stair[index].price
+      if(currentNum && currentPrice) {
+        if(index > 0) {
+          const preNum = this.addForm.stair[index - 1].number
+          const prePrice = this.addForm.stair[index - 1].price
+          if(currentNum <= preNum || currentPrice >= prePrice) {
+            this.$message({
+              type: 'warning',
+              message: `阶梯${index + 1}的起批数必须比阶梯${index}的起批数大，阶梯${index + 1}的单价必须比阶梯${index}的单价小!`
+            });
+            return
+          }
+        }
+      } else {
+        this.$message({
+              type: 'warning',
+              message: '请输入起批数和单价!'
+        });
+        return
+      }
+      this.addForm.stair.push({
+          number: '',
+          price: ''
+        })
+      this.stairArr.push({})
+    },
+    removeStair(index) {
+      this.addForm.stair.splice(index, 1)
+      this.stairArr.splice(index, 1)
+    },
+    addBox(index) {
+      const currentNum = this.addForm.box[index].number
+      const currentPrice = this.addForm.box[index].price
+      const currentName = this.addForm.box[index].name
+      const currentStore = this.addForm.box[index].store
+      if(currentNum && currentPrice && currentName && currentStore) {
+        this.addForm.box.push({
+          number: '',
+          price: '',
+          name: '',
+          store: ''
+        })
+        this.boxArr.push({})
+      } else {
+        this.$message({
+              type: 'warning',
+              message: '请输入规格名称、起批量、单价、库存!'
+        });
+        return
+      }
+    },
+    removeBox(index) {
+      this.addForm.box.splice(index, 1)
+      this.boxArr.splice(index, 1)
+    },
+    preView() {
+      this.previewDialog = true
+    },
+    onSale() {
+      console.log(this.addForm)
+    },
+    selectChange() {
+
+    },
+    focus() {
+
+    },
+    handleCheckAllChange(val, id, index) {
+      console.log(this.addForm)
       console.log(val)
       if(val) {
         this.checkAll = true
       }
-      this.addData.use = val ? this.cities : [];
+      this.addData.generate[index] = val ? this.checkboxObj[id] : [];
       console.log(this.checkedCities)
       this.isIndeterminate = false;
     },
@@ -228,6 +395,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+  td{
+    width: 150px;
+  }
   .app-container{
     padding-bottom: 140px;
     .mr40{
@@ -248,13 +418,17 @@ export default {
     .short-input{
       max-width: 200px;
     }
+    .table-input{
+      max-width: 100px;
+    }
     .box-card{
       margin-bottom: 10px;
     }
-    .unit-box{
+    .unit-box,.table-box{
       font-size: 14px;
       color: #606266;
       padding-left: 30px;
+      margin-bottom: 10px;
       font-weight: bold;
       .unit-delete{
         color: #ff0000;
