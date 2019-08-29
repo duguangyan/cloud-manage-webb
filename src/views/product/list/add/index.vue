@@ -337,7 +337,7 @@ export default {
     uploadImg(file) {
       console.log('zi ding yi')
       console.log(file)
-      fileUpload({ file: file })
+      fileUpload({ file: file.file })
     },
     getAddress() {
       // 获取产地信息
