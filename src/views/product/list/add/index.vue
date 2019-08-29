@@ -38,7 +38,7 @@
           <template v-else-if="item.inputType === 2">
             <el-checkbox-group v-model="addForm.generate[index].value">
               <el-checkbox v-for="(checkboxItem, checkboxIndex) in item.valueSet" :label="checkboxItem.id" :key="checkboxIndex">{{checkboxItem.value}}</el-checkbox>
-              <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange()">全选</el-checkbox>
+              <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="((val) => handleCheckAllChange(val, index))">全选</el-checkbox>
             </el-checkbox-group>
           </template>
           <template v-else-if="item.inputType === 3">
@@ -195,11 +195,58 @@
         <el-button type="primary" v-waves class="filter-item" @click="onSale">上架出售</el-button>
       </div>
     </div>
-    <el-dialog title="" :visible.sync="previewDialog">
-        <div slot="footer" class="dialog-footer">
-          <el-button @click="previewDialog = false">取 消</el-button>
+    <div class="self-diolog" v-if="previewDialog">
+      <div class="preview-box">
+        <div class="preview">
+          <div class="calrousel-box" style="background: #eee">
+            <div class="left-icon"></div>
+            <div class="right-icon"></div>
+            <div class="num">1/10</div>
+          </div>
+          <div class="title-box">
+            <div class="title">
+              ￥9.99~￥24.00 <span>/箱</span>
+              <span class="place">山东济南</span>
+            </div>
+            <div class="des">标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题</div>
+            <div class="message-box">
+              <span>12200人看过</span>
+              <span>订单数0</span>
+              <span>全国包邮</span>
+            </div>
+          </div>
+          <div class="product-prop">
+            <div class="tc">商品属性</div>
+            <ul>
+              <li>
+                <span class="prop">皮颜色</span>
+                <span>红</span>
+              </li>
+              <li>
+                <span class="prop">口感</span>
+                <span>甜</span>
+              </li>
+              <li>
+                <span class="prop">口感</span>
+                <span>甜</span>
+              </li>
+            </ul>
+          </div>
+          <div class="product-detail">
+            <div class="tc">商品详情</div>
+            <p>烟薯25号作为烤薯专用品种，在市场上很受欢迎。烤熟烟薯金黄带有蜜感，口感绵软香甜，甜度比一般红薯都要甜。当然，喜欢的也可以生吃或者蒸煮。此款红薯产自山东荣成，无公害种植</p>
+            <img src="@/assets/img/bg.jpg" alt="">
+          </div>
         </div>
-    </el-dialog>
+        <div class="product-buy">
+            <div class="in">收藏</div>
+            <div class="in">进货单</div>
+            <div class="cart">加入进货单</div>
+            <div class="buy">立即购买</div>
+        </div>
+      </div>
+      <div class="self-close" @click="previewDialog = false">×</div>
+    </div>
   </div>
 </template>
 
@@ -273,9 +320,12 @@ export default {
       }).then(res => {
         this.listLoading = false
         if(Array.isArray(res.data)) {
-          res.data.forEach(item => {
+          res.data.forEach((item, index) => {
+            console.log(item)
             if(item.inputType === 2) {
-              this.checkboxObj[item.id] = item.valueSet
+              this.checkboxObj[index] = item.valueSet.map((item) => {
+                return item.id
+              })
             }
             this.addForm.generate.push({
               value: item.inputType === 2 ? [] : ''
@@ -373,14 +423,9 @@ export default {
     focus() {
 
     },
-    handleCheckAllChange(val, id, index) {
-      console.log(this.addForm)
-      console.log(val)
-      if(val) {
-        this.checkAll = true
-      }
-      this.addData.generate[index] = val ? this.checkboxObj[id] : [];
-      console.log(this.checkedCities)
+    handleCheckAllChange(val, index) {
+      this.checkAll = val
+      this.addForm.generate[index].value = val ? this.checkboxObj[index] : [];
       this.isIndeterminate = false;
     },
     handleRemove(file, fileList) {
@@ -454,6 +499,195 @@ export default {
       button{
         width: 200px;
         height: 60px;
+      }
+    }
+    .self-diolog{
+      width: 100%;
+      height: 100%;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 100;
+      background: rgba(0, 0, 0, .3);
+      overflow-y: scroll;
+      .preview-box{
+        position: relative;
+        width: 580px;
+        height: 1000px;
+        margin: 0 auto;
+        .preview{
+          width: 580px;
+          height: 1000px;
+          background: #f5f5f5;
+          position: relative;
+          margin: 80px auto 0 auto;
+          overflow-y: scroll;
+          padding-bottom: 80px;
+          font-size: 18px;
+          color: #000;
+          &::-webkit-scrollbar-track-piece {
+            background: none;
+          }
+
+          &::-webkit-scrollbar {
+            width: 0;
+          }
+
+          &::-webkit-scrollbar-thumb {
+            background: none;
+          }
+          ul,li{ 
+            list-style: none; 
+            padding: 0;
+            margin: 0;
+          }
+          .tc{
+            text-align: center;
+            margin-bottom: 20px;
+          }
+          .calrousel-box{
+            height: 580px;
+            position: relative;
+            .left-icon,.right-icon{
+              width: 40px;
+              height: 40px;
+              position: absolute;
+              top: 45px;
+              border-radius: 50%;
+              background: rgba(0, 0, 0, .5)
+            }
+            .left-icon{
+              left: 20px;
+            }
+            .right-icon{
+              right: 20px;
+            }
+            .num{
+              width: 60px;
+              height: 20px;
+              line-height: 20px;
+              text-align: center;
+              border-radius: 20px;
+              position: absolute;
+              right: 20px;
+              bottom: 15px;
+              font-size: 18px;
+              color: #fff;
+              background: rgba(0, 0, 0, .5)
+            }
+          }
+          .title-box{
+            padding: 25px 20px 15px 25px;
+            margin-bottom: 15px;
+            background: #fff;
+            .title{
+              color: #f5222d;
+              font-size: 24px;
+              margin-bottom: 15px;
+              font-weight: bold;
+              span{
+                font-size: 18px;
+                color: #000;
+                font-weight: normal;
+              }
+              .place{
+                color: #999;
+                float: right;
+              }
+            }
+            .des{
+              color: #000;
+              font-size: 22px;
+              line-height: 32px;
+              margin-bottom: 15px;
+              font-weight: bold;
+            }
+            .message-box{
+              background: #e6faed;
+              height: 56px;
+              border-radius: 5px;
+              color: #49c173;
+              font-size: 14px;
+              display: flex;
+              justify-content: space-around;
+              align-items: center;
+            }
+          }
+          .product-prop{
+            padding-top: 30px;
+            background: #fff;
+            margin-bottom: 15px;
+            ul{
+              li{ 
+                height: 65px; 
+                line-height: 65px; 
+                color: #999; 
+                border-bottom: 1px dotted #f5f5f5; 
+                padding-left: 20px;
+                &:last-child{ 
+                  border-bottom: none;
+                }
+                span{
+                  display: inline-block;
+                }
+                .prop{
+                  width: 125px;
+                }
+              }
+            }
+          }
+          .product-detail{
+            padding-top: 30px;
+            background: #fff;
+            p{
+              line-height: 36px;
+              padding: 0 20px;
+            }
+            img{
+              max-width: 100%;
+              margin: 20px 0;
+            }
+          }
+        }
+        .product-buy{
+            height: 78px;
+            line-height: 78px;
+            text-align: center;
+            background: #fff;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            .in{
+              float: left;
+              width: 90px;
+              height: 78px;
+            }
+            .buy,.cart{
+              float: left;
+              width: 200px;
+              height: 78px;
+              color: #fff;
+              font-size: 23px;
+              font-weight: bold;
+            }
+            .cart{
+              background: #ffd07f;
+            }
+            .buy{
+              background: #fc2d2d;
+            }
+            
+          }
+      }
+      .self-close{
+        width: 70px;
+        height: 70px;
+        background: #fff;
+        border-radius: 50%;
+        margin: 20px auto 0 auto;
+        text-align: center;
+        vertical-align: middle;
+        cursor: pointer;
       }
     }
   }

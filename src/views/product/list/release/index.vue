@@ -3,7 +3,7 @@
   <div v-loading="listLoading" class="app-container">
     <!-- <el-cascader :options="options" :props="props"></el-cascader>
     <el-cascader :options="optionss" @active-item-change="getNodes" :props="propss"></el-cascader> -->
-    <el-cascader-panel :props="treeProps" :options="treeOptions" @change="selectChange"></el-cascader-panel>
+    <el-cascader-panel ref="cascaderAddr" :props="treeProps" :options="treeOptions" @change="selectChange"></el-cascader-panel>
     <div class="next-box">
       <el-button v-waves @click="back" class="filter-item">返回</el-button>
       <el-button v-if="!next" type="info" disabled="" v-waves class="filter-item">下一步</el-button>
@@ -27,6 +27,7 @@ export default {
         label: 'name',
         value: 'id'
       },
+      treeDes: [],
       listLoading: false,
       next: false,
       chooseId: '',
@@ -338,7 +339,10 @@ export default {
     nextJump() {
       // 下一步
       if(this.chooseId.length > 0) {
-        this.$router.push({path: 'add', query: {id: this.chooseId}})
+        this.$router.push({path: 'add', query: {
+          id: this.chooseId,
+          des: this.treeDes
+        }})
       }
     },
     getProductTree() {
@@ -356,6 +360,11 @@ export default {
     selectChange(val) {
       // 商品类型选择
       if (val.length === 4) {
+        const arr = this.$refs['cascaderAddr'].getCheckedNodes()
+        this.treeDes[3] = arr[0].label
+        this.treeDes[2] = arr[0].parent.label
+        this.treeDes[1] = arr[0].parent.parent.label
+        this.treeDes[0] = arr[0].parent.parent.parent.label
         this.chooseId = val[3]
         this.next = true
       } else {
