@@ -24,7 +24,7 @@
               placeholder="请选择产地"
               :options="addressOptions"
               :props="addressProps"
-              style="width: 200px;" 
+              style="width: 200px;"
               class="filter-item mr20"
               @change="selectChange"
               @focus="focus"
@@ -569,8 +569,8 @@ export default {
           &::-webkit-scrollbar-thumb {
             background: none;
           }
-          ul,li{ 
-            list-style: none; 
+          ul,li{
+            list-style: none;
             padding: 0;
             margin: 0;
           }
@@ -651,13 +651,13 @@ export default {
             background: #fff;
             margin-bottom: 15px;
             ul{
-              li{ 
-                height: 65px; 
-                line-height: 65px; 
-                color: #999; 
-                border-bottom: 1px dotted #f5f5f5; 
+              li{
+                height: 65px;
+                line-height: 65px;
+                color: #999;
+                border-bottom: 1px dotted #f5f5f5;
                 padding-left: 20px;
-                &:last-child{ 
+                &:last-child{
                   border-bottom: none;
                 }
                 span{
@@ -709,7 +709,7 @@ export default {
             .buy{
               background: #fc2d2d;
             }
-            
+
           }
       }
       .self-close{
