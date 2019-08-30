@@ -20,8 +20,8 @@
         <el-form-item v-for="(item, index) in baseData" :key="index" :label="item.name" :prop="'generate.' + index + '.value'">
           <template v-if="item.inputType === 0">
             <el-cascader
-              v-model="addForm.generate[index][item.id]"
-              placeholder="请选择产地"
+              v-model="addForm.generate[index].list"
+              placeholder=""
               :options="addressOptions"
               :props="addressProps"
               style="width: 200px;"
@@ -32,23 +32,23 @@
             </el-cascader>
           </template>
           <template v-else-if="item.inputType === 1">
-            <el-radio-group v-model="addForm.generate[index][item.id]" size="small">
+            <el-radio-group v-model="addForm.generate[index].list" size="small">
               <el-radio v-for="(radioItem, radioIndex) in item.valueSet" :key="radioIndex" :label="radioItem.value" border>{{radioItem.value}}</el-radio>
             </el-radio-group>
           </template>
           <template v-else-if="item.inputType === 2">
-            <el-checkbox-group v-model="addForm.generate[index][item.id]">
+            <el-checkbox-group v-model="addForm.generate[index].list" @change="((val) => checkChange(val, index))">
               <el-checkbox v-for="(checkboxItem, checkboxIndex) in item.valueSet" :label="checkboxItem.value" :key="checkboxIndex">{{checkboxItem.value}}</el-checkbox>
-              <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="((val) => handleCheckAllChange(val, index, item.id))">全选</el-checkbox>
             </el-checkbox-group>
+             <el-checkbox :indeterminate="isIndeterminate" v-model="addForm.generate[index].checkAll" @change="((val) => handleCheckAllChange(val, index, item.id))">全选</el-checkbox>
           </template>
           <template v-else-if="item.inputType === 3">
-            <el-select v-model="addForm.generate[index][item.id]" size="medium" maxlength="64" placeholder="请选择">
+            <el-select v-model="addForm.generate[index].list" size="medium" maxlength="64" placeholder="请选择">
               <el-option v-for="(selectItem, selectIndex) in item.valueSet" :key="selectIndex" :label="selectItem.id" :value="selectItem.value"></el-option>
             </el-select>
           </template>
           <template v-else-if="item.inputType === 4">
-            <el-input class="long-input" v-model="addForm.generate[index][item.id]" size="medium" maxlength="64" placeholder="" />
+            <el-input class="long-input" v-model="addForm.generate[index].list" size="medium" maxlength="64" placeholder="" />
           </template>
         </el-form-item>
       </div>
@@ -63,17 +63,17 @@
             <el-option v-for="(item, index) in sellData" :key="index" :label="item.name" :value="item.id"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item v-if="showStyle === '1'" label="库存">
-            <el-input class="short-input" v-model="addForm.stairStore" size="medium" maxlength="30" />
+        <el-form-item v-if="showStyle.type === '2'" label="库存">
+            <el-input class="short-input" v-model="addForm.sku[showStyle.id].store" size="medium" maxlength="30" />
         </el-form-item>
-        <div v-if="showStyle === '1'">
+        <div v-if="showStyle.type === '2'">
           <div v-for="(stairItem, stairIndex) in stairArr" :key="stairIndex" class="unit-box">
             <span class="mr40">阶梯{{stairIndex + 1}}</span>
-            <span class="mr5">起批数</span><el-input class="table-input mr40" v-model="addForm.stair[stairIndex].number" size="small" maxlength="30" />
-            <span class="mr5">单价</span><el-input class="table-input mr5" v-model="addForm.stair[stairIndex].price" size="small" maxlength="30" /><span class="mr20">元</span><span class="mr10 unit-delete" @click="removeStair(stairIndex)">删除</span><span class="unit-add" v-show="stairIndex === stairArr.length - 1" @click="addStair(stairIndex)">新增阶梯</span>
+            <span class="mr5">起批数</span><el-input class="table-input mr40" v-model="addForm.sku[showStyle.id].list[stairIndex].number" size="small" maxlength="30" />
+            <span class="mr5">单价</span><el-input class="table-input mr5" v-model="addForm.sku[showStyle.id].list[stairIndex].price" size="small" maxlength="30" /><span class="mr20">元</span><span class="mr10 unit-delete" @click="removeStair(stairIndex)">删除</span><span class="unit-add" v-show="stairIndex === stairArr.length - 1" @click="addStair(stairIndex, showStyle.id)">新增阶梯</span>
           </div>
         </div>
-        <div v-else-if="showStyle === '0'">
+        <div v-else-if="showStyle.type === '1'">
           <table class="table-box">
             <thead>
               <tr>
@@ -86,12 +86,12 @@
             </thead>
             <tbody>
               <tr v-for="(boxItem, boxIndex) in boxArr" :key="boxIndex">
-                <td><span class="mr5">每箱</span><el-input class="table-input" v-model="addForm.box[boxIndex].name" size="small" maxlength="30" /></td>
-                <td><el-input class="table-input" v-model="addForm.box[boxIndex].number" size="small" maxlength="30" /></td>
-                <td><el-input class="table-input mr5" v-model="addForm.box[boxIndex].price" size="small" maxlength="30" /><span>元</span></td>
-                <td><el-input class="table-input" v-model="addForm.box[boxIndex].store" size="small" maxlength="30" /></td>
+                <td><span class="mr5">每箱</span><el-input class="table-input" v-model="addForm.sku[showStyle.id].list[boxIndex].name" size="small" maxlength="30" /></td>
+                <td><el-input class="table-input" v-model="addForm.sku[showStyle.id].list[boxIndex].number" size="small" maxlength="30" /></td>
+                <td><el-input class="table-input mr5" v-model="addForm.sku[showStyle.id].list[boxIndex].price" size="small" maxlength="30" /><span>元</span></td>
+                <td><el-input class="table-input" v-model="addForm.sku[showStyle.id].list[boxIndex].store" size="small" maxlength="30" /></td>
                 <td>
-                  <span class="mr10 unit-delete" @click="removeBox(boxIndex)">删除</span><span v-show="boxIndex === boxArr.length - 1" class="unit-add" @click="addBox(boxIndex)">新增规格</span>
+                  <span class="mr10 unit-delete" @click="removeBox(boxIndex, boxItem.id)">删除</span><span v-show="boxIndex === boxArr.length - 1" class="unit-add" @click="addBox(boxIndex, showStyle.id)">新增规格</span>
                 </td>
               </tr>
             </tbody>
@@ -208,6 +208,7 @@
       </div>
       <div class="self-close" @click="previewDialog = false">×</div>
     </div>
+   
   </div>
 </template>
 
@@ -233,6 +234,8 @@ export default {
       id: '',
       eid: '',
       addressOptions: [],
+      checkboxObj: {},
+      addressObj: {},
       addressProps: {
         lazy: true,
         lazyLoad (node, resolve) {
@@ -249,29 +252,17 @@ export default {
         label: "name",
       },
       addForm: {
-        stair: [{
-          number: '',
-          price: ''
-        }],
-        stairStore: '',
-        box: [{
-          number: '',
-          price: '',
-          name: '',
-          store: ''
-        }],
+        sku: {},
         generate: [],
       },
-      stairArr: [
-        {}
-      ],
-      boxArr: [
-        {}
-      ],
+      stairArr: [''],
+      boxArr: [''],
       imgsBox: [],
       showAble: {},
-      showStyle: '',
-      checkboxObj: {},
+      showStyle: {
+        type: '',
+        id: '',
+      },
       checkedCities: [],
       checkAll: false,
       isIndeterminate: false,
@@ -308,19 +299,22 @@ export default {
         this.listLoading = false
         if(Array.isArray(res.data)) {
           res.data.forEach((item, index) => {
-            let itemId = item.id
             let obj = {}
             if(item.inputType === 2) {
-              obj[itemId] = []
-              this.checkboxObj[index] = item.valueSet.map((item) => {
-                return item.value
+              obj.list= []
+              obj.checkAll = false
+              this.checkboxObj[index] = item.valueSet.map((itemIn) => {
+                return itemIn.value
               })
             } else {
-              obj[itemId] = ''
+              obj.list = ''
             }
+            obj.id = item.id
+            obj.sort = item.sort
+            obj.name = item.name 
+            obj.nameGroup = item.nameGroup
             this.addForm.generate.push(obj)
           });
-          console.log(this.addForm)
           this.baseData = res.data
         }
       })
@@ -334,10 +328,35 @@ export default {
         this.listLoading = false
         if(Array.isArray(res.data)) {
           res.data.forEach(item => {
-            this.showAble[item.id] = item.showStyle
+            let itemId = item.id 
+            let obj = {}
+            let objP = {}
+            if(item.showStyle == 2) {
+              obj.list = []
+              obj.list.push({
+                price: '',
+                number: ''
+              })
+              obj.store = ''
+            } else if(item.showStyle == 1) {
+              obj.list = []
+              obj.list.push({
+                name: '',
+                price: '',
+                number: '',
+                store: ''
+              })
+            }
+            obj.name = item.name
+            obj.id = item.id
+            obj.showStyle = item.showStyle
+            objP[itemId] = obj
+            this.$set(this.addForm, 'sku', objP)
+            this.showAble[itemId] = item.showStyle
           });
           this.sellData = res.data
         }
+        console.log(this.addForm)
       })
     },
     uploadImg(file) {
@@ -358,18 +377,21 @@ export default {
     },
     unitChange(val) {
       // 计量单位选择
-      this.showStyle = this.showAble[val]
+      this.showStyle.type = this.showAble[val]
+      this.showStyle.id = val
+      console.log('ok', val)
+      console.log(this.addForm)
       console.log(this.showStyle)
     },
-    addStair(index) {
+    addStair(index, id) {
       // 添加阶梯价
-      const currentNum = this.addForm.stair[index].number
-      const currentPrice = this.addForm.stair[index].price
+      const currentNum = this.addForm.sku[id].list[index].number
+      const currentPrice = this.addForm.sku[id].list[index].price
       if(currentNum && currentPrice) {
         if(index > 0) {
-          const preNum = this.addForm.stair[index - 1].number
-          const prePrice = this.addForm.stair[index - 1].price
-          if(currentNum <= preNum || currentPrice >= prePrice) {
+          const preNum = this.addForm.sku[id].list[index - 1].number
+          const prePrice = this.addForm.sku[id].list[index - 1].price
+          if(Number(currentNum) <= Number(preNum) || Number(currentPrice) >= Number(prePrice)) {
             this.$message({
               type: 'warning',
               message: `阶梯${index + 1}的起批数必须比阶梯${index}的起批数大，阶梯${index + 1}的单价必须比阶梯${index}的单价小!`
@@ -384,25 +406,25 @@ export default {
         });
         return
       }
-      this.addForm.stair.push({
+      this.addForm.sku[id].list.push({
           number: '',
           price: ''
-        })
-      this.stairArr.push({})
+      })
+      this.stairArr.push('')
     },
-    removeStair(index) {
+    removeStair(index, id) {
       // 删除阶梯价
-      this.addForm.stair.splice(index, 1)
+      this.addForm.sku[id].list.splice(index, 1)
       this.stairArr.splice(index, 1)
     },
-    addBox(index) {
+    addBox(index, id) {
       // 添加箱
-      const currentNum = this.addForm.box[index].number
-      const currentPrice = this.addForm.box[index].price
-      const currentName = this.addForm.box[index].name
-      const currentStore = this.addForm.box[index].store
+      const currentNum = this.addForm.sku[id].list[index].number
+      const currentPrice = this.addForm.sku[id].list[index].price
+      const currentName = this.addForm.sku[id].list[index].name
+      const currentStore = this.addForm.sku[id].list[index].store
       if(currentNum && currentPrice && currentName && currentStore) {
-        this.addForm.box.push({
+        this.addForm.sku[id].list.push({
           number: '',
           price: '',
           name: '',
@@ -417,9 +439,9 @@ export default {
         return
       }
     },
-    removeBox(index) {
+    removeBox(index, id) {
       // 删除箱
-      this.addForm.box.splice(index, 1)
+      this.addForm.sku[id].list.splice(index, 1)
       this.boxArr.splice(index, 1)
     },
     preView() {
@@ -429,34 +451,87 @@ export default {
     onSale() {
       // 上架
       let goodsVO = {}
+      // 商品外部信息
       goodsVO.categoryId = this.categoryId
       goodsVO.name = this.addForm.title
-      goodsVO.goodsAttrList = this.addForm.generate.map((item, index) => {
+      goodsVO.detail = this.addForm.remark
+      goodsVO.showStyle = this.showStyle.type
+      goodsVO.postPayType = 0
+      goodsVO.postPrice = 0
+      goodsVO.postSettingId = 'postSettingId'
+      // 商品动态生成的基础信息
+      goodsVO.goodsAttrList = []
+      console.log(this.addForm.generate)
+     
+      this.addForm.generate.forEach(item => {
         let obj = {}
-        obj.categoryAttrId = index
-        obj.goodsAttrValueList = item
-        return obj
+        obj.name = item.name
+        obj.categoryAttrId = item.id
+        obj.nameGroup = item.nameGroup
+        obj.goodsAttrValueList = []
+        if(Array.isArray(item.list)) {
+          item.list.forEach(item => {
+            obj.goodsAttrValueList.push({
+              value: item
+            })
+          })
+        } else {
+          obj.goodsAttrValueList.push({
+            value: item.list
+          })
+        }
+
+        goodsVO.goodsAttrList.push(obj)
       })
-      goodsVO.goodsSkuList = this.addForm.stair.map((item, index) => {
-        let obj = {}
-        obj.price = item.price
-        obj.startNum = item.number
-        return obj
-      })
-      goodsVO.goodsSpecList = this.sellData.map((item, index) => {
-        let obj = {}
-        obj.categorySpecId = index
-        obj.goodsSpecValueList = [{
-          id: this.addForm.unit,
-          value: '斤'
-        }]
-        return obj
-      })
+      // 商品sku信息
+      goodsVO.goodsSkuList = []
+      goodsVO.goodsSpecList = []
+      
+      for(let key in this.addForm.sku) {
+          this.addForm.sku[key].list.forEach((item) => {
+          let first = true
+          let skuObj = {}
+          let speObj = {}
+          skuObj.priceExpList = [] 
+          speObj.goodsSpecValueList = []
+          if(first) {
+            first = false
+            this.addForm.sku[key].list.forEach((itemIn) => {
+              let itemObj = {}
+              let itemObj2 = {}
+              itemObj.price = itemIn.price
+              itemObj.startQuantity = itemIn.number
+              skuObj.priceExpList.push(itemObj)
+              if (this.addForm.sku[key].showStyle == 1) {
+                itemObj2 = {
+                  value: item.name
+                }
+              } else {
+                itemObj2 = {
+                  value: '1'
+                }
+              }
+              speObj.goodsSpecValueList.push(itemObj2)
+            })
+          }
+          
+          if (this.addForm.sku[key].showStyle == 1) {
+            skuObj.stock = item.store
+          } else {
+            skuObj.stock = this.addForm.sku[key].store
+          }
+          skuObj.priceType = this.addForm.sku[key].showStyle
+          skuObj.specValueNames = [this.addForm.sku[key].name]    
+          speObj.categorySpecId = this.addForm.sku[key].id
+          speObj.name = this.addForm.sku[key].name
+          goodsVO.goodsSkuList.push(skuObj)
+          goodsVO.goodsSpecList.push(speObj)
+        })
+        
+      }
+      // 商品图片信息
       goodsVO.goodsImgList = this.imgsBox
-      console.log('goodsvo')
       console.log(goodsVO)
-      console.log(this.addForm)
-      return
       saveGoods({
         goodsVO: goodsVO
       })
@@ -469,7 +544,7 @@ export default {
     },
     handleCheckAllChange(val, index, id) {
       // 全选
-      this.checkAll = val
+      // this.addForm.generate[index].checkAll = val
       this.addForm.generate[index][id] = val ? this.checkboxObj[index] : [];
       this.isIndeterminate = false;
       console.log(this.addForm.generate[index][id])
@@ -482,6 +557,11 @@ export default {
       // 图片预览
       this.dialogImageUrl = file.url;
       this.dialogVisible = true;
+    },
+    checkChange(value, index) {
+      let checkedCount = value.length
+      this.addForm.generate[index].checkAll = checkedCount === this.checkboxObj[index].length
+      this.isIndeterminate = checkedCount > 0 && checkedCount < this.checkboxObj[index].length
     }
   }
 }

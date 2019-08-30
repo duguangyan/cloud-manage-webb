@@ -50,6 +50,7 @@ export function saveGoods(data) {
   return request({
     url: '/goods/goods/saveGoods',
     method: 'post',
+    type: 'json',
     data
   })
 }

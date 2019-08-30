@@ -15,14 +15,20 @@ const service = axios.create({
 service.interceptors.request.use(
   config => {
     // 将请求类型改为普通的表单类型
-    config.headers['Content-Type'] = 'application/x-www-form-urlencoded'
+    if (config.type !== 'json') {
+      config.headers['Content-Type'] = 'application/x-www-form-urlencoded'
+    } else {
+      config.baseURL = 'http://192.168.0.110:8000'
+    }
     if (config.method === 'post') {
       if (config.type === 'upload') {
         config.headers['Content-Type'] = 'application/multipart/form-data'
       } else {
-        config.data = QS.stringify({
-          ...config.data // 将参数变成  a=xx&b=xx&c=xx这样的参数列表
-        })
+        if (config.type !== 'json') {
+          config.data = QS.stringify({
+            ...config.data // 将参数变成  a=xx&b=xx&c=xx这样的参数列表
+          })
+        }
       }
     }
     // do something before request is sent
