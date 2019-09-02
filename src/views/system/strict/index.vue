@@ -10,6 +10,7 @@
       lazy
       :load="loadNode"
       :expand-on-click-node="false"
+      node-key="id"
     ></el-tree>
 
     <!-- 编辑 -->
@@ -55,7 +56,8 @@ var vm = {
       grandParent: /* 顶级 */ [],
       defaultProps: {
         children: "children",
-        label: "name"
+        label: "name",
+        isLeaf: "leaf"
       },
       strict: /* 新增的地区 */ {
         name: "",
@@ -110,7 +112,7 @@ var vm = {
           if (+vm.status === 0) {
             // 新增
             let level = vm.isTopest ? -2 : vm.curData.level,
-                data = { ...vm.strict };
+              data = { ...vm.strict };
             delete data.id;
             insertAd(
               Object.assign(vm.strict, {
@@ -119,19 +121,32 @@ var vm = {
               })
             )
               .then(res => {
+                vm.$message({
+                  message: "新增成功",
+                  type: 'success'
+                });
                 // 手动更新节点
-                if(vm.isTopest){
-                  vm.$set(res.data, 'children', []);
+                if (vm.isTopest) {
+                  /* 顶级节点 */
+                  vm.$set(res.data, "children", []);
+                  res.data.leaf = true;
                   vm.grandParent.push(res.data);
-                }else{
-                  const newChild = Object.assign(res.data, { children: [] });
+                } else {
+                  /* 次级节点 */
+                  const newChild = Object.assign(res.data, {
+                    children: [],
+                    leaf: true
+                  });
                   vm.$set(vm.curData, "children", []);
                   vm.curData.children.push({ ...newChild });
+                  if (vm.curNode.isLeaf) {
+                    location.reload(false);
+                  }
                 }
                 vm.isTopest = false;
               })
               .catch(res => {
-                vm.$message.error(res.response.data.message);
+                vm.$message.error(res.message);
               });
           } else {
             // 编辑
@@ -150,7 +165,6 @@ var vm = {
                 vm.$message.error(res.msg);
               });
           }
-
         } else {
           vm.$message.error("请正确填写表单！");
         }
@@ -169,12 +183,27 @@ var vm = {
         parentId: node.data.id || ""
       }).then(res => {
         if (node.level > 0) {
-          vm.$set(node.data, "children", res.data);
+          res.data.map(item => {
+            if (+item.haveChild === 1) {
+              // vm.$set(node.data, "children", res.data);
+              item.leaf = false;
+            } else {
+              item.leaf = true;
+            }
+            vm.$set(node.data, "children", []);
+            return item;
+          });
         } else {
           res.data.map(item => {
             vm.$set(item, "children", []);
+            if (+item.haveChild === 1) {
+              item.leaf = false;
+            } else {
+              item.leaf = true;
+            }
             return item;
           });
+          vm.$set(vm.grandParent, "children", res.data);
         }
         resolve(res.data);
       });
@@ -197,8 +226,8 @@ var vm = {
         type: "warning"
       })
         .then(() => {
-          if(+data.haveChild === 1){
-            return vm.$message.error('请先删除所有子项');
+          if (+data.haveChild === 1 && data.children.length > 0) {
+            return vm.$message.error("请先删除所有子项");
           }
           // 确定删除
           delAd({
@@ -209,14 +238,14 @@ var vm = {
                 type: "success",
                 message: "删除成功"
               });
-              const parent = node.parent;
-              const children = parent.data.children || parent.data;
-              const index = children.findIndex(d => d.id === data.id);
+              let parent = node.parent;
+              let children = parent.data.children || parent.data;
+              let index = children.findIndex(d => d.id === data.id);
               children.splice(index, 1);
               node.parent.childNodes.splice(index, 1);
             })
             .catch(res => {
-              vm.$message.error(res.response.data.msg);
+              vm.$message.error(res.message);
             });
         })
         .catch(() => {
