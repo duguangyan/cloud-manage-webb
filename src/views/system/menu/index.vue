@@ -184,7 +184,7 @@
           <el-input v-model="role.sort" maxlength="11" placeholder="请输入排序" />
         </el-form-item>
         <el-form-item label="类型">
-          <el-select v-model="role.type" placeholder="请选择">
+          <el-select v-model="role.type" placeholder="请选择" @change="typeChange">
             <el-option
               v-for="(val, key) in typeData"
               :key="key"
@@ -193,13 +193,13 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item v-if="role.type !== '菜单' && role.type !== '接口'" label="按钮code">
+        <el-form-item v-if="role.type === '按钮'" label="按钮code">
           <el-input v-model="role.code" maxlength="11" placeholder="请输入按钮code" />
         </el-form-item>
-         <el-form-item v-if="role.type !== '按钮'" label="链接地址">
+         <el-form-item v-if="role.type === '菜单' || role.typ === '接口'" label="链接地址">
           <el-input v-model="role.url" maxlength="255" placeholder="请输入链接地址" />
         </el-form-item>
-        <el-form-item v-if="role.type !== '接口'" label="图标">
+        <el-form-item v-if="role.type === '菜单' || role.typ === '按钮'" label="图标">
           <svg-icon v-if="role && role.icon" :icon-class="role.icon" class="mr10" />
           <el-button v-waves class="filter-item" size="small" @click="selectIcon">选择图标</el-button>
         </el-form-item>
@@ -213,7 +213,7 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item v-if="role.type !== '接口' && role.type !== '按钮'" label="事件">
+        <el-form-item v-if="role.type === '菜单'" label="事件">
           <el-select v-model="role.operation" placeholder="请选择">
             <el-option
               v-for="(val, key) in operaData"
@@ -223,7 +223,7 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item v-if="role.type !== '菜单' && role.type !=='按钮'" label="授权">
+        <el-form-item v-if="role.type === '接口'" label="授权">
           <el-select v-model="role.auth" placeholder="请选择">
             <el-option
               v-for="(val, key) in authData"
@@ -658,6 +658,14 @@ export default {
       this.prarentDialogVisible = true
       await this.getRoutes()
     },
+    typeChange(val) {
+      if(val !== '接口') {
+        this.role.auth = ''
+      }
+      if(val !== '事件') {
+        this.role.operation = '--'
+      }
+    },
     selectIcon() {
       // 选择图标
       this.iconDialogVisible = true
@@ -722,7 +730,7 @@ export default {
            url: this.role.url,
            type: this.typeDataN[this.role.type],
            operation: this.operaDataN[this.role.operation],
-           auth: this.authDataN[this.role.auth],
+           auth: this.role.auth === '' ? '' : this.authDataN[this.role.auth],
            remark: this.role.remark
          }).catch(err => {
            this.diaDisable = false
@@ -777,6 +785,11 @@ export default {
           `,
         type: 'success'
       })
+    },
+    refreshLazyTree(node, children) {
+      var theChildren = node.childNodes
+      theChildren.splice(0, theChildren.length)
+      node.doCreateChildren(children)
     },
     confirmParent() {
       this.prarentDialogVisible = false
