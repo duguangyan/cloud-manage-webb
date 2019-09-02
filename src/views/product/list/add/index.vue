@@ -239,7 +239,8 @@ export default {
       addressProps: {
         lazy: true,
         lazyLoad (node, resolve) {
-          getAd({ parentId: node.value == undefined ? 0 : node.value }).then( res => {
+          console.log(node)
+          getAd({ parentId: node.data === undefined ? 0 : node.data.id }).then( res => {
             if(Array.isArray(res.data)) {
               res.data.map((item) => {
                 item.leaf = item.haveChild === 0
@@ -248,7 +249,8 @@ export default {
             }
           })
         },
-        value: "id",
+        value: "name",
+        id: "id",
         label: "name",
       },
       addForm: {
@@ -356,7 +358,6 @@ export default {
           });
           this.sellData = res.data
         }
-        console.log(this.addForm)
       })
     },
     uploadImg(file) {
@@ -379,9 +380,6 @@ export default {
       // 计量单位选择
       this.showStyle.type = this.showAble[val]
       this.showStyle.id = val
-      console.log('ok', val)
-      console.log(this.addForm)
-      console.log(this.showStyle)
     },
     addStair(index, id) {
       // 添加阶梯价
@@ -461,23 +459,27 @@ export default {
       goodsVO.postSettingId = 'postSettingId'
       // 商品动态生成的基础信息
       goodsVO.goodsAttrList = []
-      console.log(this.addForm.generate)
-     
+      let sortList = 0
       this.addForm.generate.forEach(item => {
         let obj = {}
+        let sortValue = 0
         obj.name = item.name
         obj.categoryAttrId = item.id
         obj.nameGroup = item.nameGroup
+        obj.sort = sortList++
         obj.goodsAttrValueList = []
         if(Array.isArray(item.list)) {
           item.list.forEach(item => {
+            sortValue++
             obj.goodsAttrValueList.push({
-              value: item
+              value: item,
+              sort: sortValue
             })
           })
         } else {
           obj.goodsAttrValueList.push({
-            value: item.list
+            value: item.list,
+            sort: sortValue
           })
         }
 
@@ -486,55 +488,62 @@ export default {
       // 商品sku信息
       goodsVO.goodsSkuList = []
       goodsVO.goodsSpecList = []
-      
-      for(let key in this.addForm.sku) {
-          this.addForm.sku[key].list.forEach((item) => {
-          let first = true
-          let skuObj = {}
-          let speObj = {}
-          skuObj.priceExpList = [] 
+      let sku = this.addForm.sku
+      let speSort = 0
+      for(let key in sku) {
+        let skuObj = {}
+        let speObj = {}
+        speObj.sort = speSort++
+        if (this.addForm.sku[key].showStyle === '1') {
           speObj.goodsSpecValueList = []
-          if(first) {
-            first = false
-            this.addForm.sku[key].list.forEach((itemIn) => {
-              let itemObj = {}
-              let itemObj2 = {}
-              itemObj.price = itemIn.price
-              itemObj.startQuantity = itemIn.number
-              skuObj.priceExpList.push(itemObj)
-              if (this.addForm.sku[key].showStyle == 1) {
-                itemObj2 = {
-                  value: item.name
-                }
-              } else {
-                itemObj2 = {
-                  value: '1'
-                }
-              }
-              speObj.goodsSpecValueList.push(itemObj2)
-            })
-          }
-          
-          if (this.addForm.sku[key].showStyle == 1) {
+          let boxSort = 0
+          speObj.categorySpecId = sku[key].id
+          speObj.name = sku[key].name
+          sku[key].list.forEach(item => {
+            skuObj.priceType = sku[key].showStyle
+            skuObj.specValueNames = [sku[key].name]
+            skuObj.price = item.price
+            skuObj.startNum = item.number
             skuObj.stock = item.store
-          } else {
-            skuObj.stock = this.addForm.sku[key].store
-          }
-          skuObj.priceType = this.addForm.sku[key].showStyle
-          skuObj.specValueNames = [this.addForm.sku[key].name]    
-          speObj.categorySpecId = this.addForm.sku[key].id
-          speObj.name = this.addForm.sku[key].name
+            skuObj.priceExpList = []
+            skuObj.priceExpList.push({
+              price: item.price,
+              startQuantity: item.number
+            })
+            speObj.goodsSpecValueList.push({
+              value: item.name,
+              sort: boxSort++
+            })
+          })
           goodsVO.goodsSkuList.push(skuObj)
           goodsVO.goodsSpecList.push(speObj)
-        })
-        
+        } else if (this.addForm.sku[key].showStyle === '2') {
+          skuObj.priceType = sku[key].showStyle
+          skuObj.specValueNames = [sku[key].name]
+          skuObj.priceExpList = []
+          skuObj.stock = sku[key].store
+          speObj.categorySpecId = sku[key].id
+          speObj.name = sku[key].name
+          speObj.goodsSpecValueList = []
+          speObj.goodsSpecValueList.push({
+            value: 1
+          })
+          sku[key].list.forEach(item => {
+            skuObj.priceExpList.push({
+              price: item.price,
+              startQuantity: item.number
+            })
+          })
+          goodsVO.goodsSkuList.push(skuObj)
+          goodsVO.goodsSpecList.push(speObj)
+        }
       }
       // 商品图片信息
       goodsVO.goodsImgList = this.imgsBox
-      console.log(goodsVO)
-      saveGoods({
-        goodsVO: goodsVO
-      })
+      // let data = JSON.stringify({
+      //   goodsVO: goodsVO
+      // })
+      saveGoods(goodsVO)
     },
     selectChange() {
 
@@ -546,12 +555,11 @@ export default {
       // 全选
       // this.addForm.generate[index].checkAll = val
       this.addForm.generate[index][id] = val ? this.checkboxObj[index] : [];
+      debugger
       this.isIndeterminate = false;
-      console.log(this.addForm.generate[index][id])
     },
     handleRemove(file, fileList) {
       // 删除图片
-      console.log(file, fileList);
     },
     handlePictureCardPreview(file) {
       // 图片预览
