@@ -46,6 +46,7 @@
 
 <script>
 import { getAd, insertAd, editAd, delAd } from "@/api/upms/strict";
+import { getUserBtnByPId } from '@/api/upms/menu'
 import { debuglog } from "util";
 
 var vm = {
@@ -53,6 +54,20 @@ var vm = {
   data() {
     vm = this;
     return {
+      btnsPermission: {
+        edit: {
+          name: '编辑',
+          auth: false
+        },
+        add: {
+          name: '添加',
+          auth: false
+        },
+        del: {
+          name: '删除',
+          auth: false
+        },
+      },
       grandParent: /* 顶级 */ [],
       defaultProps: {
         children: "children",
@@ -99,6 +114,19 @@ var vm = {
       status: /* 0:新增,1:编辑 */ 0,
       isTopest: /* 类型 */ false
     };
+  },
+  mounted(){
+    getUserBtnByPId({ parentId: this.$route.meta.id }).then(res => {
+      if(Array.isArray(res.data)) {
+        res.data.map((val) => {
+          if(this.btnsPermission.hasOwnProperty(val.code)) {
+            this.btnsPermission[val.code].auth = val.checked === 1
+            this.btnsPermission[val.code].name = val.name
+          }
+
+        })
+      }
+    })
   },
   methods: {
     createTopest() {
@@ -257,7 +285,7 @@ var vm = {
       return (
         <span class="custom-tree-node">
           <span>{data.name}&emsp;</span>
-          <el-tooltip content="编辑地域" placement="top">
+          {vm.btnsPermission.edit.auth && <el-tooltip content="编辑地域" placement="top">
             <el-button
               size="medium"
               type="text"
@@ -267,9 +295,9 @@ var vm = {
             >
               <i class="el-icon-edit"></i>
             </el-button>
-          </el-tooltip>
+          </el-tooltip>}
 
-          <el-tooltip content="新增地域" placement="top">
+          {vm.btnsPermission.add.auth && <el-tooltip content="新增地域" placement="top">
             <el-button
               size="medium"
               type="text"
@@ -279,9 +307,9 @@ var vm = {
             >
               <i class="el-icon-circle-plus-outline"></i>
             </el-button>
-          </el-tooltip>
+          </el-tooltip>}
 
-          <el-tooltip content="删除地域" placement="top">
+          {vm.btnsPermission.del.auth && <el-tooltip content="删除地域" placement="top">
             <el-button
               size="medium"
               type="text"
@@ -291,7 +319,7 @@ var vm = {
             >
               <i class="el-icon-delete"></i>
             </el-button>
-          </el-tooltip>
+          </el-tooltip>}
         </span>
       );
     }
