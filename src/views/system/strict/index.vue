@@ -172,6 +172,9 @@ var vm = {
                   }
                 }
                 vm.isTopest = false;
+                for(let k in vm.strict){
+                  vm.strict[k] = '';
+                }
               })
               .catch(res => {
                 vm.$message.error(res.message);
