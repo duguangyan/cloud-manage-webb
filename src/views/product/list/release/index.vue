@@ -1,8 +1,6 @@
 <template>
   <!-- <div class="app-container"> -->
   <div v-loading="listLoading" class="app-container">
-    <!-- <el-cascader :options="options" :props="props"></el-cascader>
-    <el-cascader :options="optionss" @active-item-change="getNodes" :props="propss"></el-cascader> -->
     <el-cascader-panel ref="cascaderAddr" :props="treeProps" :options="treeOptions" @change="selectChange"></el-cascader-panel>
     <div class="next-box">
       <el-button v-waves @click="back" class="filter-item">返回</el-button>

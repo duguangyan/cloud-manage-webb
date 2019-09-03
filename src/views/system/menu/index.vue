@@ -61,7 +61,7 @@
         prop="url"
         label="链接地址"
         align="center"
-        width="250">
+        width="500">
       </el-table-column>
       <el-table-column
         prop="status"
@@ -72,6 +72,7 @@
       <el-table-column
         prop="operation"
         label="事件"
+        width="150"
         align="center">
       </el-table-column>
       <el-table-column
