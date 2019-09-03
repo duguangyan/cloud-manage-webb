@@ -8,49 +8,58 @@
         <!-- <el-cascader :options="addressOptions" :props="addressProps"></el-cascader> -->
       </div>
     </el-card>
-    <el-form v-loading="diaLoading" ref="addData" :rules="rules" :model="addForm" label-position="right" label-width="70px" style="">
+    <el-form v-loading="diaLoading" ref="productForm" :rules="rules" :model="addForm" label-position="right" label-width="120px" style="">
     <el-card class="box-card">
       <div slot="header" class="clearfix">
         <span>基本信息</span>
       </div>
       <div  class="text item">
-        <el-form-item label="标题">
+        <el-form-item label="标题" required>
           <el-input class="long-input" v-model="addForm.title" size="medium" maxlength="64" placeholder="请输入名称，如：品种+口感+产地+用途等" />
         </el-form-item>
-        <el-form-item v-for="(item, index) in baseData" :key="index" :label="item.name" :prop="'generate.' + index + '.value'">
-          <template v-if="item.inputType === 0">
-            <el-cascader
-              v-model="addForm.generate[index].list"
-              placeholder=""
-              :options="addressOptions"
-              :props="addressProps"
-              style="width: 200px;"
-              class="filter-item mr20"
-              @change="selectChange"
-              @focus="focus"
-              @keyup.enter.native="handleFilter">
-            </el-cascader>
-          </template>
-          <template v-else-if="item.inputType === 1">
-            <el-radio-group v-model="addForm.generate[index].list" size="small">
-              <el-radio v-for="(radioItem, radioIndex) in item.valueSet" :key="radioIndex" :label="radioItem.value" border>{{radioItem.value}}</el-radio>
-            </el-radio-group>
-          </template>
-          <template v-else-if="item.inputType === 2">
-            <el-checkbox-group v-model="addForm.generate[index].list" @change="((val) => checkChange(val, index))">
-              <el-checkbox v-for="(checkboxItem, checkboxIndex) in item.valueSet" :label="checkboxItem.value" :key="checkboxIndex">{{checkboxItem.value}}</el-checkbox>
-            </el-checkbox-group>
-             <el-checkbox :indeterminate="isIndeterminate" v-model="addForm.generate[index].checkAll" @change="((val) => handleCheckAllChange(val, index, item.id))">全选</el-checkbox>
-          </template>
-          <template v-else-if="item.inputType === 3">
-            <el-select v-model="addForm.generate[index].list" size="medium" maxlength="64" placeholder="请选择">
-              <el-option v-for="(selectItem, selectIndex) in item.valueSet" :key="selectIndex" :label="selectItem.id" :value="selectItem.value"></el-option>
-            </el-select>
-          </template>
-          <template v-else-if="item.inputType === 4">
-            <el-input class="long-input" v-model="addForm.generate[index].list" size="medium" maxlength="64" placeholder="" />
-          </template>
-        </el-form-item>
+        <template v-for="(item, index) in baseData">
+          <el-form-item :key="index" :label="item.name" required :prop="item.name">
+            <template v-if="item.inputType === 0">
+              <el-cascader
+                v-model="addForm.generate[index].list"
+                :placeholder="item.hint"
+                :options="addressOptions"
+                :style="{width: item.length + 'px'}"
+                :props="addressProps"
+                style="width: 200px;"
+                class="filter-item mr20"
+                @change="selectChange"
+                @focus="focus"
+                @keyup.enter.native="handleFilter">
+              </el-cascader>
+              <span v-if="item.exp !== null">{{item.exp}}</span>
+            </template>
+            <template v-else-if="item.inputType === 1">
+              <el-radio-group v-model="addForm.generate[index].list" size="small">
+                <el-radio v-for="(radioItem, radioIndex) in item.valueSet" :key="radioIndex" :label="radioItem.value" border>{{radioItem.value}}</el-radio>
+              </el-radio-group>
+              <span v-if="item.exp !== null">{{item.exp}}</span>
+            </template>
+            <template v-else-if="item.inputType === 2">
+              <el-checkbox-group v-model="addForm.generate[index].list" @change="((val) => checkChange(val, index))">
+                <el-checkbox v-for="(checkboxItem, checkboxIndex) in item.valueSet" :label="checkboxItem.value" :key="checkboxIndex">{{checkboxItem.value}}</el-checkbox>
+              </el-checkbox-group>
+              <el-checkbox :indeterminate="isIndeterminate" v-model="addForm.generate[index].checkAll" @change="((val) => handleCheckAllChange(val, index, item.id))">全选</el-checkbox>
+              <span v-if="item.exp !== null">{{item.exp}}</span>
+            </template>
+            <template v-else-if="item.inputType === 3">
+              <el-select v-model="addForm.generate[index].list" size="medium" maxlength="64" placeholder="请选择">
+                <el-option v-for="(selectItem, selectIndex) in item.valueSet" :key="selectIndex" :label="selectItem.id" :value="selectItem.value"></el-option>
+              </el-select>
+              <span v-if="item.exp !== null">{{item.exp}}</span>
+            </template>
+            <template v-else-if="item.inputType === 4">
+              <el-input class="long-input" v-model="addForm.generate[index].list" size="medium" maxlength="64" :placeholder="item.hint" :style="{width: item.length + 'px'}" />
+              <span v-if="item.exp !== null">{{item.exp}}</span>
+            </template>
+          </el-form-item>         
+        </template>
+
       </div>
     </el-card>
     <el-card class="box-card">
@@ -153,7 +162,7 @@
       <div>
         <el-button v-waves class="filter-item" @click="preView">预览</el-button>
         <el-button v-waves class="filter-item">保存待上架</el-button>
-        <el-button type="primary" v-waves class="filter-item" @click="onSale">上架出售</el-button>
+        <el-button type="primary" v-waves class="filter-item" @click="submitForm('productForm')">上架出售</el-button>
       </div>
     </div>
     <div class="self-diolog" v-if="previewDialog">
@@ -218,15 +227,15 @@ import { getByCategoryId, getUnit, saveGoods } from '@/api/goods/list'
 import { getAd } from '@/api/upms/strict'
 import { fileUpload } from '@/api/goods/upload'
 let id = 0;
-export default {
+let vm = {
   name: 'addProduct',
   directives: { waves },
   data() {
+    vm = this;
     return {
       categoryId: '',
       baseData: [],
       sellData: [],
-      addData: [],
       boxData: [],
       treeProps: {},
       treeValue: '',
@@ -236,19 +245,23 @@ export default {
       addressOptions: [],
       checkboxObj: {},
       addressObj: {},
+      cascader: [],
       addressProps: {
         lazy: true,
         lazyLoad (node, resolve) {
-          getAd({ parentId: node.value == undefined ? 0 : node.value }).then( res => {
+          console.log('lazy')
+          console.log(node)
+          getAd({ parentId: node.level === 0 ? 0 : node.data.id }).then( res => {
             if(Array.isArray(res.data)) {
               res.data.map((item) => {
-                item.leaf = item.haveChild === 0
+                item.leaf = item.haveChild === 0 || parseInt(vm.cascader[0]) == node.level + 1
               });
               resolve(res.data);
             }
           })
         },
-        value: "id",
+        value: "name",
+        id: "id",
         label: "name",
       },
       addForm: {
@@ -266,7 +279,30 @@ export default {
       checkedCities: [],
       checkAll: false,
       isIndeterminate: false,
-      rules: {},
+      rules: {
+        name: [
+          { required: true, message: '请输入活动名称', trigger: 'blur' },
+          { min: 3, max: 5, message: '长度在 3 到 5 个字符', trigger: 'blur' }
+        ],
+        region: [
+          { required: true, message: '请选择活动区域', trigger: 'change' }
+        ],
+        date1: [
+          { type: 'date', required: true, message: '请选择日期', trigger: 'change' }
+        ],
+        date2: [
+          { type: 'date', required: true, message: '请选择时间', trigger: 'change' }
+        ],
+        type: [
+          { type: 'array', required: true, message: '请至少选择一个活动性质', trigger: 'change' }
+        ],
+        resource: [
+          { required: true, message: '请选择活动资源', trigger: 'change' }
+        ],
+        desc: [
+          { required: true, message: '请填写活动形式', trigger: 'blur' }
+        ]
+      },
       value: '',
       previewDialog: false,
       diaLoading: false,
@@ -314,7 +350,13 @@ export default {
             obj.name = item.name 
             obj.nameGroup = item.nameGroup
             this.addForm.generate.push(obj)
+            if(item.inputType === 0) {
+              this.cascader.push(item.valueSet[0].value)
+              // this.$set(this.cascader, item.id, item.valueSet[0].value)
+            }
           });
+          console.log('add form')
+          console.log(this.addForm)
           this.baseData = res.data
         }
       })
@@ -356,7 +398,6 @@ export default {
           });
           this.sellData = res.data
         }
-        console.log(this.addForm)
       })
     },
     uploadImg(file) {
@@ -379,9 +420,6 @@ export default {
       // 计量单位选择
       this.showStyle.type = this.showAble[val]
       this.showStyle.id = val
-      console.log('ok', val)
-      console.log(this.addForm)
-      console.log(this.showStyle)
     },
     addStair(index, id) {
       // 添加阶梯价
@@ -448,6 +486,16 @@ export default {
       // 预览
       this.previewDialog = true
     },
+    submitForm(formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          alert('submit!');
+        } else {
+          console.log('error submit!!');
+          return false;
+        }
+      });
+    },
     onSale() {
       // 上架
       let goodsVO = {}
@@ -461,23 +509,27 @@ export default {
       goodsVO.postSettingId = 'postSettingId'
       // 商品动态生成的基础信息
       goodsVO.goodsAttrList = []
-      console.log(this.addForm.generate)
-     
+      let sortList = 0
       this.addForm.generate.forEach(item => {
         let obj = {}
+        let sortValue = 0
         obj.name = item.name
         obj.categoryAttrId = item.id
         obj.nameGroup = item.nameGroup
+        obj.sort = sortList++
         obj.goodsAttrValueList = []
         if(Array.isArray(item.list)) {
           item.list.forEach(item => {
+            sortValue++
             obj.goodsAttrValueList.push({
-              value: item
+              value: item,
+              sort: sortValue
             })
           })
         } else {
           obj.goodsAttrValueList.push({
-            value: item.list
+            value: item.list,
+            sort: sortValue
           })
         }
 
@@ -486,72 +538,76 @@ export default {
       // 商品sku信息
       goodsVO.goodsSkuList = []
       goodsVO.goodsSpecList = []
-      
-      for(let key in this.addForm.sku) {
-          this.addForm.sku[key].list.forEach((item) => {
-          let first = true
-          let skuObj = {}
-          let speObj = {}
-          skuObj.priceExpList = [] 
+      let sku = this.addForm.sku
+      let speSort = 0
+      for(let key in sku) {
+        let skuObj = {}
+        let speObj = {}
+        speObj.sort = speSort++
+        if (this.addForm.sku[key].showStyle === '1') {
           speObj.goodsSpecValueList = []
-          if(first) {
-            first = false
-            this.addForm.sku[key].list.forEach((itemIn) => {
-              let itemObj = {}
-              let itemObj2 = {}
-              itemObj.price = itemIn.price
-              itemObj.startQuantity = itemIn.number
-              skuObj.priceExpList.push(itemObj)
-              if (this.addForm.sku[key].showStyle == 1) {
-                itemObj2 = {
-                  value: item.name
-                }
-              } else {
-                itemObj2 = {
-                  value: '1'
-                }
-              }
-              speObj.goodsSpecValueList.push(itemObj2)
-            })
-          }
-          
-          if (this.addForm.sku[key].showStyle == 1) {
+          let boxSort = 0
+          speObj.categorySpecId = sku[key].id
+          speObj.name = sku[key].name
+          sku[key].list.forEach(item => {
+            skuObj.priceType = sku[key].showStyle
+            skuObj.specValueNames = [sku[key].name]
+            skuObj.price = item.price
+            skuObj.startNum = item.number
             skuObj.stock = item.store
-          } else {
-            skuObj.stock = this.addForm.sku[key].store
-          }
-          skuObj.priceType = this.addForm.sku[key].showStyle
-          skuObj.specValueNames = [this.addForm.sku[key].name]    
-          speObj.categorySpecId = this.addForm.sku[key].id
-          speObj.name = this.addForm.sku[key].name
+            skuObj.priceExpList = []
+            skuObj.priceExpList.push({
+              price: item.price,
+              startQuantity: item.number
+            })
+            speObj.goodsSpecValueList.push({
+              value: item.name,
+              sort: boxSort++
+            })
+          })
           goodsVO.goodsSkuList.push(skuObj)
           goodsVO.goodsSpecList.push(speObj)
-        })
-        
+        } else if (this.addForm.sku[key].showStyle === '2') {
+          skuObj.priceType = sku[key].showStyle
+          skuObj.specValueNames = [sku[key].name]
+          skuObj.priceExpList = []
+          skuObj.stock = sku[key].store
+          speObj.categorySpecId = sku[key].id
+          speObj.name = sku[key].name
+          speObj.goodsSpecValueList = []
+          speObj.goodsSpecValueList.push({
+            value: 1
+          })
+          sku[key].list.forEach(item => {
+            skuObj.priceExpList.push({
+              price: item.price,
+              startQuantity: item.number
+            })
+          })
+          goodsVO.goodsSkuList.push(skuObj)
+          goodsVO.goodsSpecList.push(speObj)
+        }
       }
       // 商品图片信息
       goodsVO.goodsImgList = this.imgsBox
-      console.log(goodsVO)
-      saveGoods({
-        goodsVO: goodsVO
-      })
+      // let data = JSON.stringify({
+      //   goodsVO: goodsVO
+      // })
+      saveGoods(goodsVO)
     },
-    selectChange() {
-
+    selectChange(val) {
+      console.log('change', val)
     },
     focus() {
 
     },
     handleCheckAllChange(val, index, id) {
       // 全选
-      // this.addForm.generate[index].checkAll = val
-      this.addForm.generate[index][id] = val ? this.checkboxObj[index] : [];
+      this.addForm.generate[index].list = val ? this.checkboxObj[index] : [];
       this.isIndeterminate = false;
-      console.log(this.addForm.generate[index][id])
     },
     handleRemove(file, fileList) {
       // 删除图片
-      console.log(file, fileList);
     },
     handlePictureCardPreview(file) {
       // 图片预览
@@ -565,6 +621,7 @@ export default {
     }
   }
 }
+export default vm;
 </script>
 
 <style lang="scss" scoped>

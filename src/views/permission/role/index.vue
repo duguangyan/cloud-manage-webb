@@ -35,9 +35,9 @@
       </el-table-column>
       <el-table-column align="center" label="操作" min-width="300">
         <template slot-scope="scope">
-          <el-button type="primary" size="small" @click="msgEdit(scope)">编辑</el-button>
-          <el-button type="primary" size="small" @click="handleEdit(scope)">分配权限</el-button>
-          <el-button type="danger" size="small" @click="handleDelete(scope)">删除</el-button>
+          <el-button v-if="btnsPermission.edit.auth" type="primary" size="small" @click="msgEdit(scope)">{{btnsPermission.edit.name}}</el-button>
+          <el-button v-if="btnsPermission.role.auth" type="primary" size="small" @click="handleEdit(scope)">{{btnsPermission.role.name}}</el-button>
+          <el-button v-if="btnsPermission.delete.auth" type="danger" size="small" @click="handleDelete(scope)">{{btnsPermission.delete.name}}</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -130,13 +130,25 @@ export default {
         add: {
           name: '添加',
           auth: false
+        },
+        edit: {
+          name: '编辑',
+          auth: false
+        },
+        role: {
+          name: '分配',
+          auth: false
+        },
+        delete: {
+          name: '删除',
+          auth: false
         }
       },
       dialogVisible: false,
       roleDialogVisible: false,
       dialogType: 'new',
       dialogTitle: '新增角色',
-      checkStrictly: false,
+      checkStrictly: true,
       defaultProps: {
         children: 'children',
         label: 'title'
@@ -169,7 +181,6 @@ export default {
             this.btnsPermission[val.code].auth = val.checked === 1
             this.btnsPermission[val.code].name = val.name
           }
-          
         })
       }
     })
@@ -261,14 +272,14 @@ export default {
       this.dialogTitle = '编辑'
       this.dialogType = 'edit'
       this.dialogVisible = true
-      this.checkStrictly = true
+      // this.checkStrictly = true
       this.role = deepClone(scope.row)
     },
     async handleEdit(scope) {
       this.dialogTitle = '分配权限'
       this.dialogType = 'roles'
       this.dialogVisible = true
-      this.checkStrictly = true
+      // this.checkStrictly = true
       this.role = deepClone(scope.row)
       getRoleResourceTree({roleId: this.role.id}).then(res => {
         this.serviceRoutes = res.data
@@ -277,7 +288,7 @@ export default {
         const routes = Array.isArray(res.data)? this.generateArr(res.data): this.generateRoutes([])
         this.$refs.tree.setCheckedNodes(routes)
         // set checked state of a node not affects its father and child nodes
-        this.checkStrictly = false
+        // this.checkStrictly = false
         })
       })
       
