@@ -5,50 +5,149 @@
       <!-- <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">搜索</el-button> -->
       <el-button v-waves class="filter-item" @click="handAddRoot">新增一级分类</el-button>
     </div>
-
-    <el-tree
-      class="filter-tree"
-      v-loading="listLoading"
-      draggable
-      @node-drop="sort"
-      @node-click="nodeClick"
-      @node-expand="nodeExpan"
-      @node-collapse="nodeCols"
-      :data="productData"
-      node-key="id"
-      :props="defaultProps"
-      :filter-node-method="filterNode"
-      :allow-drop="allowDrop"
-      :expand-on-click-node="false"
-      :default-expanded-keys="keyArr"
-      :auto-expand-parent="false"
-      :highlight-current="true"
-      ref="tree">
-      <span class="custom-tree-node" slot-scope="{ node, data }">
-        <span class="col-cont" v-html="showFilter(node.label)" ></span>
-        <span class="more">
-          <i class="product-num" :ref="data.id"></i>
-          <i class="el-icon-edit" title="修改名称" @click.stop="msgEdit(node, data)" />
-          <i class="el-icon-remove-outline" 
-            type="text"
-            size="mini"
-            title="删除分类"
-            @click.stop="() => handleDelete(node, data)" />
-          <i class="el-icon-circle-plus-outline" 
-            type="text"
-            size="mini"
-            title="新增子集分类"
-            @click.stop="() => append(node, data)" />
-        </span>
-      </span>
-    </el-tree>
+    <div class="clearfix">
+      <div class="left">
+        <el-tree
+          class="filter-tree"
+          v-loading="listLoading"
+          draggable
+          @node-drop="sort"
+          @node-click="nodeClick"
+          @node-expand="nodeExpan"
+          @node-collapse="nodeCols"
+          :data="productData"
+          node-key="id"
+          :props="defaultProps"
+          :filter-node-method="filterNode"
+          :allow-drop="allowDrop"
+          :expand-on-click-node="false"
+          :default-expanded-keys="keyArr"
+          :auto-expand-parent="false"
+          :highlight-current="true"
+          ref="tree">
+          <span class="custom-tree-node" slot-scope="{ node, data }">
+            <span class="col-cont" v-html="showFilter(node.label)" ></span>
+            <span class="more">
+              <i class="product-num" :ref="data.id"></i>
+              <i class="el-icon-edit" title="修改名称" @click.stop="msgEdit(node, data)" />
+              <i class="el-icon-remove-outline" 
+                type="text"
+                size="mini"
+                title="删除分类"
+                @click.stop="() => handleDelete(node, data)" />
+              <i class="el-icon-circle-plus-outline" 
+                type="text"
+                size="mini"
+                title="新增子集分类"
+                @click.stop="() => append(node, data)" />
+            </span>
+          </span>
+        </el-tree>
+      </div>
+      <div class="right">
+        <div class="data-box">
+          <el-row type="flex" class="mb5" justify="space-around">
+            <el-col><div class="box-title">计量单位管理</div></el-col>
+            <el-col><div class="tr"><el-button v-waves size="small" type="primary" @click="add(1)">新增</el-button></div></el-col>
+          </el-row>
+          <el-table
+            :data="unitData"
+            border
+            >
+            <el-table-column
+              prop="date"
+              label="日期"
+              align="center"
+              width="180">
+            </el-table-column>
+            <el-table-column
+              prop="name"
+              label="姓名"
+              align="center"
+              width="180">
+            </el-table-column>
+            <el-table-column
+              prop="address"
+              label="地址"
+              align="center">
+            </el-table-column>
+            <el-table-column
+              prop="address"
+              label="操作"
+              align="center">
+            </el-table-column>
+          </el-table>
+        </div>
+      </div>
+    </div>
 
     <el-dialog :visible.sync="dialogVisible" :closeOnClickModal="false" :title="dialogMsg">
-      <el-form v-loading="diaLoading" ref="productForm" :model="role" label-width="80px" label-position="left" :rules="productRules">
-        <el-form-item label="分类名" prop="name">
-          <el-input v-model="role.name" maxlength="20" placeholder="请输入分类名" />
-        </el-form-item>
-      </el-form>
+      <template v-if="dialogType === 'unit'">
+        <el-form v-loading="diaLoading" ref="unitForm" :model="role" label-width="80px" label-position="left" :rules="productRules">
+          <el-form-item label="名称" prop="name">
+            <el-input v-model="role.name" maxlength="20" placeholder="请输入名称" />
+          </el-form-item>
+          <el-form-item label="启用状态" prop="name">
+            <el-radio label="1">是</el-radio>
+            <el-radio label="2">否</el-radio>
+          </el-form-item>
+        </el-form>
+      </template>
+      <template v-else-if="dialogType === 'spec'">
+        <el-form v-loading="diaLoading" ref="specForm" :model="role" label-width="80px" label-position="left" :rules="productRules">
+          <el-form-item label="名称" prop="name">
+            <el-input v-model="role.name" maxlength="20" placeholder="请输入名称" />
+          </el-form-item>
+          <el-form-item label="属性类型" prop="name">
+            <el-checkbox-group v-model="checkList">
+              <el-checkbox label="单选框"></el-checkbox>
+              <el-checkbox label="复选框"></el-checkbox>
+              <el-checkbox label="下拉框"></el-checkbox>
+              <el-checkbox label="文本输入框" disabled></el-checkbox>
+              <el-checkbox label="地址选择框" disabled></el-checkbox>
+            </el-checkbox-group>
+          </el-form-item>
+          <el-form-item label="排序" prop="name">
+            <el-input v-model="role.name" maxlength="20" placeholder="请输入排序" />
+          </el-form-item>
+          <el-form-item label="提示语" prop="name">
+            <el-input v-model="role.name" maxlength="20" placeholder="请输入提示语" />
+          </el-form-item>
+          <el-form-item label="尾部语" prop="name">
+            <el-input v-model="role.name" maxlength="20" placeholder="请输入名称尾部语" />
+          </el-form-item>
+          <el-form-item label="是否必填" prop="name">
+            <el-radio label="1">是</el-radio>
+            <el-radio label="2">否</el-radio>
+          </el-form-item>
+          <el-form-item label="是否搜索" prop="name">
+            <el-radio label="1">是</el-radio>
+            <el-radio label="2">否</el-radio>
+          </el-form-item>
+          <el-form-item label="启用状态" prop="name">
+            <el-radio label="1">是</el-radio>
+            <el-radio label="2">否</el-radio>
+          </el-form-item>
+        </el-form>
+      </template>
+      <template v-else-if="dialogType === 'prop'">
+        <el-form v-loading="diaLoading" ref="propForm" :model="role" label-width="80px" label-position="left" :rules="productRules">
+          <el-form-item label="属性名称" prop="name">
+            <el-input v-model="role.name" maxlength="20" placeholder="请输入属性名称" />
+          </el-form-item>
+          <el-form-item label="启用状态" prop="name">
+            <el-radio label="1">是</el-radio>
+            <el-radio label="2">否</el-radio>
+          </el-form-item>
+        </el-form>
+      </template>
+      <template v-else-if="dialogType === 'new' || dialogType === 'edit'">
+        <el-form v-loading="diaLoading" ref="productForm" :model="role" label-width="80px" label-position="left" :rules="productRules">
+          <el-form-item label="分类名" prop="name">
+            <el-input v-model="role.name" maxlength="20" placeholder="请输入分类名" />
+          </el-form-item>
+        </el-form>
+      </template>
       <div style="text-align:right;">
         <el-button type="danger" @click="dialogVisible=false">取消</el-button>
         <el-button type="primary" :disabled="diaDisable" @click="regFun">确定</el-button>
@@ -102,6 +201,23 @@ export default {
               validator: validateName
           }]
       },
+      unitData: [{
+        date: '2016-05-02',
+        name: '王小虎',
+        address: '上海市普陀区金沙江路 1518 弄'
+      }, {
+        date: '2016-05-04',
+        name: '王小虎',
+        address: '上海市普陀区金沙江路 1517 弄'
+      }, {
+        date: '2016-05-01',
+        name: '王小虎',
+        address: '上海市普陀区金沙江路 1519 弄'
+      }, {
+        date: '2016-05-03',
+        name: '王小虎',
+        address: '上海市普陀区金沙江路 1516 弄'
+      }],
       parentId: '',
       node: {},
       nodeData: {},
@@ -303,6 +419,22 @@ export default {
         this.randomDrag(obj)
       }
     },
+    add(type) {
+      // 新增
+      if (type === 1) {
+        this.dialogType = 'unit'
+        this.dialogMsg = '新增计量单位'
+        
+      } else if (type === 2) {
+        this.dialogType = 'spec'
+        this.dialogMsg = '新增规格管理'
+      } else {
+        this.dialogType = 'prop'
+        this.dialogMsg = '新增属性模板'
+      }
+      this.dialogVisible = true
+      this.checkStrictly = true
+    },
     msgEdit(node, data) {
       this.dialogType = 'edit'
       this.dialogMsg = '编辑分类名'
@@ -369,6 +501,12 @@ export default {
         this.diaDisable = false
         this.diaLoading = false
         this.getProductTree()
+      } else if (this.dialogType === 'unit') {
+
+      } else if (this.dialogType === 'spec') {
+
+      } else if (this.dialogType === 'prop') {
+
       }
       this.listLoading = false
       const { name, remark } = this.role
@@ -397,6 +535,20 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+  .left{
+    width: 50%;
+    float: left;
+  }
+  .right{
+    width: 50%;
+    float: left;
+  }
+  .mb5{
+    margin-bottom: 5px;
+  }
+  .tr{
+    text-align: right;
+  }
   .more{
     visibility: hidden;
     margin-left: 20px;
@@ -415,5 +567,14 @@ export default {
   }
   .filter-container{
     padding-bottom: 30px;
+  }
+  .data-box{
+    width: 800px;
+    background: #eee;
+    padding: 20px;
+    margin-bottom: 20px;
+    .box-title{
+      line-height: 32px;
+    }
   }
 </style>

@@ -79,58 +79,63 @@
       <div slot="header" class="clearfix">
         <span>销售信息</span>
       </div>
-      <div  class="text item">
-        <el-form-item 
-          label="计量单位" 
-          :prop="'unit'"
-          :rules="{
-            required: true, message: '计量单位必填', trigger: 'blur'     
-          }">
-          <el-select v-model="addForm.unit" size="medium" maxlength="64" placeholder="请选择" @change="unitChange">
-            <el-option v-for="(item, index) in sellData" :key="index" :label="item.name" :value="item.id"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item 
-          v-if="showStyle.type === '2'" 
-          :prop="'sku.'+showStyle.id+'.store'"
-          :rules="{
-            required: true, message: '库存必填', trigger: 'blur'     
-          }"
-          label="库存">
-            <el-input class="short-input" v-model="addForm.sku[showStyle.id].store" size="medium" maxlength="30" />
-        </el-form-item>
-        <div v-if="showStyle.type === '2'">
-          <div v-for="(stairItem, stairIndex) in stairArr" :key="stairIndex" class="unit-box">
-            <span class="mr40">阶梯{{stairIndex + 1}}</span>
-            <span class="mr5">起批数</span><el-input class="table-input mr40" v-model="addForm.sku[showStyle.id].list[stairIndex].number" size="small" maxlength="30" />
-            <span class="mr5">单价</span><el-input class="table-input mr5" v-model="addForm.sku[showStyle.id].list[stairIndex].price" size="small" maxlength="30" /><span class="mr20">元</span><span v-show="stairIndex > 0 || stairArr.length > 1" class="mr10 unit-delete" @click="removeStair(stairIndex, showStyle.id)">删除</span><span class="unit-add" v-show="stairIndex === stairArr.length - 1" @click="addStair(stairIndex, showStyle.id)">新增阶梯</span>
+      <el-tabs v-model="activeName" @tab-click="handleClick">
+        <el-tab-pane label="用户管理" name="first">
+          <div  class="text item">
+            <el-form-item 
+              label="计量单位" 
+              :prop="'unit'"
+              :rules="{
+                required: true, message: '计量单位必填', trigger: 'blur'     
+              }">
+              <el-select v-model="addForm.unit" size="medium" maxlength="64" placeholder="请选择" @change="unitChange">
+                <el-option v-for="(item, index) in sellData" :key="index" :label="item.name" :value="item.id"></el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item 
+              v-if="showStyle.type === '2'" 
+              :prop="'sku.'+showStyle.id+'.store'"
+              :rules="{
+                required: true, message: '库存必填', trigger: 'blur'     
+              }"
+              label="库存">
+                <el-input class="short-input" v-model="addForm.sku[showStyle.id].store" size="medium" maxlength="30" />
+            </el-form-item>
+            <div v-if="showStyle.type === '2'">
+              <div v-for="(stairItem, stairIndex) in stairArr" :key="stairIndex" class="unit-box">
+                <span class="mr40">阶梯{{stairIndex + 1}}</span>
+                <span class="mr5">起批数</span><el-input class="table-input mr40" v-model="addForm.sku[showStyle.id].list[stairIndex].number" size="small" maxlength="30" />
+                <span class="mr5">单价</span><el-input class="table-input mr5" v-model="addForm.sku[showStyle.id].list[stairIndex].price" size="small" maxlength="30" /><span class="mr20">元</span><span v-show="stairIndex > 0 || stairArr.length > 1" class="mr10 unit-delete" @click="removeStair(stairIndex, showStyle.id)">删除</span><span class="unit-add" v-show="stairIndex === stairArr.length - 1" @click="addStair(stairIndex, showStyle.id)">新增阶梯</span>
+              </div>
+            </div>
+            <div v-else-if="showStyle.type === '1'">
+              <table class="table-box">
+                <thead>
+                  <tr>
+                    <td>规格名称</td>
+                    <td>起批量</td>
+                    <td>单价</td>
+                    <td>库存</td>
+                    <td></td>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(boxItem, boxIndex) in boxArr" :key="boxIndex">
+                    <td><span class="mr5">每箱</span><el-input class="table-input" v-model="addForm.sku[showStyle.id].list[boxIndex].name" size="small" maxlength="30" /></td>
+                    <td><el-input class="table-input" v-model="addForm.sku[showStyle.id].list[boxIndex].number" size="small" maxlength="30" /></td>
+                    <td><el-input class="table-input mr5" v-model="addForm.sku[showStyle.id].list[boxIndex].price" size="small" maxlength="30" /><span>元</span></td>
+                    <td><el-input class="table-input" v-model="addForm.sku[showStyle.id].list[boxIndex].store" size="small" maxlength="30" /></td>
+                    <td>
+                      <span v-show="boxIndex > 0 || boxArr.length > 1" class="mr10 unit-delete" @click="removeBox(boxIndex, showStyle.id)">删除</span><span v-show="boxIndex === boxArr.length - 1" class="unit-add" @click="addBox(boxIndex, showStyle.id)">新增规格</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-        <div v-else-if="showStyle.type === '1'">
-          <table class="table-box">
-            <thead>
-              <tr>
-                <td>规格名称</td>
-                <td>起批量</td>
-                <td>单价</td>
-                <td>库存</td>
-                <td></td>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(boxItem, boxIndex) in boxArr" :key="boxIndex">
-                <td><span class="mr5">每箱</span><el-input class="table-input" v-model="addForm.sku[showStyle.id].list[boxIndex].name" size="small" maxlength="30" /></td>
-                <td><el-input class="table-input" v-model="addForm.sku[showStyle.id].list[boxIndex].number" size="small" maxlength="30" /></td>
-                <td><el-input class="table-input mr5" v-model="addForm.sku[showStyle.id].list[boxIndex].price" size="small" maxlength="30" /><span>元</span></td>
-                <td><el-input class="table-input" v-model="addForm.sku[showStyle.id].list[boxIndex].store" size="small" maxlength="30" /></td>
-                <td>
-                  <span v-show="boxIndex > 0 || boxArr.length > 1" class="mr10 unit-delete" @click="removeBox(boxIndex, showStyle.id)">删除</span><span v-show="boxIndex === boxArr.length - 1" class="unit-add" @click="addBox(boxIndex, showStyle.id)">新增规格</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+        </el-tab-pane>
+        <el-tab-pane label="配置管理" name="second">配置管理</el-tab-pane>
+      </el-tabs>
     </el-card>
     <el-card class="box-card">
       <div slot="header" class="clearfix">
@@ -272,6 +277,7 @@ let vm = {
       treeProps: {},
       treeValue: '',
       productTitle: '',
+      activeName: 'first',
       id: '',
       eid: '',
       addressOptions: [],
@@ -417,6 +423,10 @@ let vm = {
           type: 1
         })
       })
+    },
+    handleClick(tab, event) {
+      // 报价方式切换
+      console.log(tab, event);
     },
     getAddress() {
       // 获取产地信息
