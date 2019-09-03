@@ -1,25 +1,27 @@
 <template>
   <div class="app-container">
     <div class="filter-container mb20">
-      商品ID/标题：
-      <el-input v-model="listQuery.keywords"  placeholder="请输入商品ID/标题" style="width: 200px;" class="filter-item mr20" @keyup.enter.native="handleFilter" />
-      品种：
-      <el-cascader
-        v-model="treeValue"
-        :options="treeOptions"
-        :props="treeProps"
-        placeholder="请选择品种"
-        style="width: 200px;" 
-        class="filter-item mr20"
-        @change="selectChange"
-        @focus="focus"
-        @keyup.enter.native="handleFilter">
-      </el-cascader>
-      <el-button v-if="btnsPermission.search.auth" v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">{{btnsPermission.search.name}}</el-button>
-      <el-button v-if="btnsPermission.search.auth" v-waves class="filter-item" @click="resetList">重置</el-button>
+      <template v-if="btnsPermission.search.auth">
+        商品ID/标题：
+        <el-input v-model="listQuery.keywords"  placeholder="请输入商品ID/标题" style="width: 200px;" class="filter-item mr20" @keyup.enter.native="handleFilter" />
+        品种：
+        <el-cascader
+          v-model="treeValue"
+          :options="treeOptions"
+          :props="treeProps"
+          placeholder="请选择品种"
+          style="width: 200px;" 
+          class="filter-item mr20"
+          @change="selectChange"
+          @focus="focus"
+          @keyup.enter.native="handleFilter">
+        </el-cascader>
+        <el-button v-waves class="filter-item" type="primary" :disabled="disable" icon="el-icon-search" @click="handleFilter">{{btnsPermission.search.name}}</el-button>
+        <el-button v-waves class="filter-item" @click="resetList">重置</el-button>
+      </template>
       <el-button v-if="btnsPermission.add.auth" @click="jump" v-waves class="filter-item add-btn">{{btnsPermission.add.name}}</el-button>
     </div>
-    <div class="mb20">
+    <div v-if="btnsPermission.search.auth" class="mb20">
       <template v-if="saleType === '3'">
         上架时间：
       </template>
@@ -32,16 +34,14 @@
       
       <el-date-picker
         v-model="dateValue"
-        value-format="yyyy-MM-dd"
-        type="daterange"
-        align="right"
-        size="small"
-        unlink-panels
+        type="datetimerange"
+        :picker-options="pickerOptions"
         range-separator="至"
+        value-format="yyyy-MM-dd hh:mm:ss"
         start-placeholder="开始日期"
         end-placeholder="结束日期"
-        :picker-options="pickerOptions"
-        @change="dateChange">
+        @change="dateChange"
+        align="right">
       </el-date-picker>
     </div>
     <el-tabs v-model="saleType" @tab-click="handleClick">
@@ -49,8 +49,8 @@
       <el-tab-pane label="待上架" name="1"></el-tab-pane>
       <el-tab-pane label="已下架" name="4"></el-tab-pane>
     </el-tabs>
-    <el-button v-if="saleType === '1' || saleType === '4'" type="primary" size="small" v-waves class="filter-item mb10" @click="saleChange('mul', 0, '')">批量上架</el-button>
-    <el-button v-if="saleType === '3'" size="small" v-waves class="filter-item mb10" @click="saleChange('mul', 1, '')">批量下架</el-button>
+    <el-button v-if="btnsPermission.onSale.auth && (saleType === '1' || saleType === '4')" type="primary" size="small" v-waves class="filter-item mb10" @click="saleChange('mul', 0, '')">批量{{btnsPermission.onSale.name}}</el-button>
+    <el-button v-if="btnsPermission.offSale.auth && saleType === '3'" size="small" v-waves class="filter-item mb10" @click="saleChange('mul', 1, '')">批量{{btnsPermission.offSale.name}}</el-button>
     <el-table
       ref="multipleTable"
       v-loading="listLoading"
@@ -144,9 +144,9 @@
       </el-table-column>
       <el-table-column align="center" label="操作" min-width="300">
         <template slot-scope="scope">
-          <el-button type="primary" size="small" @click="msgEdit(scope)">编辑</el-button>
-          <el-button v-if="saleType === '1' || saleType === '4'" type="primary" size="small" @click="saleChange('one', 0, scope)">上架</el-button>
-          <el-button v-if="saleType === '3'" type="primary" size="small" @click="saleChange('one', 1, scope)">下架</el-button>
+          <el-button v-if="btnsPermission.edit.auth" type="primary" size="small" @click="msgEdit(scope)">{{btnsPermission.edit.name}}</el-button>
+          <el-button v-if="btnsPermission.onSale.auth && (saleType === '1' || saleType === '4')" type="primary" size="small" @click="saleChange('one', 0, scope)">{{btnsPermission.onSale.name}}</el-button>
+          <el-button v-if="btnsPermission.offSale.auth && saleType === '3'" type="primary" size="small" @click="saleChange('one', 1, scope)">{{btnsPermission.offSale.name}}</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -158,6 +158,7 @@
 import waves from '@/directive/waves'
 import Pagination from '@/components/Pagination'
 import { getList, handlerGoods } from '@/api/goods/list'
+import { getUserBtnByPId } from '@/api/upms/menu'
 import { getProductTree } from '@/api/goods/product'
 
 
@@ -169,13 +170,26 @@ export default {
       btnsPermission: {
         search: {
           name: '搜索',
-          auth: true
+          auth: false
         },
         add: {
-          name: '新增商品',
-          auth: true
+          name: '添加',
+          auth: false
+        },
+        edit: {
+          name: '编辑',
+          auth: false
+        },
+        onSale: {
+          name: '上架',
+          auth: false
+        },
+        offSale: {
+          name: '下架',
+          auth: false
         }
       },
+      disable: false,
       listQuery: {
         createTimeStart: '',
         createTimeEnd: '',
@@ -238,6 +252,19 @@ export default {
   created() {
     this.getList()
   },
+  mounted() {
+    getUserBtnByPId({ parentId: this.$route.meta.id }).then(res => {
+      if(Array.isArray(res.data)) {
+        res.data.map((val) => {
+          if(this.btnsPermission.hasOwnProperty(val.code)) {
+            this.btnsPermission[val.code].auth = val.checked === 1
+            this.btnsPermission[val.code].name = val.name
+          }
+          
+        })
+      }
+    })
+  },
   methods: {
     jump() {
       // 新增商品
@@ -246,14 +273,17 @@ export default {
     getList() {
       // 获取商品列表
       this.listLoading = true
+      this.disable = true
       getList(this.listQuery).then(res => {
         if(Array.isArray(res.data.records)) {
           this.listLoading = false
+          this.disable = false
           this.total = res.data.total
           this.tableData = res.data.records
         }
       }).catch(err => {
         this.listLoading = false
+        this.disable = false
       })
     },
     msgEdit(scope) {

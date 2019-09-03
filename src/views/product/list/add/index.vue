@@ -8,17 +8,30 @@
         <!-- <el-cascader :options="addressOptions" :props="addressProps"></el-cascader> -->
       </div>
     </el-card>
-    <el-form v-loading="diaLoading" ref="productForm" :rules="rules" :model="addForm" label-position="right" label-width="120px" style="">
+    <el-form v-loading="diaLoading" ref="productForm" :model="addForm" label-position="right" label-width="120px" style="">
     <el-card class="box-card">
       <div slot="header" class="clearfix">
         <span>基本信息</span>
       </div>
       <div  class="text item">
-        <el-form-item label="标题" required>
-          <el-input class="long-input" v-model="addForm.title" size="medium" maxlength="64" placeholder="请输入名称，如：品种+口感+产地+用途等" />
+        <el-form-item label="标题" required prop="title">
+          <el-input 
+          class="long-input" 
+          v-model="addForm.title" 
+          size="medium" maxlength="64" 
+          :rules="{
+            required: true, message: '标题必填', trigger: 'blur'
+          }"
+          placeholder="请输入名称，如：品种+口感+产地+用途等" />
         </el-form-item>
         <template v-for="(item, index) in baseData">
-          <el-form-item :key="index" :label="item.name" required :prop="item.name">
+          <el-form-item 
+          :key="index" 
+          :label="item.name" 
+          :rules="{
+            required: true, message: `${item.name}必填`, trigger: 'blur', type: item.inputType === 0 || item.inputType === 2 ? 'array' : '' 
+          }"
+          :prop="'generate.' + index + '.list'">
             <template v-if="item.inputType === 0">
               <el-cascader
                 v-model="addForm.generate[index].list"
@@ -67,19 +80,30 @@
         <span>销售信息</span>
       </div>
       <div  class="text item">
-        <el-form-item label="计量单位">
+        <el-form-item 
+          label="计量单位" 
+          :prop="'unit'"
+          :rules="{
+            required: true, message: '计量单位必填', trigger: 'blur'     
+          }">
           <el-select v-model="addForm.unit" size="medium" maxlength="64" placeholder="请选择" @change="unitChange">
             <el-option v-for="(item, index) in sellData" :key="index" :label="item.name" :value="item.id"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item v-if="showStyle.type === '2'" label="库存">
+        <el-form-item 
+          v-if="showStyle.type === '2'" 
+          :prop="'sku.'+showStyle.id+'.store'"
+          :rules="{
+            required: true, message: '库存必填', trigger: 'blur'     
+          }"
+          label="库存">
             <el-input class="short-input" v-model="addForm.sku[showStyle.id].store" size="medium" maxlength="30" />
         </el-form-item>
         <div v-if="showStyle.type === '2'">
           <div v-for="(stairItem, stairIndex) in stairArr" :key="stairIndex" class="unit-box">
             <span class="mr40">阶梯{{stairIndex + 1}}</span>
             <span class="mr5">起批数</span><el-input class="table-input mr40" v-model="addForm.sku[showStyle.id].list[stairIndex].number" size="small" maxlength="30" />
-            <span class="mr5">单价</span><el-input class="table-input mr5" v-model="addForm.sku[showStyle.id].list[stairIndex].price" size="small" maxlength="30" /><span class="mr20">元</span><span class="mr10 unit-delete" @click="removeStair(stairIndex)">删除</span><span class="unit-add" v-show="stairIndex === stairArr.length - 1" @click="addStair(stairIndex, showStyle.id)">新增阶梯</span>
+            <span class="mr5">单价</span><el-input class="table-input mr5" v-model="addForm.sku[showStyle.id].list[stairIndex].price" size="small" maxlength="30" /><span class="mr20">元</span><span v-show="stairIndex > 0 || stairArr.length > 1" class="mr10 unit-delete" @click="removeStair(stairIndex, showStyle.id)">删除</span><span class="unit-add" v-show="stairIndex === stairArr.length - 1" @click="addStair(stairIndex, showStyle.id)">新增阶梯</span>
           </div>
         </div>
         <div v-else-if="showStyle.type === '1'">
@@ -100,7 +124,7 @@
                 <td><el-input class="table-input mr5" v-model="addForm.sku[showStyle.id].list[boxIndex].price" size="small" maxlength="30" /><span>元</span></td>
                 <td><el-input class="table-input" v-model="addForm.sku[showStyle.id].list[boxIndex].store" size="small" maxlength="30" /></td>
                 <td>
-                  <span class="mr10 unit-delete" @click="removeBox(boxIndex, boxItem.id)">删除</span><span v-show="boxIndex === boxArr.length - 1" class="unit-add" @click="addBox(boxIndex, showStyle.id)">新增规格</span>
+                  <span v-show="boxIndex > 0 || boxArr.length > 1" class="mr10 unit-delete" @click="removeBox(boxIndex, showStyle.id)">删除</span><span v-show="boxIndex === boxArr.length - 1" class="unit-add" @click="addBox(boxIndex, showStyle.id)">新增规格</span>
                 </td>
               </tr>
             </tbody>
@@ -113,12 +137,15 @@
         <span>图文视图</span>
       </div>
       <div  class="text item">
-        <el-form-item label="商品视图">
+        <el-form-item 
+          label="商品视图" required>
           <el-upload
             action="https://jsonplaceholder.typicode.com/posts/"
             list-type="picture-card"
             :http-request="uploadImg"
+            v-model="addForm.imgBox"
             :on-preview="handlePictureCardPreview"
+            :file-list="imgsList"
             :on-remove="handleRemove">
             <i class="el-icon-plus"></i>
           </el-upload>
@@ -128,7 +155,12 @@
             <p>* 默认第一张图片为商品封面图；</p>
           </div>
         </el-form-item>
-        <el-form-item label="介绍文案">
+        <el-form-item 
+          label="介绍文案" 
+          :rules="{
+            required: true, message: '介绍文案必填', trigger: 'blur'
+          }"
+          prop="remark">
           <el-input
             class="long-input"
             v-model="addForm.remark"
@@ -146,7 +178,7 @@
       </div>
       <div  class="text item">
         <el-form-item label="物流信息">
-          <el-select v-model="value" size="medium" maxlength="64" placeholder="请选择">
+          <el-select v-model="logisticsValue" size="medium" maxlength="64" placeholder="请选择">
             <el-option
               v-for="item in addForm.unit"
               :key="item.value"
@@ -267,47 +299,22 @@ let vm = {
       addForm: {
         sku: {},
         generate: [],
+        imgsBox: []
       },
       stairArr: [''],
       boxArr: [''],
-      imgsBox: [],
       showAble: {},
       showStyle: {
         type: '',
         id: '',
       },
-      checkedCities: [],
-      checkAll: false,
       isIndeterminate: false,
-      rules: {
-        name: [
-          { required: true, message: '请输入活动名称', trigger: 'blur' },
-          { min: 3, max: 5, message: '长度在 3 到 5 个字符', trigger: 'blur' }
-        ],
-        region: [
-          { required: true, message: '请选择活动区域', trigger: 'change' }
-        ],
-        date1: [
-          { type: 'date', required: true, message: '请选择日期', trigger: 'change' }
-        ],
-        date2: [
-          { type: 'date', required: true, message: '请选择时间', trigger: 'change' }
-        ],
-        type: [
-          { type: 'array', required: true, message: '请至少选择一个活动性质', trigger: 'change' }
-        ],
-        resource: [
-          { required: true, message: '请选择活动资源', trigger: 'change' }
-        ],
-        desc: [
-          { required: true, message: '请填写活动形式', trigger: 'blur' }
-        ]
-      },
-      value: '',
+      logisticsValue: '',
       previewDialog: false,
       diaLoading: false,
       dialogImageUrl: '',
-      dialogVisible: false
+      dialogVisible: false,
+      imgsList: []
     }
   },
   components: {  },
@@ -357,6 +364,7 @@ let vm = {
           });
           console.log('add form')
           console.log(this.addForm)
+          console.log(this.rules)
           this.baseData = res.data
         }
       })
@@ -404,7 +412,7 @@ let vm = {
       let formData = new FormData()
       formData.append('file', file.file)
       fileUpload(formData).then(res => {
-        this.imgsBox.push({
+        this.addForm.imgsBox.push({
           imgUrl: res.data,
           type: 1
         })
@@ -452,6 +460,9 @@ let vm = {
     },
     removeStair(index, id) {
       // 删除阶梯价
+      console.log(this.addForm)
+      console.log(index)
+      console.log('id', id)
       this.addForm.sku[id].list.splice(index, 1)
       this.stairArr.splice(index, 1)
     },
@@ -487,6 +498,7 @@ let vm = {
       this.previewDialog = true
     },
     submitForm(formName) {
+      console.log(this.$refs[formName])
       this.$refs[formName].validate((valid) => {
         if (valid) {
           alert('submit!');
@@ -589,10 +601,7 @@ let vm = {
         }
       }
       // 商品图片信息
-      goodsVO.goodsImgList = this.imgsBox
-      // let data = JSON.stringify({
-      //   goodsVO: goodsVO
-      // })
+      goodsVO.goodsImgList = this.addForm.imgsBox
       saveGoods(goodsVO)
     },
     selectChange(val) {

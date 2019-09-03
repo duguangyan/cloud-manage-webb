@@ -156,7 +156,7 @@ export default {
       this.dialogMsg = '添加一级分类'
       this.dialogVisible = true
     },
-     filterNode(value, data) {
+    filterNode(value, data) {
       if (!value) return true;
       return data.name.indexOf(value) !== -1;
     },
