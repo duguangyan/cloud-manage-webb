@@ -1,4 +1,3 @@
-import { getAuthCode } from '@/api/oauth/auth'
 import { constantRoutes } from '@/router'
 import { getRoles } from '@/api/upms/user'
 import Layout from '@/layout'

@@ -16,10 +16,11 @@ export function getInfo(query) {
   })
 }
 
-export function logout() {
+export function logout(data) {
   return request({
-    url: '/user/logout',
-    method: 'post'
+    url: '/oauth/deleteToken',
+    method: 'post',
+    data
   })
 }
 

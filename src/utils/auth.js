@@ -19,8 +19,8 @@ export function getUuid() {
   return Cookies.get(Uuid)
 }
 
-export function setUuid(token) {
-  return Cookies.set(Uuid, token)
+export function setUuid(uuid) {
+  return Cookies.set(Uuid, uuid)
 }
 
 export function removeUuid() {

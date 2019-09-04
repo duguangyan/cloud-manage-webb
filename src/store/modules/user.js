@@ -4,7 +4,6 @@ import router, { resetRouter } from '@/router'
 
 const state = {
   token: getToken(),
-  uuid: getUuid(),
   refreshToken: '',
   name: '',
   avatar: '',
@@ -39,9 +38,10 @@ const mutations = {
 const actions = {
   // user login
   login({ commit }, userInfo) {
+    const uuid = getUuid()
     const { username, password, authcode } = userInfo
     return new Promise((resolve, reject) => {
-      login({ username: username.trim(), password: password, grant_type: 'password', imageCode: authcode, deviceId: state.uuid, scope: '1', client_id: 'cmanager', client_secret: 'xx', systemId: 1 }).then(response => {
+      login({ username: username.trim(), password: password, grant_type: 'password', imageCode: authcode, deviceId: uuid, scope: '1', client_id: 'cmanager', client_secret: 'xx', systemId: 1 }).then(response => {
         const data = response
         commit('SET_TOKEN', data.access_token)
         commit('SET_REFRESH_TOKEN', data.refresh_token)
@@ -79,14 +79,19 @@ const actions = {
   // user logout
   logout({ commit, state }) {
     return new Promise((resolve, reject) => {
-      logout(state.token).then(() => {
-        commit('SET_TOKEN', '')
-        removeToken()
-        resetRouter()
-        resolve()
-      }).catch(error => {
-        reject(error)
-      })
+      commit('SET_NAME', '')
+      commit('SET_TOKEN', '')
+      removeToken()
+      resetRouter()
+      resolve()
+      // logout({ access_token: state.token }).then(() => {
+      //   commit('SET_TOKEN', '')
+      //   removeToken()
+      //   resetRouter()
+      //   resolve()
+      // }).catch(error => {
+      //   reject(error)
+      // })
     })
   },
 
