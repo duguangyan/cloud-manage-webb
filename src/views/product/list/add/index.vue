@@ -18,7 +18,9 @@
           <el-input 
           class="long-input" 
           v-model="addForm.title" 
-          size="medium" maxlength="64" 
+          size="medium" 
+          maxlength="100" 
+          show-word-limit
           :rules="{
             required: true, message: '标题必填', trigger: 'blur'
           }"
@@ -88,7 +90,7 @@
               :rules="{
                 required: true, message: '计量单位必填', trigger: 'blur'     
               }">
-              <el-select v-model="addForm.unit" size="medium" maxlength="64" placeholder="请选择" @change="unitChange">
+              <el-select v-model="addForm.unit" size="medium" maxlength="64" placeholder="请选择" @change="((val) => unitChange(val, 1))">
                 <el-option v-for="(item, index) in sellData" :key="index" :label="item.name" :value="item.id"></el-option>
               </el-select>
             </el-form-item>
@@ -102,34 +104,80 @@
                 <el-input class="short-input" v-model="addForm.sku[showStyle.id].store" size="medium" maxlength="30" />
             </el-form-item>
             <div v-if="showStyle.type === '2'">
-              <div v-for="(stairItem, stairIndex) in stairArr" :key="stairIndex" class="unit-box">
+              <el-table
+                :data="stairArr"
+                border
+                style="max-width: 700px">
+                <el-table-column  label="起批量" width="220" align="center">
+                  <template slot-scope="scope">
+                    <span class="mr5">起批数</span><el-input class="table-input" v-model="addForm.sku[showStyle.id].list[scope.$index].number" size="small" maxlength="12" />
+                  </template>
+                </el-table-column>
+                <el-table-column label="价格" width="220" align="center">
+                  <template slot-scope="scope">
+                    <span class="mr5">单价</span><el-input class="table-input" v-model="addForm.sku[showStyle.id].list[scope.$index].price" size="small" maxlength="12" />
+                  </template>
+                </el-table-column>
+                <el-table-column label="操作" align="center">
+                  <template slot-scope="scope">
+                    <div style="text-align: left;padding-left: 50px;">
+                      <el-button v-show="scope.$index > 0 || stairArr.length > 1" size="mini" type="danger" plain @click="removeStair(scope.$index, showStyle.id)">
+                        删除
+                      </el-button>
+                      <el-button v-show="scope.$index === stairArr.length - 1" size="mini" type="primary" plain @click="addStair(scope.$index, showStyle.id)">
+                        新增规格
+                      </el-button>
+                      <!-- <span v-show="scope.$index > 0 || stairArr.length > 1" class="mr10 unit-delete" @click="removeStair(scope.$index, showStyle.id)">删除</span><span v-show="scope.$index === stairArr.length - 1" class="unit-add" @click="addStair(scope.$index, showStyle.id)">新增规格</span> -->
+                    </div>
+                  </template>
+                </el-table-column>
+              </el-table>
+              <!-- <div v-for="(stairItem, stairIndex) in stairArr" :key="stairIndex" class="unit-box">
                 <span class="mr40">阶梯{{stairIndex + 1}}</span>
                 <span class="mr5">起批数</span><el-input class="table-input mr40" v-model="addForm.sku[showStyle.id].list[stairIndex].number" size="small" maxlength="30" />
                 <span class="mr5">单价</span><el-input class="table-input mr5" v-model="addForm.sku[showStyle.id].list[stairIndex].price" size="small" maxlength="30" /><span class="mr20">元</span><span v-show="stairIndex > 0 || stairArr.length > 1" class="mr10 unit-delete" @click="removeStair(stairIndex, showStyle.id)">删除</span><span class="unit-add" v-show="stairIndex === stairArr.length - 1" @click="addStair(stairIndex, showStyle.id)">新增阶梯</span>
-              </div>
+              </div> -->
             </div>
             <div v-else-if="showStyle.type === '1'">
               <el-table
-                :data="tableData"
-                border
-                style="width: 100%">
-                <el-table-column  label="规格名称" width="180">
-                    <span class="mr5">每箱</span><el-input class="table-input" v-model="addForm.sku[showStyle.id].list[boxIndex].name" size="small" maxlength="30" />
+                :data="boxArr"
+                style="max-width: 1140px"
+                border>
+                <el-table-column  label="规格名称" width="220" align="center">
+                  <template slot-scope="scope">
+                    <el-input class="table-input mr5" v-model="addForm.sku[showStyle.id].list[scope.$index].name" size="small" maxlength="12" /><span>斤/箱</span>
+                  </template>
                 </el-table-column>
-                <el-table-column label="起批量" width="180">
-                  <el-input class="table-input" v-model="addForm.sku[showStyle.id].list[boxIndex].number" size="small" maxlength="30" />
+                <el-table-column label="起批量" width="220" align="center">
+                  <template slot-scope="scope">
+                    <el-input class="table-input" v-model="addForm.sku[showStyle.id].list[scope.$index].number" size="small" maxlength="12" />
+                  </template>
                 </el-table-column>
-                <el-table-column label="单价" width="180">
-                  <el-input class="table-input mr5" v-model="addForm.sku[showStyle.id].list[boxIndex].price" size="small" maxlength="30" /><span>元</span>
+                <el-table-column label="价格" width="220" align="center">
+                  <template slot-scope="scope">
+                    <el-input class="table-input mr5" v-model="addForm.sku[showStyle.id].list[scope.$index].price" size="small" maxlength="12" /><span>元</span>
+                  </template>
                 </el-table-column>
-                <el-table-column label="库存">
-                  <el-input class="table-input" v-model="addForm.sku[showStyle.id].list[boxIndex].store" size="small" maxlength="30" />
+                <el-table-column label="库存" width="220" align="center">
+                  <template slot-scope="scope">
+                    <el-input class="table-input" v-model="addForm.sku[showStyle.id].list[scope.$index].store" size="small" maxlength="12" />
+                  </template>
                 </el-table-column>
-                <el-table-column label="">
-                  <span v-show="boxIndex > 0 || boxArr.length > 1" class="mr10 unit-delete" @click="removeBox(boxIndex, showStyle.id)">删除</span><span v-show="boxIndex === boxArr.length - 1" class="unit-add" @click="addBox(boxIndex, showStyle.id)">新增规格</span>
+                <el-table-column label="操作" align="center">
+                  <template slot-scope="scope">
+                    <div style="text-align: left;padding-left: 50px;">
+                      <el-button v-show="scope.$index > 0 || boxArr.length > 1" size="mini" type="danger" plain @click="removeBox(scope.$index, showStyle.id)">
+                        删除
+                      </el-button>
+                      <el-button v-show="scope.$index === boxArr.length - 1" size="mini" type="primary" plain @click="addBox(scope.$index, showStyle.id)">
+                        新增规格
+                      </el-button>
+                      <!-- <span v-show="scope.$index > 0 || boxArr.length > 1" class="mr10 unit-delete" @click="removeBox(scope.$index, showStyle.id)">删除</span><span v-show="scope.$index === boxArr.length - 1" class="unit-add" @click="addBox(scope.$index, showStyle.id)">新增规格</span> -->
+                    </div>
+                  </template>
                 </el-table-column>
               </el-table>
-              <table class="table-box">
+              <!-- <table class="table-box">
                 <thead>
                   <tr>
                     <td>规格名称</td>
@@ -150,20 +198,39 @@
                     </td>
                   </tr>
                 </tbody>
-              </table>
+              </table> -->
             </div>
           </div>
         </el-tab-pane>
         <el-tab-pane label="配置管理" name="second">
+          <el-form-item 
+            label="计量单位" 
+            :prop="'unitMore'"
+            :rules="{
+              required: true, message: '计量单位必填', trigger: 'blur'     
+            }">
+            <el-select v-model="addForm.unitMore" size="medium" maxlength="64" placeholder="请选择" @change="((val) => unitChange(val, 2))">
+              <el-option v-for="(item, index) in sellMoreData" :key="index" :label="item.name" :value="item.id"></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item 
+            label="规格1" 
+            :prop="'unitMore'"
+            :rules="{
+              required: true, message: '计量单位必填', trigger: 'blur'     
+            }">
+            <el-select v-model="addForm.unitMore" size="medium" maxlength="64" placeholder="请选择" @change="((val) => unitChange(val, 2))">
+              <el-option v-for="(item, index) in sellMoreData" :key="index" :label="item.name" :value="item.id"></el-option>
+            </el-select>
+            <el-button type="danger" plain size="small" v-waves>删除</el-button>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" plain size="medium" v-waves>添加规格</el-button>
+          </el-form-item>
           <el-table
             :data="tableData"
             border
             style="width: 100%">
-            <el-table-column
-              type="index"
-              >
-              INDEX:{{index}}
-            </el-table-column>
             <el-table-column
               label="输入"
               width="180">
@@ -219,7 +286,8 @@
           <el-input
             class="long-input"
             v-model="addForm.remark"
-            maxlength="255"
+            maxlength="1000"
+            show-word-limit
             :autosize="{ minRows: 5}"
             type="textarea"
             placeholder="请输入介绍内容"
@@ -323,6 +391,17 @@ let vm = {
       categoryId: '',
       baseData: [],
       sellData: [],
+      sellMoreData: [
+        {
+          name: '件'
+        },
+        {
+          name: '斤'
+        },
+        {
+          name: '箱'
+        }
+      ],
       boxData: [],
       treeProps: {},
       treeValue: '',
@@ -450,10 +529,10 @@ let vm = {
       }).then(res => {
         this.listLoading = false
         if(Array.isArray(res.data)) {
+          let skuInitObj = {}
           res.data.forEach(item => {
             let itemId = item.id 
             let obj = {}
-            let objP = {}
             if(item.showStyle == 2) {
               obj.list = []
               obj.list.push({
@@ -473,10 +552,10 @@ let vm = {
             obj.name = item.name
             obj.id = item.id
             obj.showStyle = item.showStyle
-            objP[itemId] = obj
-            this.$set(this.addForm, 'sku', objP)
+            skuInitObj[itemId] = obj
             this.showAble[itemId] = item.showStyle
           });
+          this.$set(this.addForm, 'sku', skuInitObj)
           this.sellData = res.data
         }
       })
@@ -501,10 +580,12 @@ let vm = {
         this.addressOptions = res.data
       })
     },
-    unitChange(val) {
+    unitChange(val, type) {
       // 计量单位选择
       this.showStyle.type = this.showAble[val]
       this.showStyle.id = val
+      console.log(this.showStyle)
+      console.log(this.addForm)
     },
     addStair(index, id) {
       // 添加阶梯价
@@ -735,26 +816,21 @@ export default vm;
       max-width: 200px;
     }
     .table-input{
-      max-width: 100px;
+      max-width: 120px;
     }
     .box-card{
       margin-bottom: 10px;
     }
-    .unit-box,.table-box{
-      font-size: 14px;
-      color: #606266;
-      padding-left: 30px;
-      margin-bottom: 10px;
-      font-weight: bold;
-      .unit-delete{
-        color: #ff0000;
-        cursor: pointer;
-      }
-      .unit-add{
-        color: #409EFF;
-        cursor: pointer;
-      }
+  
+    .unit-delete{
+      color: #ff0000;
+      cursor: pointer;
     }
+    .unit-add{
+      color: #409EFF;
+      cursor: pointer;
+    }
+
     .bottom-box{
       text-align: center;
       position: fixed;
