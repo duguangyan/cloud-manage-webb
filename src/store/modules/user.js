@@ -1,9 +1,10 @@
-import { login, logout, getInfo, getRoles } from '@/api/upms/user'
-import { getToken, setToken, removeToken } from '@/utils/auth'
+import { login, logout, getInfo } from '@/api/upms/user'
+import { getToken, setToken, removeToken, getUuid, setUuid, removeUuid } from '@/utils/auth'
 import router, { resetRouter } from '@/router'
 
 const state = {
   token: getToken(),
+  uuid: getUuid(),
   refreshToken: '',
   name: '',
   avatar: '',
@@ -38,9 +39,9 @@ const mutations = {
 const actions = {
   // user login
   login({ commit }, userInfo) {
-    const { username, password } = userInfo
+    const { username, password, authcode } = userInfo
     return new Promise((resolve, reject) => {
-      login({ username: username.trim(), password: password, grant_type: 'password', scope: '1', client_id: 'cmanager', client_secret: 'xx', systemId: 1 }).then(response => {
+      login({ username: username.trim(), password: password, grant_type: 'password', imageCode: authcode, deviceId: state.uuid, scope: '1', client_id: 'cmanager', client_secret: 'xx', systemId: 1 }).then(response => {
         const data = response
         commit('SET_TOKEN', data.access_token)
         commit('SET_REFRESH_TOKEN', data.refresh_token)

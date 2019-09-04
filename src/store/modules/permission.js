@@ -1,3 +1,4 @@
+import { getAuthCode } from '@/api/oauth/auth'
 import { constantRoutes } from '@/router'
 import { getRoles } from '@/api/upms/user'
 import Layout from '@/layout'
@@ -94,12 +95,11 @@ const mutations = {
   SET_ROUTES: (state, routes) => {
     state.addRoutes = routes
     state.routes = constantRoutes.concat(routes)
-    console.log('route')
-    console.log(state.routes)
   }
 }
 
 const actions = {
+  // 生成路由表
   generateRoutes({ commit }, roles) {
     return new Promise((resolve, reject) => {
       let accessedRouters = []

@@ -109,6 +109,26 @@
               </div>
             </div>
             <div v-else-if="showStyle.type === '1'">
+              <el-table
+                :data="tableData"
+                border
+                style="width: 100%">
+                <el-table-column  label="规格名称" width="180">
+                    <span class="mr5">每箱</span><el-input class="table-input" v-model="addForm.sku[showStyle.id].list[boxIndex].name" size="small" maxlength="30" />
+                </el-table-column>
+                <el-table-column label="起批量" width="180">
+                  <el-input class="table-input" v-model="addForm.sku[showStyle.id].list[boxIndex].number" size="small" maxlength="30" />
+                </el-table-column>
+                <el-table-column label="单价" width="180">
+                  <el-input class="table-input mr5" v-model="addForm.sku[showStyle.id].list[boxIndex].price" size="small" maxlength="30" /><span>元</span>
+                </el-table-column>
+                <el-table-column label="库存">
+                  <el-input class="table-input" v-model="addForm.sku[showStyle.id].list[boxIndex].store" size="small" maxlength="30" />
+                </el-table-column>
+                <el-table-column label="">
+                  <span v-show="boxIndex > 0 || boxArr.length > 1" class="mr10 unit-delete" @click="removeBox(boxIndex, showStyle.id)">删除</span><span v-show="boxIndex === boxArr.length - 1" class="unit-add" @click="addBox(boxIndex, showStyle.id)">新增规格</span>
+                </el-table-column>
+              </el-table>
               <table class="table-box">
                 <thead>
                   <tr>
@@ -134,7 +154,37 @@
             </div>
           </div>
         </el-tab-pane>
-        <el-tab-pane label="配置管理" name="second">配置管理</el-tab-pane>
+        <el-tab-pane label="配置管理" name="second">
+          <el-table
+            :data="tableData"
+            border
+            style="width: 100%">
+            <el-table-column
+              type="index"
+              >
+              INDEX:{{index}}
+            </el-table-column>
+            <el-table-column
+              label="输入"
+              width="180">
+               <el-input></el-input>
+            </el-table-column>
+            <el-table-column
+              prop="date"
+              label="日期"
+              width="180">
+            </el-table-column>
+            <el-table-column
+              prop="name"
+              label="姓名"
+              width="180">
+            </el-table-column>
+            <el-table-column
+              prop="address"
+              label="地址">
+            </el-table-column>
+          </el-table>
+        </el-tab-pane>
       </el-tabs>
     </el-card>
     <el-card class="box-card">
@@ -314,6 +364,23 @@ let vm = {
         type: '',
         id: '',
       },
+      tableData: [{
+        date: '2016-05-02',
+        name: '王小虎',
+        address: '上海市普陀区金沙江路 1518 弄'
+      }, {
+        date: '2016-05-04',
+        name: '王小虎',
+        address: '上海市普陀区金沙江路 1517 弄'
+      }, {
+        date: '2016-05-01',
+        name: '王小虎',
+        address: '上海市普陀区金沙江路 1519 弄'
+      }, {
+        date: '2016-05-03',
+        name: '王小虎',
+        address: '上海市普陀区金沙江路 1516 弄'
+      }],
       isIndeterminate: false,
       logisticsValue: '',
       previewDialog: false,
