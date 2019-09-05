@@ -74,7 +74,14 @@
             </template>
           </el-form-item>         
         </template>
-
+        <el-form-item v-for="(selfItem, selfIndex) in addForm.selfProp" :key="selfIndex" :label="addForm.selfProp[selfIndex].name">
+          {{addForm.selfProp[selfIndex].value}}
+        </el-form-item>
+        <el-form-item label="" required prop="title">
+          <el-button size="medium" type="primary" plain @click="addSelfProp">
+            新增属性
+          </el-button>
+        </el-form-item>
       </div>
     </el-card>
     <el-card class="box-card">
@@ -90,7 +97,7 @@
               :rules="{
                 required: true, message: '计量单位必填', trigger: 'blur'     
               }">
-              <el-select v-model="addForm.unit" size="medium" maxlength="64" placeholder="请选择" @change="((val) => unitChange(val, 1))">
+              <el-select v-model="addForm.unit" size="medium" maxlength="64" placeholder="请选择" @change="((val) => unitChange(val, 'auto'))">
                 <el-option v-for="(item, index) in sellData" :key="index" :label="item.name" :value="item.id"></el-option>
               </el-select>
             </el-form-item>
@@ -105,7 +112,7 @@
             </el-form-item>
             <div v-if="showStyle.type === '2'">
               <el-table
-                :data="stairArr"
+                :data="addForm.sku[showStyle.id].list"
                 border
                 style="max-width: 700px">
                 <el-table-column  label="起批量" width="220" align="center">
@@ -121,10 +128,10 @@
                 <el-table-column label="操作" align="center">
                   <template slot-scope="scope">
                     <div style="text-align: left;padding-left: 50px;">
-                      <el-button v-show="scope.$index > 0 || stairArr.length > 1" size="mini" type="danger" plain @click="removeStair(scope.$index, showStyle.id)">
+                      <el-button v-show="scope.$index > 0 || addForm.sku[showStyle.id].list.length > 1" size="mini" type="danger" plain @click="removeStair(scope.$index, showStyle.id)">
                         删除
                       </el-button>
-                      <el-button v-show="scope.$index === stairArr.length - 1" size="mini" type="primary" plain @click="addStair(scope.$index, showStyle.id)">
+                      <el-button v-show="scope.$index === addForm.sku[showStyle.id].list.length - 1" size="mini" type="primary" plain @click="addStair(scope.$index, showStyle.id)">
                         新增规格
                       </el-button>
                       <!-- <span v-show="scope.$index > 0 || stairArr.length > 1" class="mr10 unit-delete" @click="removeStair(scope.$index, showStyle.id)">删除</span><span v-show="scope.$index === stairArr.length - 1" class="unit-add" @click="addStair(scope.$index, showStyle.id)">新增规格</span> -->
@@ -140,7 +147,7 @@
             </div>
             <div v-else-if="showStyle.type === '1'">
               <el-table
-                :data="boxArr"
+                :data="addForm.sku[showStyle.id].list"
                 style="max-width: 1140px"
                 border>
                 <el-table-column  label="规格名称" width="220" align="center">
@@ -166,10 +173,10 @@
                 <el-table-column label="操作" align="center">
                   <template slot-scope="scope">
                     <div style="text-align: left;padding-left: 50px;">
-                      <el-button v-show="scope.$index > 0 || boxArr.length > 1" size="mini" type="danger" plain @click="removeBox(scope.$index, showStyle.id)">
+                      <el-button v-show="scope.$index > 0 || addForm.sku[showStyle.id].list.length > 1" size="mini" type="danger" plain @click="removeBox(scope.$index, showStyle.id)">
                         删除
                       </el-button>
-                      <el-button v-show="scope.$index === boxArr.length - 1" size="mini" type="primary" plain @click="addBox(scope.$index, showStyle.id)">
+                      <el-button v-show="scope.$index === addForm.sku[showStyle.id].list.length - 1" size="mini" type="primary" plain @click="addBox(scope.$index, showStyle.id)">
                         新增规格
                       </el-button>
                       <!-- <span v-show="scope.$index > 0 || boxArr.length > 1" class="mr10 unit-delete" @click="removeBox(scope.$index, showStyle.id)">删除</span><span v-show="scope.$index === boxArr.length - 1" class="unit-add" @click="addBox(scope.$index, showStyle.id)">新增规格</span> -->
@@ -209,46 +216,81 @@
             :rules="{
               required: true, message: '计量单位必填', trigger: 'blur'     
             }">
-            <el-select v-model="addForm.unitMore" size="medium" maxlength="64" placeholder="请选择" @change="((val) => unitChange(val, 2))">
+            <el-select v-model="addForm.unitMore" size="medium" maxlength="64" placeholder="请选择" @change="((val) => unitChange(val, 'more'))">
               <el-option v-for="(item, index) in sellMoreData" :key="index" :label="item.name" :value="item.id"></el-option>
             </el-select>
           </el-form-item>
           <el-form-item 
-            label="规格1" 
+            v-for="(item, pIndex) in addForm.moreSpec" :key="pIndex"
+            :label="'规格' + (pIndex + 1)" 
             :prop="'unitMore'"
-            :rules="{
-              required: true, message: '计量单位必填', trigger: 'blur'     
-            }">
-            <el-select v-model="addForm.unitMore" size="medium" maxlength="64" placeholder="请选择" @change="((val) => unitChange(val, 2))">
-              <el-option v-for="(item, index) in sellMoreData" :key="index" :label="item.name" :value="item.id"></el-option>
+            >
+            <el-select v-model="addForm.moreSpec[pIndex].selectValue" filterable allow-create size="medium" maxlength="64" placeholder="请选择" @change="((val) => unitChange(val, 'spec', pIndex))">
+              <el-option v-for="(item, index) in sellMoreData" :key="index" :label="item.name" :value="item.name"></el-option>
             </el-select>
-            <el-button type="danger" plain size="small" v-waves>删除</el-button>
+            <el-button type="danger" plain size="small" v-waves @click="removeMoreSpec(pIndex)">删除</el-button>
+            <div v-show="addForm.moreSpec[pIndex].isSpecSelect">
+              <el-input
+                v-for="(item, index) in addForm.moreSpec[pIndex].list" :key="index"
+                placeholder="请输入规格值"
+                v-model="addForm.moreSpec[pIndex].list[index].value"
+                size="mini"
+                class="table-input mr5"
+                clearable
+                @clear="removeMoreSpecValue(pIndex, index)"
+                @blur="(event) => specValueBlur(event, pIndex)">
+              </el-input>
+              <el-button type="primary" plain size="mini" v-waves @click="addMoreSpecValue(pIndex)">添加</el-button>
+            </div>
           </el-form-item>
           <el-form-item>
-            <el-button type="primary" plain size="medium" v-waves>添加规格</el-button>
+            <el-button v-show="addForm.moreSpec.length < 2 && moreSpecTableShow" type="primary" plain size="medium" v-waves @click="addMoreSpec">添加规格</el-button>
           </el-form-item>
           <el-table
-            :data="tableData"
-            border
-            style="width: 100%">
+            v-if="moreSpecTableShow"
+            :data="addForm.moreSpecData"
+            :span-method="arraySpanMethod"
+            border>
             <el-table-column
-              label="输入"
-              width="180">
-               <el-input></el-input>
+              v-if="addForm.moreSpec.length > 0 && addForm.moreSpec[0].selectValue.length > 0"
+              :label="addForm.moreSpec[0].selectValue"
+              align="center"
+              width="220">
+              <template slot-scope="scope">
+                 <span>{{addForm.moreSpecData[scope.$index].one}}</span>
+              </template>
             </el-table-column>
             <el-table-column
-              prop="date"
-              label="日期"
-              width="180">
+              v-if="addForm.moreSpec.length === 2 && addForm.moreSpec[1].selectValue.length > 0"
+              :label="addForm.moreSpec[1].selectValue"
+              align="center"
+              width="220">
+              <template slot-scope="scope">
+                 <span>{{addForm.moreSpecData[scope.$index].two}}</span>
+              </template>
             </el-table-column>
             <el-table-column
-              prop="name"
-              label="姓名"
-              width="180">
+              label="起批量"
+              align="center"
+              width="220">
+              <template slot-scope="scope">
+                 <el-input v-model="addForm.moreSpecData[scope.$index].startNum" class="table-input" size="small" maxlength="12" />
+              </template>
             </el-table-column>
             <el-table-column
-              prop="address"
-              label="地址">
+              label="价格"
+              align="center"
+              width="220">
+              <template slot-scope="scope">
+                 <el-input v-model="addForm.moreSpecData[scope.$index].price" class="table-input" size="small" maxlength="12" />
+              </template>
+            </el-table-column>
+            <el-table-column
+              align="center"
+              label="库存">
+              <template slot-scope="scope">
+                 <el-input v-model="addForm.moreSpecData[scope.$index].store" class="table-input" size="small" maxlength="12" />
+              </template>
             </el-table-column>
           </el-table>
         </el-tab-pane>
@@ -372,7 +414,20 @@
       </div>
       <div class="self-close" @click="previewDialog = false">×</div>
     </div>
-   
+    <el-dialog :visible.sync="dialogProp" :closeOnClickModal="false" title="添加属性">
+      <el-form v-loading="diaLoading" ref="selfPropForm" :model="selfProp" label-width="100px" label-position="left">
+          <el-form-item label="属性名">
+            <el-input v-model="selfProp.name" maxlength="20" placeholder="请输入属性名" />
+          </el-form-item>
+          <el-form-item label="属性值">
+            <el-input v-model="selfProp.value" maxlength="20" placeholder="请输入属性值" />
+          </el-form-item>
+      </el-form>
+      <div style="text-align:right;">
+        <el-button type="danger" @click="dialogVisible=false">取消</el-button>
+        <el-button type="primary" @click="confirm">确定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -393,15 +448,22 @@ let vm = {
       sellData: [],
       sellMoreData: [
         {
+          id: 1,
           name: '件'
         },
         {
+          id: 2,
           name: '斤'
         },
         {
+          id: 3,
           name: '箱'
         }
       ],
+      selfProp: {
+        name: '',
+        value: ''
+      },
       boxData: [],
       treeProps: {},
       treeValue: '',
@@ -416,8 +478,6 @@ let vm = {
       addressProps: {
         lazy: true,
         lazyLoad (node, resolve) {
-          console.log('lazy')
-          console.log(node)
           getAd({ parentId: node.level === 0 ? 0 : node.data.id }).then( res => {
             if(Array.isArray(res.data)) {
               res.data.map((item) => {
@@ -427,45 +487,44 @@ let vm = {
             }
           })
         },
-        value: "name",
+        value: "shortName",
         id: "id",
-        label: "name",
+        label: "shortName",
       },
       addForm: {
         sku: {},
         generate: [],
-        imgsBox: []
+        imgsBox: [],
+        unitMore: '',
+        selfProp: [],
+        moreSpec: [],
+        moreSpecType: 'auto',
+        moreSpecData: [{
+          one: '',
+          two: '',
+          startNum: '',
+          price: '',
+          store: ''
+        }]
       },
-      stairArr: [''],
-      boxArr: [''],
       showAble: {},
       showStyle: {
         type: '',
         id: '',
       },
-      tableData: [{
-        date: '2016-05-02',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
-      }, {
-        date: '2016-05-04',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1517 弄'
-      }, {
-        date: '2016-05-01',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1519 弄'
-      }, {
-        date: '2016-05-03',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1516 弄'
-      }],
+      role: {
+        name: ''
+      },
+      tableSpan: false,
+      moreSpecTable: [],
+      moreSpecTableShow: false,
       isIndeterminate: false,
       logisticsValue: '',
       previewDialog: false,
       diaLoading: false,
       dialogImageUrl: '',
       dialogVisible: false,
+      dialogProp: false,
       imgsList: []
     }
   },
@@ -580,12 +639,19 @@ let vm = {
         this.addressOptions = res.data
       })
     },
-    unitChange(val, type) {
+    unitChange(val, type, pindex) {
       // 计量单位选择
-      this.showStyle.type = this.showAble[val]
-      this.showStyle.id = val
-      console.log(this.showStyle)
-      console.log(this.addForm)
+      if(type === 'auto') {
+        this.showStyle.type = this.showAble[val]
+        this.showStyle.id = val
+      } else if(type === 'more') {
+        this.moreSpecTableShow = true
+      } else if(type === 'spec') {
+        this.addForm.moreSpec[pindex].isSpecSelect = true
+        console.log(this.addForm.moreSpec)
+      }
+      
+    
     },
     addStair(index, id) {
       // 添加阶梯价
@@ -614,7 +680,6 @@ let vm = {
           number: '',
           price: ''
       })
-      this.stairArr.push('')
     },
     removeStair(index, id) {
       // 删除阶梯价
@@ -622,7 +687,6 @@ let vm = {
       console.log(index)
       console.log('id', id)
       this.addForm.sku[id].list.splice(index, 1)
-      this.stairArr.splice(index, 1)
     },
     addBox(index, id) {
       // 添加箱
@@ -637,7 +701,6 @@ let vm = {
           name: '',
           store: ''
         })
-        this.boxArr.push({})
       } else {
         this.$message({
               type: 'warning',
@@ -649,11 +712,26 @@ let vm = {
     removeBox(index, id) {
       // 删除箱
       this.addForm.sku[id].list.splice(index, 1)
-      this.boxArr.splice(index, 1)
     },
     preView() {
       // 预览
       this.previewDialog = true
+    },
+    addSelfProp() {
+      // 添加基础属性
+      this.dialogProp = true
+    },
+    confirm() {
+      // 确认添加属性
+      this.addForm.selfProp.push({
+        name: this.selfProp.name,
+        value: this.selfProp.value
+      })
+      this.dialogProp = false
+    },
+    removeSelfProp(index) {
+      // 删除添加的基础属性
+      this.addForm.selfProp.splice(index, 1)
     },
     submitForm(formName) {
       console.log(this.$refs[formName])
@@ -785,7 +863,82 @@ let vm = {
       let checkedCount = value.length
       this.addForm.generate[index].checkAll = checkedCount === this.checkboxObj[index].length
       this.isIndeterminate = checkedCount > 0 && checkedCount < this.checkboxObj[index].length
+    },
+    addMoreSpec() {
+      // 添加更多报价规格
+      this.tableSpan = false
+      this.addForm.moreSpec.push({
+        selectValue: '',
+        isSpecSelect: false,
+        list: [{
+          value: ''
+        }]
+      })
+    },
+    removeMoreSpec(index) {
+      // 删除更多报价规格
+      this.addForm.moreSpec.splice(index, 1)
+    },
+    addMoreSpecValue(pindex) {
+      // 添加更多报价规格值
+      this.addForm.moreSpec[pindex].list.push({
+        value: ''
+      })
+    },
+    removeMoreSpecValue(pindex, index) {
+      // 删除过多报价规格值
+      this.addForm.moreSpec[pindex].list.splice(index, 1)
+    },
+    specValueBlur(e, pindex) {
+      // 报价规格值在table中更新
+      this.tableSpan = true
+      let arr = []
+      if(pindex === 0) {
+        this.addForm.moreSpec[0].list.forEach((item, i) => {
+          arr[i] = {
+            one: item.value,
+            two: '',
+            startNum: '',
+            price: '',
+            store: ''
+          }
+        })
+      } else if(pindex === 1) {
+        this.addForm.moreSpec[0].list.forEach(itemOne => {
+          this.addForm.moreSpec[1].list.forEach(itemTwo => {
+            arr.push({
+              one: itemOne.value,
+              two: itemTwo.value,
+              startNum: '',
+              price: '',
+              store: ''
+            })
+          })
+        })
+      }
+      this.addForm.moreSpecData = arr;
+    },
+    arraySpanMethod({ row, column, rowIndex, columnIndex }) {
+      // if(this.tableSpan && columnIndex === 0) {
+      //   if(this.addForm.moreSpec[0] && this.addForm.moreSpec[1]) {
+      //     let oneLen = this.addForm.moreSpec[0].list.length
+      //     let twoLen = this.addForm.moreSpec[1].list.length
+      //     if(twoLen > 2) {
+      //     if (rowIndex % 2 === 0) {
+      //     if (columnIndex === 0) {
+      //       return [1, 2];
+      //     } else if (columnIndex === 1) {
+      //       return [0, 0];
+      //     }
+      //   }
+      //     }
+      //   } else {
+      //     return false
+      //   }
+      // }
+    
     }
+
   }
 }
 export default vm;

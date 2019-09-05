@@ -53,8 +53,6 @@ export default {
       return toPath(params)
     },
     handleLink(item) {
-      console.log('item')
-      console.log(item)
       const { redirect, path } = item
       // if (redirect) {
       //   console.log(redirect)

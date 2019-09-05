@@ -12,7 +12,7 @@
     </div>
 
     <el-button v-if="btnsPermission.add.auth" type="primary" size="small" @click="handleAddRole">{{btnsPermission.add.name}}</el-button>
-    <el-button v-if="btnsPermission.lock.auth" size="small" @click="handleLockMul" >{{btnsPermission.lock.name}}</el-button>
+    <el-button v-if="btnsPermission.lock.auth" size="small" @click="handleLockMul" >批量锁定</el-button>
 
     <el-table 
       v-loading="listLoading"
@@ -67,8 +67,8 @@
       </el-table-column>
       <el-table-column align="center" label="操作" min-width="320">
         <template slot-scope="scope">
-          <el-button type="primary" size="small" @click="msgEdit(scope)">编辑</el-button>
-          <el-button type="primary" size="small" @click="handleLock(scope)">
+          <el-button v-if="btnsPermission.edit.auth" type="primary" size="small" @click="msgEdit(scope)">{{btnsPermission.edit.name}}</el-button>
+          <el-button v-if="btnsPermission.lock.auth" type="primary" size="small" @click="handleLock(scope)">
             <template v-if="scope.row.status === 0">
               解锁
             </template>
@@ -76,8 +76,8 @@
               锁定
             </template>
           </el-button>
-          <el-button type="primary" size="small" @click="setRole(scope)">分配角色</el-button>
-          <el-button type="danger" size="small" @click="handleDelete(scope)">删除</el-button>
+          <el-button v-if="btnsPermission.role.auth" type="primary" size="small" @click="setRole(scope)">{{btnsPermission.role.name}}</el-button>
+          <el-button v-if="btnsPermission.delete.auth" type="danger" size="small" @click="handleDelete(scope)">{{btnsPermission.delete.name}}</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -93,13 +93,15 @@
           @select="roleSelectFun">
           <el-table-column
             type="selection"
-             label="角色名"
             width="55">
           </el-table-column>
           <el-table-column
             prop="name"
-            label="角色名"
-          >
+            label="角色名">
+          </el-table-column>
+          <el-table-column
+            prop="systemName"
+            label="所属系统">
           </el-table-column>
         </el-table>
         <pagination v-show="roleTotal>0" :total="roleTotal" :page.sync="roleListQuery.pageIndex" :limit.sync="roleListQuery.pageSize"  @pagination="getRoleList" />
@@ -189,7 +191,19 @@ export default {
           auth: false
         },
         lock: {
-          name: '批量锁定',
+          name: '锁定',
+          auth: false
+        },
+        edit: {
+          name: '编辑',
+          auth: false
+        },
+        role: {
+          name: '分配角色',
+          auth: false
+        },
+        delete: {
+          name: '删除',
           auth: false
         }
       },
