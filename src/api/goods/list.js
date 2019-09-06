@@ -45,6 +45,15 @@ export function getUnit(query) {
   })
 }
 
+// 根据分类获取计量单位
+export function getUnitList(query) {
+  return request({
+    url: '/goods/categoryUnit/getCategoryUnitList',
+    method: 'get',
+    params: query
+  })
+}
+
 // 发布新商品
 export function saveGoods(data) {
   return request({

@@ -74,8 +74,9 @@
             </template>
           </el-form-item>         
         </template>
-        <el-form-item v-for="(selfItem, selfIndex) in addForm.selfProp" :key="selfIndex" :label="addForm.selfProp[selfIndex].name">
-          {{addForm.selfProp[selfIndex].value}}
+        <el-form-item v-for="(selfItem, selfIndex) in addForm.selfProp" :key="selfIndex + 'x'" :label="addForm.selfProp[selfIndex].name">
+          <span class="mr40">{{addForm.selfProp[selfIndex].list}}</span>
+          <el-button type="danger" plain size="small" v-waves @click="removeSelfProp(selfIndex)">删除</el-button>
         </el-form-item>
         <el-form-item label="" required prop="title">
           <el-button size="medium" type="primary" plain @click="addSelfProp">
@@ -89,7 +90,7 @@
         <span>销售信息</span>
       </div>
       <el-tabs v-model="activeName" @tab-click="handleClick">
-        <el-tab-pane label="用户管理" name="first">
+        <el-tab-pane label="默认报价方式" name="first">
           <div  class="text item">
             <el-form-item 
               label="计量单位" 
@@ -139,11 +140,6 @@
                   </template>
                 </el-table-column>
               </el-table>
-              <!-- <div v-for="(stairItem, stairIndex) in stairArr" :key="stairIndex" class="unit-box">
-                <span class="mr40">阶梯{{stairIndex + 1}}</span>
-                <span class="mr5">起批数</span><el-input class="table-input mr40" v-model="addForm.sku[showStyle.id].list[stairIndex].number" size="small" maxlength="30" />
-                <span class="mr5">单价</span><el-input class="table-input mr5" v-model="addForm.sku[showStyle.id].list[stairIndex].price" size="small" maxlength="30" /><span class="mr20">元</span><span v-show="stairIndex > 0 || stairArr.length > 1" class="mr10 unit-delete" @click="removeStair(stairIndex, showStyle.id)">删除</span><span class="unit-add" v-show="stairIndex === stairArr.length - 1" @click="addStair(stairIndex, showStyle.id)">新增阶梯</span>
-              </div> -->
             </div>
             <div v-else-if="showStyle.type === '1'">
               <el-table
@@ -184,32 +180,10 @@
                   </template>
                 </el-table-column>
               </el-table>
-              <!-- <table class="table-box">
-                <thead>
-                  <tr>
-                    <td>规格名称</td>
-                    <td>起批量</td>
-                    <td>单价</td>
-                    <td>库存</td>
-                    <td></td>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="(boxItem, boxIndex) in boxArr" :key="boxIndex">
-                    <td><span class="mr5">每箱</span><el-input class="table-input" v-model="addForm.sku[showStyle.id].list[boxIndex].name" size="small" maxlength="30" /></td>
-                    <td><el-input class="table-input" v-model="addForm.sku[showStyle.id].list[boxIndex].number" size="small" maxlength="30" /></td>
-                    <td><el-input class="table-input mr5" v-model="addForm.sku[showStyle.id].list[boxIndex].price" size="small" maxlength="30" /><span>元</span></td>
-                    <td><el-input class="table-input" v-model="addForm.sku[showStyle.id].list[boxIndex].store" size="small" maxlength="30" /></td>
-                    <td>
-                      <span v-show="boxIndex > 0 || boxArr.length > 1" class="mr10 unit-delete" @click="removeBox(boxIndex, showStyle.id)">删除</span><span v-show="boxIndex === boxArr.length - 1" class="unit-add" @click="addBox(boxIndex, showStyle.id)">新增规格</span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table> -->
             </div>
           </div>
         </el-tab-pane>
-        <el-tab-pane label="配置管理" name="second">
+        <el-tab-pane label="更多报价方式" name="second">
           <el-form-item 
             label="计量单位" 
             :prop="'unitMore'"
@@ -238,7 +212,7 @@
                 class="table-input mr5"
                 clearable
                 @clear="removeMoreSpecValue(pIndex, index)"
-                @blur="(event) => specValueBlur(event, pIndex)">
+                @blur="(event) => specValueBlur(event, pIndex, addForm.moreSpec[pIndex].list[index].value)">
               </el-input>
               <el-button type="primary" plain size="mini" v-waves @click="addMoreSpecValue(pIndex)">添加</el-button>
             </div>
@@ -261,7 +235,7 @@
               </template>
             </el-table-column>
             <el-table-column
-              v-if="addForm.moreSpec.length === 2 && addForm.moreSpec[1].selectValue.length > 0"
+              v-if="addForm.moreSpec.length === 2 && addForm.moreSpec[1].selectValue.length > 0 && addForm.moreSpec[1].list[0].value.trim().length > 0"
               :label="addForm.moreSpec[1].selectValue"
               align="center"
               width="220">
@@ -359,7 +333,8 @@
       <div>
         <el-button v-waves class="filter-item" @click="preView">预览</el-button>
         <el-button v-waves class="filter-item">保存待上架</el-button>
-        <el-button type="primary" v-waves class="filter-item" @click="submitForm('productForm')">上架出售</el-button>
+        <el-button type="primary" v-waves class="filter-item" @click="onSale">上架出售</el-button>
+        <!-- <el-button type="primary" v-waves class="filter-item" @click="submitForm('productForm')">上架出售</el-button> -->
       </div>
     </div>
     <div class="self-diolog" v-if="previewDialog">
@@ -415,16 +390,16 @@
       <div class="self-close" @click="previewDialog = false">×</div>
     </div>
     <el-dialog :visible.sync="dialogProp" :closeOnClickModal="false" title="添加属性">
-      <el-form v-loading="diaLoading" ref="selfPropForm" :model="selfProp" label-width="100px" label-position="left">
-          <el-form-item label="属性名">
+      <el-form v-loading="diaLoading" :rules="ruuuu" ref="selfForm" :model="selfProp" label-width="100px" label-position="left">
+          <el-form-item label="属性名" :prop="'name'">
             <el-input v-model="selfProp.name" maxlength="20" placeholder="请输入属性名" />
           </el-form-item>
-          <el-form-item label="属性值">
+          <el-form-item label="属性值" :prop="'value'">
             <el-input v-model="selfProp.value" maxlength="20" placeholder="请输入属性值" />
           </el-form-item>
       </el-form>
       <div style="text-align:right;">
-        <el-button type="danger" @click="dialogVisible=false">取消</el-button>
+        <el-button type="danger" @click="dialogProp=false">取消</el-button>
         <el-button type="primary" @click="confirm">确定</el-button>
       </div>
     </el-dialog>
@@ -433,7 +408,7 @@
 
 <script>
 import waves from '@/directive/waves'
-import { getByCategoryId, getUnit, saveGoods } from '@/api/goods/list'
+import { getByCategoryId, getUnit, saveGoods, getUnitList } from '@/api/goods/list'
 import { getAd } from '@/api/upms/strict'
 import { fileUpload } from '@/api/goods/upload'
 let id = 0;
@@ -442,6 +417,25 @@ let vm = {
   directives: { waves },
   data() {
     vm = this;
+    let checkName = (rule, value, callback) => {
+      if(!value) {
+        return callback(new Error('属性名不能为空!'))
+      } else if(value.trim() === '标题') {
+        return callback(new Error('属性名已存在'))
+      } 
+      
+      this.addForm.generate.forEach(item => {
+        if(item.name === value.trim()) {
+          return callback(new Error('属性名已存在'))
+        }
+      })
+      this.addForm.selfProp.forEach(item => {
+        if(item.name === value.trim()) {
+          return callback(new Error('属性名已存在'))
+        }
+      })
+      callback();
+    };
     return {
       categoryId: '',
       baseData: [],
@@ -460,6 +454,14 @@ let vm = {
           name: '箱'
         }
       ],
+      ruuuu: {
+       name: [
+          { required: true, validator: checkName, trigger: 'blur' }
+        ],
+        value: [
+          { required: true, message: '属性只能不能为空', trigger: 'blur' }
+        ]
+      },
       selfProp: {
         name: '',
         value: ''
@@ -497,6 +499,14 @@ let vm = {
         imgsBox: [],
         unitMore: '',
         selfProp: [],
+        selfRules: {
+          name: [
+            { required: true, validator: checkName, trigger: 'blur' }
+          ],
+          value: [
+            { required: true, trigger: 'blur' }
+          ]
+        },
         moreSpec: [],
         moreSpecType: 'auto',
         moreSpecData: [{
@@ -515,6 +525,8 @@ let vm = {
       role: {
         name: ''
       },
+      combineLen: 0,
+      isCombine: false,
       tableSpan: false,
       moreSpecTable: [],
       moreSpecTableShow: false,
@@ -631,7 +643,10 @@ let vm = {
     },
     handleClick(tab, event) {
       // 报价方式切换
-      console.log(tab, event);
+      if(this.activeName === 'second') {
+        getUnitList({ categoryId: this.categoryId })
+      }
+      
     },
     getAddress() {
       // 获取产地信息
@@ -719,15 +734,27 @@ let vm = {
     },
     addSelfProp() {
       // 添加基础属性
+      this.selfProp = {
+        name: '',
+        value: ''
+      }
       this.dialogProp = true
     },
     confirm() {
       // 确认添加属性
-      this.addForm.selfProp.push({
-        name: this.selfProp.name,
-        value: this.selfProp.value
+      this.$refs.selfForm.validate((valid) => {
+        if(valid) {
+          this.addForm.selfProp.push({
+            name: this.selfProp.name.trim(),
+            list: this.selfProp.value.trim(),
+            sort: '',
+            id: '',
+            nameGroup: ''
+          })
+          this.dialogProp = false
+        }
       })
-      this.dialogProp = false
+      
     },
     removeSelfProp(index) {
       // 删除添加的基础属性
@@ -751,14 +778,15 @@ let vm = {
       goodsVO.categoryId = this.categoryId
       goodsVO.name = this.addForm.title
       goodsVO.detail = this.addForm.remark
-      goodsVO.showStyle = this.showStyle.type
+      goodsVO.showStyle = this.showStyle.type === '' ? 3 : this.showStyle.type
       goodsVO.postPayType = 0
       goodsVO.postPrice = 0
       goodsVO.postSettingId = 'postSettingId'
       // 商品动态生成的基础信息
       goodsVO.goodsAttrList = []
       let sortList = 0
-      this.addForm.generate.forEach(item => {
+      let baseData = this.addForm.generate.concat(this.addForm.selfProp)
+      baseData.forEach(item => {
         let obj = {}
         let sortValue = 0
         obj.name = item.name
@@ -786,58 +814,123 @@ let vm = {
       // 商品sku信息
       goodsVO.goodsSkuList = []
       goodsVO.goodsSpecList = []
-      let sku = this.addForm.sku
-      let speSort = 0
-      for(let key in sku) {
-        let skuObj = {}
-        let speObj = {}
-        speObj.sort = speSort++
-        if (this.addForm.sku[key].showStyle === '1') {
-          speObj.goodsSpecValueList = []
-          let boxSort = 0
-          speObj.categorySpecId = sku[key].id
-          speObj.name = sku[key].name
-          sku[key].list.forEach(item => {
+      if(this.activeName === 'first') {
+        let sku = this.addForm.sku
+        let key = this.showStyle.id
+        let speSort = 0
+        // for(let key in sku) {
+          
+          let speObj = {}
+          let skuSort = 0
+          speObj.sort = speSort++
+          if (this.addForm.sku[key].showStyle === '1') {
+            speObj.goodsSpecValueList = []
+            let boxSort = 0
+            speObj.categorySpecId = sku[key].id
+            speObj.name = sku[key].name
+            sku[key].list.forEach(item => {
+              let skuObj = {}
+              skuObj.sort = skuSort++
+              skuObj.priceType = sku[key].showStyle
+              skuObj.skuAttrValues = [{
+                name: sku[key].name + '斤/箱',
+                value: item.name
+              }]
+              skuObj.price = item.price
+              skuObj.startNum = item.number
+              skuObj.stock = item.store
+              skuObj.priceExpList = []
+              skuObj.priceExpList.push({
+                price: item.price,
+                startQuantity: item.number
+              })
+              speObj.goodsSpecValueList.push({
+                value: item.name,
+                sort: boxSort++
+              })
+              goodsVO.goodsSkuList.push(skuObj)
+            })
+            
+            goodsVO.goodsSpecList.push(speObj)
+          } else if (this.addForm.sku[key].showStyle === '2') {
+            let skuObj = {}
             skuObj.priceType = sku[key].showStyle
-            skuObj.specValueNames = [sku[key].name]
+            skuObj.sort = speSort++
+            skuObj.priceExpList = []
+            skuObj.stock = sku[key].store
+            speObj.categorySpecId = sku[key].id
+            speObj.name = sku[key].name
+            speObj.goodsSpecValueList = []
+            speObj.goodsSpecValueList.push({
+              value: 1,
+              sort: 1
+            })
+            skuObj.skuAttrValues = [{
+              name: sku[key].name,
+              value: 1
+            }]
+            sku[key].list.forEach(item => {
+              skuObj.priceExpList.push({
+                price: item.price,
+                startQuantity: item.number
+              })
+            })
+            goodsVO.goodsSkuList.push(skuObj)
+            goodsVO.goodsSpecList.push(speObj)
+          }
+        // }
+      } else if(this.activeName === 'second') {
+        let skuOne = this.addForm.moreSpec[0].list
+        let skuTwo = this.addForm.moreSpec[1].list
+        let skuSort = 0
+       
+          this.addForm.moreSpecData.forEach(item => {
+            let skuObj = {}
+            skuObj.sort = skuSort++
+            skuObj.priceType = 3
+            skuObj.skuAttrValues = [
+              {
+                name: item.oneSelect,
+                value: item.one
+              },
+              {
+                name: item.twoSelect,
+                value: item.two
+              }
+            ]
             skuObj.price = item.price
-            skuObj.startNum = item.number
+            skuObj.startNum = item.startNum
             skuObj.stock = item.store
             skuObj.priceExpList = []
             skuObj.priceExpList.push({
               price: item.price,
-              startQuantity: item.number
+              startQuantity: item.startNum
             })
-            speObj.goodsSpecValueList.push({
-              value: item.name,
-              sort: boxSort++
+            goodsVO.goodsSkuList.push(skuObj)
+          })
+          let speOutSort = 0
+          this.addForm.moreSpec.forEach(item => {
+            let speObj = {}
+            let speSort = 0
+            speObj.categorySpecId = ''
+            speObj.name = item.selectValue
+            speObj.sort = speOutSort++
+            speObj.goodsSpecValueList = []
+            item.list.forEach(itemList => {
+              speObj.goodsSpecValueList.push({
+                value: itemList.value,
+                sort: speSort++
+              })
             })
+            goodsVO.goodsSpecList.push(speObj)
           })
-          goodsVO.goodsSkuList.push(skuObj)
-          goodsVO.goodsSpecList.push(speObj)
-        } else if (this.addForm.sku[key].showStyle === '2') {
-          skuObj.priceType = sku[key].showStyle
-          skuObj.specValueNames = [sku[key].name]
-          skuObj.priceExpList = []
-          skuObj.stock = sku[key].store
-          speObj.categorySpecId = sku[key].id
-          speObj.name = sku[key].name
-          speObj.goodsSpecValueList = []
-          speObj.goodsSpecValueList.push({
-            value: 1
-          })
-          sku[key].list.forEach(item => {
-            skuObj.priceExpList.push({
-              price: item.price,
-              startQuantity: item.number
-            })
-          })
-          goodsVO.goodsSkuList.push(skuObj)
-          goodsVO.goodsSpecList.push(speObj)
-        }
       }
+      
       // 商品图片信息
       goodsVO.goodsImgList = this.addForm.imgsBox
+      console.log('result')
+      console.log(this.addForm)
+      console.log(goodsVO)
       saveGoods(goodsVO)
     },
     selectChange(val) {
@@ -877,7 +970,8 @@ let vm = {
     },
     removeMoreSpec(index) {
       // 删除更多报价规格
-      this.addForm.moreSpec.splice(index, 1)
+       this.addForm.moreSpec.splice(index, 1)
+      this.specValueBlur('', 0, 'true')
     },
     addMoreSpecValue(pindex) {
       // 添加更多报价规格值
@@ -887,55 +981,87 @@ let vm = {
     },
     removeMoreSpecValue(pindex, index) {
       // 删除过多报价规格值
-      this.addForm.moreSpec[pindex].list.splice(index, 1)
-    },
-    specValueBlur(e, pindex) {
-      // 报价规格值在table中更新
-      this.tableSpan = true
-      let arr = []
-      if(pindex === 0) {
-        this.addForm.moreSpec[0].list.forEach((item, i) => {
-          arr[i] = {
-            one: item.value,
-            two: '',
-            startNum: '',
-            price: '',
-            store: ''
-          }
-        })
-      } else if(pindex === 1) {
-        this.addForm.moreSpec[0].list.forEach(itemOne => {
-          this.addForm.moreSpec[1].list.forEach(itemTwo => {
-            arr.push({
-              one: itemOne.value,
-              two: itemTwo.value,
-              startNum: '',
-              price: '',
-              store: ''
-            })
-          })
-        })
+      if(index === 0) {
+        this.specValueBlur('', 0, 'true')
+        return false
+      } else {
+        this.addForm.moreSpec[pindex].list.splice(index, 1)
+        this.specValueBlur('', pindex, 'true')
       }
-      this.addForm.moreSpecData = arr;
+    },
+    specValueBlur(e, pindex, val) {
+      // 报价规格值在table中更新
+      if(val.length > 0) {
+        this.tableSpan = true
+        let arr = []
+        if(pindex === 0) {
+          this.addForm.moreSpec[0].list.forEach((item, i) => {
+            if(item.value.trim().length > 0) {
+              arr[i] = {
+                one: item.value,
+                two: '',
+                startNum: '',
+                price: '',
+                store: ''
+              }
+            }
+          })
+        } else if(pindex === 1) {
+          let len = 0
+          let first = true
+          console.log('add')
+          console.log(this.addForm.moreSpec)
+          this.addForm.moreSpec[0].list.forEach(itemOne => {
+            this.addForm.moreSpec[1].list.forEach(itemTwo => {
+              if(itemTwo.value.trim().length > 0) {
+                if(first) {
+                  ++len
+                }
+                arr.push({
+                  one: itemOne.value,
+                  two: itemTwo.value,
+                  oneSelect: this.addForm.moreSpec[0].selectValue,
+                  twoSelect: this.addForm.moreSpec[1].selectValue,
+                  startNum: '',
+                  price: '',
+                  store: ''
+                })
+              }
+              
+            })
+            first = false
+          })
+          if(len > 1) {
+            this.isCombine = true
+          } else {
+            this.isCombine = false
+          }
+          console.log(len)
+          this.combineLen = len
+        } else {
+          this.isCombine = false
+        }
+        this.addForm.moreSpecData = arr;
+      }
+      
     },
     arraySpanMethod({ row, column, rowIndex, columnIndex }) {
-      // if(this.tableSpan && columnIndex === 0) {
-      //   if(this.addForm.moreSpec[0] && this.addForm.moreSpec[1]) {
-      //     let oneLen = this.addForm.moreSpec[0].list.length
-      //     let twoLen = this.addForm.moreSpec[1].list.length
-      //     if(twoLen > 2) {
-      //     if (rowIndex % 2 === 0) {
-      //     if (columnIndex === 0) {
-      //       return [1, 2];
-      //     } else if (columnIndex === 1) {
-      //       return [0, 0];
-      //     }
-      //   }
-      //     }
-      //   } else {
-      //     return false
-      //   }
-      // }
+      if(this.isCombine && columnIndex === 0) {
+          if(this.combineLen > 1 && rowIndex % this.combineLen === 0) {
+            console.log('conbine len:', this.combineLen)
+            console.log('row index', rowIndex)
+            return {
+              rowspan: this.combineLen,
+              colspan: 1
+            }
+          } else {
+            return {
+              rowspan: 0,
+              colspan: 0
+            }
+          }
+      
+      }
     
     }
 

@@ -18,7 +18,8 @@ service.interceptors.request.use(
     if (config.type !== 'json') {
       config.headers['Content-Type'] = 'application/x-www-form-urlencoded'
     } else {
-      config.baseURL = 'http://192.168.0.110:8000'
+      config.headers['Content-Type'] = 'application/json'
+      config.baseURL = 'http://192.168.0.111:8000'
     }
     if (config.method === 'post') {
       if (config.type === 'upload') {
