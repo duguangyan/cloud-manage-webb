@@ -17,7 +17,7 @@
         <el-form-item label="标题" required prop="title">
           <el-input 
           class="long-input" 
-          v-model="addForm.title" 
+          v-model.trim="addForm.title" 
           size="medium" 
           maxlength="100" 
           show-word-limit
@@ -69,7 +69,7 @@
               <span v-if="item.exp !== null">{{item.exp}}</span>
             </template>
             <template v-else-if="item.inputType === 4">
-              <el-input class="long-input" v-model="addForm.generate[index].list" size="medium" maxlength="64" :placeholder="item.hint" :style="{width: item.length + 'px'}" />
+              <el-input class="long-input" v-model.trim="addForm.generate[index].list" size="medium" maxlength="64" :placeholder="item.hint" :style="{width: item.length + 'px'}" />
               <span v-if="item.exp !== null">{{item.exp}}</span>
             </template>
           </el-form-item>         
@@ -96,7 +96,7 @@
               label="计量单位" 
               :prop="'unit'"
               :rules="{
-                required: true, message: '计量单位必填', trigger: 'blur'     
+                required: activeName === 'first', message: '计量单位必填', trigger: 'blur'     
               }">
               <el-select v-model="addForm.unit" size="medium" maxlength="64" placeholder="请选择" @change="((val) => unitChange(val, 'auto'))">
                 <el-option v-for="(item, index) in sellData" :key="index" :label="item.name" :value="item.id"></el-option>
@@ -106,81 +106,85 @@
               v-if="showStyle.type === '2'" 
               :prop="'sku.'+showStyle.id+'.store'"
               :rules="{
-                required: true, message: '库存必填', trigger: 'blur'     
+                required: activeName === 'first', message: '库存必填，且为数字', trigger: 'blur', pattern:/^\d+$/,
               }"
               label="库存">
-                <el-input class="short-input" v-model="addForm.sku[showStyle.id].store" size="medium" maxlength="30" />
+                <el-input class="short-input" v-model.trim="addForm.sku[showStyle.id].store" size="medium" maxlength="30" />
             </el-form-item>
-            <div v-if="showStyle.type === '2'">
-              <el-table
-                :data="addForm.sku[showStyle.id].list"
-                border
-                style="max-width: 700px">
-                <el-table-column  label="起批量" width="220" align="center">
-                  <template slot-scope="scope">
-                    <span class="mr5">起批数</span><el-input class="table-input" v-model="addForm.sku[showStyle.id].list[scope.$index].number" size="small" maxlength="12" />
-                  </template>
-                </el-table-column>
-                <el-table-column label="价格" width="220" align="center">
-                  <template slot-scope="scope">
-                    <span class="mr5">单价</span><el-input class="table-input" v-model="addForm.sku[showStyle.id].list[scope.$index].price" size="small" maxlength="12" />
-                  </template>
-                </el-table-column>
-                <el-table-column label="操作" align="center">
-                  <template slot-scope="scope">
-                    <div style="text-align: left;padding-left: 50px;">
-                      <el-button v-show="scope.$index > 0 || addForm.sku[showStyle.id].list.length > 1" size="mini" type="danger" plain @click="removeStair(scope.$index, showStyle.id)">
-                        删除
-                      </el-button>
-                      <el-button v-show="scope.$index === addForm.sku[showStyle.id].list.length - 1" size="mini" type="primary" plain @click="addStair(scope.$index, showStyle.id)">
-                        新增规格
-                      </el-button>
-                      <!-- <span v-show="scope.$index > 0 || stairArr.length > 1" class="mr10 unit-delete" @click="removeStair(scope.$index, showStyle.id)">删除</span><span v-show="scope.$index === stairArr.length - 1" class="unit-add" @click="addStair(scope.$index, showStyle.id)">新增规格</span> -->
-                    </div>
-                  </template>
-                </el-table-column>
-              </el-table>
-            </div>
-            <div v-else-if="showStyle.type === '1'">
-              <el-table
-                :data="addForm.sku[showStyle.id].list"
-                style="max-width: 1140px"
-                border>
-                <el-table-column  label="规格名称" width="220" align="center">
-                  <template slot-scope="scope">
-                    <el-input class="table-input mr5" v-model="addForm.sku[showStyle.id].list[scope.$index].name" size="small" maxlength="12" /><span>斤/箱</span>
-                  </template>
-                </el-table-column>
-                <el-table-column label="起批量" width="220" align="center">
-                  <template slot-scope="scope">
-                    <el-input class="table-input" v-model="addForm.sku[showStyle.id].list[scope.$index].number" size="small" maxlength="12" />
-                  </template>
-                </el-table-column>
-                <el-table-column label="价格" width="220" align="center">
-                  <template slot-scope="scope">
-                    <el-input class="table-input mr5" v-model="addForm.sku[showStyle.id].list[scope.$index].price" size="small" maxlength="12" /><span>元</span>
-                  </template>
-                </el-table-column>
-                <el-table-column label="库存" width="220" align="center">
-                  <template slot-scope="scope">
-                    <el-input class="table-input" v-model="addForm.sku[showStyle.id].list[scope.$index].store" size="small" maxlength="12" />
-                  </template>
-                </el-table-column>
-                <el-table-column label="操作" align="center">
-                  <template slot-scope="scope">
-                    <div style="text-align: left;padding-left: 50px;">
-                      <el-button v-show="scope.$index > 0 || addForm.sku[showStyle.id].list.length > 1" size="mini" type="danger" plain @click="removeBox(scope.$index, showStyle.id)">
-                        删除
-                      </el-button>
-                      <el-button v-show="scope.$index === addForm.sku[showStyle.id].list.length - 1" size="mini" type="primary" plain @click="addBox(scope.$index, showStyle.id)">
-                        新增规格
-                      </el-button>
-                      <!-- <span v-show="scope.$index > 0 || boxArr.length > 1" class="mr10 unit-delete" @click="removeBox(scope.$index, showStyle.id)">删除</span><span v-show="scope.$index === boxArr.length - 1" class="unit-add" @click="addBox(scope.$index, showStyle.id)">新增规格</span> -->
-                    </div>
-                  </template>
-                </el-table-column>
-              </el-table>
-            </div>
+            <el-form-item :prop="'hasMsg'" :rules="{
+                required: activeName === 'first', message: '请填写完整表格信息'
+              }">  
+              <div v-if="showStyle.type === '2'">
+                <el-table
+                  :data="addForm.sku[showStyle.id].list"
+                  border
+                  style="max-width: 700px">
+                  <el-table-column  label="起批量" width="220" align="center">
+                    <template slot-scope="scope">
+                      <span class="mr5">起批数</span><el-input class="table-input" v-model.trim="addForm.sku[showStyle.id].list[scope.$index].number" size="small" maxlength="12" />
+                    </template>
+                  </el-table-column>
+                  <el-table-column label="价格" width="220" align="center">
+                    <template slot-scope="scope">
+                      <span class="mr5">单价</span><el-input class="table-input" v-model.trim="addForm.sku[showStyle.id].list[scope.$index].price" size="small" maxlength="12" />
+                    </template>
+                  </el-table-column>
+                  <el-table-column label="操作" align="center">
+                    <template slot-scope="scope">
+                      <div style="text-align: left;padding-left: 50px;">
+                        <el-button v-show="scope.$index > 0 || addForm.sku[showStyle.id].list.length > 1" size="mini" type="danger" plain @click="removeStair(scope.$index, showStyle.id)">
+                          删除
+                        </el-button>
+                        <el-button v-show="scope.$index === addForm.sku[showStyle.id].list.length - 1" size="mini" type="primary" plain @click="addStair(scope.$index, showStyle.id)">
+                          新增规格
+                        </el-button>
+                        <!-- <span v-show="scope.$index > 0 || stairArr.length > 1" class="mr10 unit-delete" @click="removeStair(scope.$index, showStyle.id)">删除</span><span v-show="scope.$index === stairArr.length - 1" class="unit-add" @click="addStair(scope.$index, showStyle.id)">新增规格</span> -->
+                      </div>
+                    </template>
+                  </el-table-column>
+                </el-table>
+              </div>
+              <div v-else-if="showStyle.type === '1'">
+                <el-table
+                  :data="addForm.sku[showStyle.id].list"
+                  style="max-width: 1140px"
+                  border>
+                  <el-table-column  label="规格名称" width="220" align="center">
+                    <template slot-scope="scope">
+                      <el-input class="table-input mr5" v-model.trim="addForm.sku[showStyle.id].list[scope.$index].name" size="small" maxlength="12" /><span>{{showAble[showStyle.id].valueSuffix}}</span>
+                    </template>
+                  </el-table-column>
+                  <el-table-column label="起批量" width="220" align="center">
+                    <template slot-scope="scope">
+                      <el-input class="table-input" v-model.trim="addForm.sku[showStyle.id].list[scope.$index].number" size="small" maxlength="12" />
+                    </template>
+                  </el-table-column>
+                  <el-table-column label="价格" width="220" align="center">
+                    <template slot-scope="scope">
+                      <el-input class="table-input mr5" v-model.trim="addForm.sku[showStyle.id].list[scope.$index].price" size="small" maxlength="12" /><span>元</span>
+                    </template>
+                  </el-table-column>
+                  <el-table-column label="库存" width="220" align="center">
+                    <template slot-scope="scope">
+                      <el-input class="table-input" v-model.trim="addForm.sku[showStyle.id].list[scope.$index].store" size="small" maxlength="12" />
+                    </template>
+                  </el-table-column>
+                  <el-table-column label="操作" align="center">
+                    <template slot-scope="scope">
+                      <div style="text-align: left;padding-left: 50px;">
+                        <el-button v-show="scope.$index > 0 || addForm.sku[showStyle.id].list.length > 1" size="mini" type="danger" plain @click="removeBox(scope.$index, showStyle.id)">
+                          删除
+                        </el-button>
+                        <el-button v-show="scope.$index === addForm.sku[showStyle.id].list.length - 1" size="mini" type="primary" plain @click="addBox(scope.$index, showStyle.id)">
+                          新增规格
+                        </el-button>
+                        <!-- <span v-show="scope.$index > 0 || boxArr.length > 1" class="mr10 unit-delete" @click="removeBox(scope.$index, showStyle.id)">删除</span><span v-show="scope.$index === boxArr.length - 1" class="unit-add" @click="addBox(scope.$index, showStyle.id)">新增规格</span> -->
+                      </div>
+                    </template>
+                  </el-table-column>
+                </el-table>
+              </div>
+            </el-form-item>
           </div>
         </el-tab-pane>
         <el-tab-pane label="更多报价方式" name="second">
@@ -188,7 +192,7 @@
             label="计量单位" 
             :prop="'unitMore'"
             :rules="{
-              required: true, message: '计量单位必填', trigger: 'blur'     
+              required: activeName === 'second', message: '计量单位必填', trigger: 'blur'     
             }">
             <el-select v-model="addForm.unitMore" size="medium" maxlength="64" placeholder="请选择" @change="((val) => unitChange(val, 'more'))">
               <el-option v-for="(item, index) in sellMoreData" :key="index" :label="item.name" :value="item.id"></el-option>
@@ -220,53 +224,57 @@
           <el-form-item>
             <el-button v-show="addForm.moreSpec.length < 2 && moreSpecTableShow" type="primary" plain size="medium" v-waves @click="addMoreSpec">添加规格</el-button>
           </el-form-item>
-          <el-table
-            v-if="moreSpecTableShow"
-            :data="addForm.moreSpecData"
-            :span-method="arraySpanMethod"
-            border>
-            <el-table-column
-              v-if="addForm.moreSpec.length > 0 && addForm.moreSpec[0].selectValue.length > 0"
-              :label="addForm.moreSpec[0].selectValue"
-              align="center"
-              width="220">
-              <template slot-scope="scope">
-                 <span>{{addForm.moreSpecData[scope.$index].one}}</span>
-              </template>
-            </el-table-column>
-            <el-table-column
-              v-if="addForm.moreSpec.length === 2 && addForm.moreSpec[1].selectValue.length > 0 && addForm.moreSpec[1].list[0].value.trim().length > 0"
-              :label="addForm.moreSpec[1].selectValue"
-              align="center"
-              width="220">
-              <template slot-scope="scope">
-                 <span>{{addForm.moreSpecData[scope.$index].two}}</span>
-              </template>
-            </el-table-column>
-            <el-table-column
-              label="起批量"
-              align="center"
-              width="220">
-              <template slot-scope="scope">
-                 <el-input v-model="addForm.moreSpecData[scope.$index].startNum" class="table-input" size="small" maxlength="12" />
-              </template>
-            </el-table-column>
-            <el-table-column
-              label="价格"
-              align="center"
-              width="220">
-              <template slot-scope="scope">
-                 <el-input v-model="addForm.moreSpecData[scope.$index].price" class="table-input" size="small" maxlength="12" />
-              </template>
-            </el-table-column>
-            <el-table-column
-              align="center"
-              label="库存">
-              <template slot-scope="scope">
-                 <el-input v-model="addForm.moreSpecData[scope.$index].store" class="table-input" size="small" maxlength="12" />
-              </template>
-            </el-table-column>
-          </el-table>
+          <el-form-item :prop="'hasSelfMsg'" :rules="{
+                required: activeName === 'second', message: '请填写完整表格信息'
+              }">  
+            <el-table
+              v-if="moreSpecTableShow"
+              :data="addForm.moreSpecData"
+              :span-method="arraySpanMethod"
+              border>
+              <el-table-column
+                v-if="addForm.moreSpec.length > 0 && addForm.moreSpec[0].selectValue.length > 0"
+                :label="addForm.moreSpec[0].selectValue"
+                align="center"
+                width="220">
+                <template slot-scope="scope">
+                  <span>{{addForm.moreSpecData[scope.$index].one}}</span>
+                </template>
+              </el-table-column>
+              <el-table-column
+                v-if="addForm.moreSpec.length === 2 && addForm.moreSpec[1].selectValue.length > 0 && addForm.moreSpec[1].list[0].value.length > 0"
+                :label="addForm.moreSpec[1].selectValue"
+                align="center"
+                width="220">
+                <template slot-scope="scope">
+                  <span>{{addForm.moreSpecData[scope.$index].two}}</span>
+                </template>
+              </el-table-column>
+              <el-table-column
+                label="起批量"
+                align="center"
+                width="220">
+                <template slot-scope="scope">
+                  <el-input v-model.trim="addForm.moreSpecData[scope.$index].startNum" class="table-input" size="small" maxlength="12" />
+                </template>
+              </el-table-column>
+              <el-table-column
+                label="价格"
+                align="center"
+                width="220">
+                <template slot-scope="scope">
+                  <el-input v-model.trim="addForm.moreSpecData[scope.$index].price" class="table-input" size="small" maxlength="12" />
+                </template>
+              </el-table-column>
+              <el-table-column
+                align="center"
+                label="库存">
+                <template slot-scope="scope">
+                  <el-input v-model.trim="addForm.moreSpecData[scope.$index].store" class="table-input" size="small" maxlength="12" />
+                </template>
+              </el-table-column>
+            </el-table>
+          </el-form-item> 
         </el-tab-pane>
       </el-tabs>
     </el-card>
@@ -278,6 +286,7 @@
         <el-form-item 
           label="商品视图" required>
           <el-upload
+            ref="uplodadImg"
             action="https://jsonplaceholder.typicode.com/posts/"
             list-type="picture-card"
             :http-request="uploadImg"
@@ -301,7 +310,7 @@
           prop="remark">
           <el-input
             class="long-input"
-            v-model="addForm.remark"
+            v-model.trim="addForm.remark"
             maxlength="1000"
             show-word-limit
             :autosize="{ minRows: 5}"
@@ -333,8 +342,8 @@
       <div>
         <el-button v-waves class="filter-item" @click="preView">预览</el-button>
         <el-button v-waves class="filter-item">保存待上架</el-button>
-        <el-button type="primary" v-waves class="filter-item" @click="onSale">上架出售</el-button>
-        <!-- <el-button type="primary" v-waves class="filter-item" @click="submitForm('productForm')">上架出售</el-button> -->
+        <!-- <el-button type="primary" v-waves class="filter-item" @click="onSale">上架出售</el-button> -->
+        <el-button type="primary" v-waves class="filter-item" @click="submitForm('productForm')">上架出售</el-button>
       </div>
     </div>
     <div class="self-diolog" v-if="previewDialog">
@@ -392,10 +401,10 @@
     <el-dialog :visible.sync="dialogProp" :closeOnClickModal="false" title="添加属性">
       <el-form v-loading="diaLoading" :rules="ruuuu" ref="selfForm" :model="selfProp" label-width="100px" label-position="left">
           <el-form-item label="属性名" :prop="'name'">
-            <el-input v-model="selfProp.name" maxlength="20" placeholder="请输入属性名" />
+            <el-input v-model.trim="selfProp.name" maxlength="20" placeholder="请输入属性名" />
           </el-form-item>
           <el-form-item label="属性值" :prop="'value'">
-            <el-input v-model="selfProp.value" maxlength="20" placeholder="请输入属性值" />
+            <el-input v-model.trim="selfProp.value" maxlength="20" placeholder="请输入属性值" />
           </el-form-item>
       </el-form>
       <div style="text-align:right;">
@@ -403,12 +412,15 @@
         <el-button type="primary" @click="confirm">确定</el-button>
       </div>
     </el-dialog>
+    <el-dialog :visible.sync="dialogVisible">
+      <img width="100%" :src="dialogImageUrl" alt="">
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import waves from '@/directive/waves'
-import { getByCategoryId, getUnit, saveGoods, getUnitList } from '@/api/goods/list'
+import { getByCategoryId, getUnit, saveGoods, getUnitList, getSpeList } from '@/api/goods/list'
 import { getAd } from '@/api/upms/strict'
 import { fileUpload } from '@/api/goods/upload'
 let id = 0;
@@ -420,17 +432,17 @@ let vm = {
     let checkName = (rule, value, callback) => {
       if(!value) {
         return callback(new Error('属性名不能为空!'))
-      } else if(value.trim() === '标题') {
+      } else if(value === '标题') {
         return callback(new Error('属性名已存在'))
       } 
       
       this.addForm.generate.forEach(item => {
-        if(item.name === value.trim()) {
+        if(item.name === value) {
           return callback(new Error('属性名已存在'))
         }
       })
       this.addForm.selfProp.forEach(item => {
-        if(item.name === value.trim()) {
+        if(item.name === value) {
           return callback(new Error('属性名已存在'))
         }
       })
@@ -499,6 +511,8 @@ let vm = {
         imgsBox: [],
         unitMore: '',
         selfProp: [],
+        hasMsg: '',
+        hasSelfMsg: '',
         selfRules: {
           name: [
             { required: true, validator: checkName, trigger: 'blur' }
@@ -527,7 +541,6 @@ let vm = {
       },
       combineLen: 0,
       isCombine: false,
-      tableSpan: false,
       moreSpecTable: [],
       moreSpecTableShow: false,
       isIndeterminate: false,
@@ -639,6 +652,8 @@ let vm = {
           imgUrl: res.data,
           type: 1
         })
+        console.log('----')
+        console.log(this.$refs.uplodadImg)
       })
     },
     handleClick(tab, event) {
@@ -663,7 +678,6 @@ let vm = {
         this.moreSpecTableShow = true
       } else if(type === 'spec') {
         this.addForm.moreSpec[pindex].isSpecSelect = true
-        console.log(this.addForm.moreSpec)
       }
       
     
@@ -745,8 +759,8 @@ let vm = {
       this.$refs.selfForm.validate((valid) => {
         if(valid) {
           this.addForm.selfProp.push({
-            name: this.selfProp.name.trim(),
-            list: this.selfProp.value.trim(),
+            name: this.selfProp.name,
+            list: this.selfProp.value,
             sort: '',
             id: '',
             nameGroup: ''
@@ -761,10 +775,35 @@ let vm = {
       this.addForm.selfProp.splice(index, 1)
     },
     submitForm(formName) {
-      console.log(this.$refs[formName])
+      if(this.activeName === 'first') {
+        this.addForm.hasMsg = '1'
+        let tableData = this.addForm.sku[this.showStyle.id] ? this.addForm.sku[this.showStyle.id].list : []
+        for(let i = 0; i < tableData.length; i++) {
+          if(tableData[i].number.length === 0 || tableData[i].price.length === 0 || (this.showAble[this.showStyle.id] === '1' && (tableData[i].name.length === 0 || tableData[i].store.length === 0))) {
+            this.addForm.hasMsg = ''
+            break
+          }
+        }
+        if(tableData.length === 0) {
+          this.addForm.hasMsg = ''
+        }
+      } else if(this.activeName === 'second') {
+        this.addForm.hasSelfMsg = '1'
+        let tableData = this.addForm.moreSpecData
+        for(let i = 0; i < tableData.length; i++) {
+          if(tableData[i].price.length === 0 || tableData[i].startNum.length === 0 || tableData[i].store.length === 0) {
+            this.addForm.hasSelfMsg = ''
+            break
+          }
+        }
+        if(tableData.length === 0) {
+          this.addForm.hasSelfMsg = ''
+        }
+      }
       this.$refs[formName].validate((valid) => {
         if (valid) {
           alert('submit!');
+          this.onSale()
         } else {
           console.log('error submit!!');
           return false;
@@ -833,7 +872,7 @@ let vm = {
               skuObj.sort = skuSort++
               skuObj.priceType = sku[key].showStyle
               skuObj.skuAttrValues = [{
-                name: sku[key].name + '斤/箱',
+                name: sku[key].name + this.showAble[this.showStyle],
                 value: item.name
               }]
               skuObj.price = item.price
@@ -880,24 +919,25 @@ let vm = {
           }
         // }
       } else if(this.activeName === 'second') {
-        let skuOne = this.addForm.moreSpec[0].list
-        let skuTwo = this.addForm.moreSpec[1].list
         let skuSort = 0
        
           this.addForm.moreSpecData.forEach(item => {
             let skuObj = {}
             skuObj.sort = skuSort++
             skuObj.priceType = 3
-            skuObj.skuAttrValues = [
-              {
+            skuObj.skuAttrValues = []
+            if(item.oneSelect.length > 0) {
+              skuObj.skuAttrValues.push({
                 name: item.oneSelect,
                 value: item.one
-              },
-              {
+              })
+            }
+            if(item.twoSelect.length > 0) {
+              skuObj.skuAttrValues.push({
                 name: item.twoSelect,
                 value: item.two
-              }
-            ]
+              })
+            }
             skuObj.price = item.price
             skuObj.startNum = item.startNum
             skuObj.stock = item.store
@@ -959,7 +999,9 @@ let vm = {
     },
     addMoreSpec() {
       // 添加更多报价规格
-      this.tableSpan = false
+      // getSpeList({ id: this.categoryId }).then(res => {
+
+      // })
       this.addForm.moreSpec.push({
         selectValue: '',
         isSpecSelect: false,
@@ -970,8 +1012,10 @@ let vm = {
     },
     removeMoreSpec(index) {
       // 删除更多报价规格
-       this.addForm.moreSpec.splice(index, 1)
-      this.specValueBlur('', 0, 'true')
+      this.addForm.moreSpec.splice(index, 1)
+      if(this.addForm.moreSpec.length > 0) {
+         this.specValueBlur('', 0, 'true')
+      }
     },
     addMoreSpecValue(pindex) {
       // 添加更多报价规格值
@@ -981,25 +1025,31 @@ let vm = {
     },
     removeMoreSpecValue(pindex, index) {
       // 删除过多报价规格值
-      if(index === 0) {
+      if(this.addForm.moreSpec[pindex].list.length <= 1) {
         this.specValueBlur('', 0, 'true')
         return false
       } else {
         this.addForm.moreSpec[pindex].list.splice(index, 1)
-        this.specValueBlur('', pindex, 'true')
+        if(this.addForm.moreSpec.length > 1) {
+          this.specValueBlur('', 1, 'true')
+        } else {
+          this.specValueBlur('', 0, 'true')
+        }
+       
       }
     },
     specValueBlur(e, pindex, val) {
       // 报价规格值在table中更新
       if(val.length > 0) {
-        this.tableSpan = true
         let arr = []
         if(pindex === 0) {
           this.addForm.moreSpec[0].list.forEach((item, i) => {
-            if(item.value.trim().length > 0) {
+            if(item.value.length > 0) {
               arr[i] = {
                 one: item.value,
                 two: '',
+                oneSelect: this.addForm.moreSpec[0].selectValue,
+                twoSelect: this.addForm.moreSpec[1] ? this.addForm.moreSpec[1].selectValue : '',
                 startNum: '',
                 price: '',
                 store: ''
@@ -1007,16 +1057,10 @@ let vm = {
             }
           })
         } else if(pindex === 1) {
-          let len = 0
-          let first = true
-          console.log('add')
-          console.log(this.addForm.moreSpec)
+
           this.addForm.moreSpec[0].list.forEach(itemOne => {
             this.addForm.moreSpec[1].list.forEach(itemTwo => {
-              if(itemTwo.value.trim().length > 0) {
-                if(first) {
-                  ++len
-                }
+              if(itemTwo.value.length > 0) {
                 arr.push({
                   one: itemOne.value,
                   two: itemTwo.value,
@@ -1029,18 +1073,22 @@ let vm = {
               }
               
             })
-            first = false
           })
-          if(len > 1) {
+        }
+        let len = 1
+        for(let i = 1; i < arr.length; i++) {
+          if(arr[i].one === arr[0].one) {
+            ++len
+          } else {
+            break
+          }
+        }
+        if(len > 1) {
             this.isCombine = true
           } else {
             this.isCombine = false
           }
-          console.log(len)
-          this.combineLen = len
-        } else {
-          this.isCombine = false
-        }
+        this.combineLen = len
         this.addForm.moreSpecData = arr;
       }
       
