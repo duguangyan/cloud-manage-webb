@@ -129,7 +129,7 @@ export function getPropList(query) {
 // 新增属性
 export function insetPropList(data) {
   return request({
-    url: '/goods/categorySpec/insert',
+    url: '/goods/categoryAttr/insert',
     method: 'post',
     data
   })
@@ -138,18 +138,18 @@ export function insetPropList(data) {
 // 更新属性
 export function updatePropList(data) {
   return request({
-    url: '/goods/categorySpec/insert',
+    url: '/goods/categoryAttr/update',
     method: 'post',
     data
   })
 }
 
 // 删除属性
-export function deletePropList(query) {
+export function deletePropList(data) {
   return request({
-    url: '/goods/categorySpec/delete',
-    method: 'get',
-    params: query
+    url: '/goods/categoryAttr/delete',
+    method: 'post',
+    data
   })
 }
 

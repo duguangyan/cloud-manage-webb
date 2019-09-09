@@ -41,7 +41,7 @@ const actions = {
     const uuid = getUuid()
     const { username, password, authcode } = userInfo
     return new Promise((resolve, reject) => {
-      login({ username: username.trim(), password: password, grant_type: 'password', imageCode: authcode, deviceId: uuid, scope: '1', client_id: 'cmanager', client_secret: 'xx', systemId: 1 }).then(response => {
+      login({ username: username.trim(), password: password, grant_type: 'image_code', imageCode: authcode, deviceId: uuid, scope: '1', client_id: 'cmanager', client_secret: 'xx', systemId: 1 }).then(response => {
         const data = response
         commit('SET_TOKEN', data.access_token)
         commit('SET_REFRESH_TOKEN', data.refresh_token)

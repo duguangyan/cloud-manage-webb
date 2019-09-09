@@ -44,7 +44,7 @@
           </span>
         </el-tree>
       </div>
-      <div v-show="rightBoxShow" class="right">
+      <div v-show="rightBoxShow" v-loading="boxLoading" class="right">
         <div class="data-box">
           <el-row type="flex" class="mb5" justify="space-around">
             <el-col><div class="box-title">计量单位管理</div></el-col>
@@ -67,15 +67,18 @@
               align="center">
             </el-table-column>
             <el-table-column
-              prop="status"
               label="启用状态"
               align="center"
               width="180">
+              <template slot-scope="scope">
+                <span v-if="scope.row.status === 0">禁用</span>
+                <span v-else-if="scope.row.staus === 1">启用</span>
+              </template>
             </el-table-column>
             <el-table-column
               prop="createTime"
               label="创建时间"
-              width="150"
+              width="160"
               align="center">
             </el-table-column>
             <el-table-column
@@ -101,7 +104,7 @@
             <el-col><div class="tr"><el-button v-waves size="small" type="primary" @click="add(2)">新增</el-button></div></el-col>
           </el-row>
           <el-table
-            :data="speData"
+            :data="specData"
             border
             >
             <el-table-column
@@ -109,7 +112,7 @@
               prop="index"
               label="序号"
               align="center"
-              width="180">
+              width="100">
             </el-table-column>
             <el-table-column
               prop="name"
@@ -117,14 +120,17 @@
               align="center">
             </el-table-column>
             <el-table-column
-              prop="status"
               label="启用状态"
               align="center">
+              <template slot-scope="scope">
+                <span v-if="scope.row.status === 0">禁用</span>
+                <span v-else-if="scope.row.status === 1">启用</span>
+              </template>
             </el-table-column>
             <el-table-column
               prop="createTime"
               label="创建时间"
-              width="150"
+              width="160"
               align="center">
             </el-table-column>
             <el-table-column
@@ -158,7 +164,7 @@
               prop="index"
               label="序号"
               align="center"
-              width="180">
+              width="100">
             </el-table-column>
             <el-table-column
               prop="name"
@@ -170,23 +176,31 @@
               label="是否必填"
               align="center"
               width="180">
+              <template slot-scope="scope">
+                <span v-if="scope.row.isRequire === 0">否</span>
+                <span v-else-if="scope.row.isRequire === 1">是</span>
+              </template>
             </el-table-column>
             <el-table-column
               prop="status"
               label="启用状态"
               align="center"
               width="180">
+              <template slot-scope="scope">
+                <span v-if="scope.row.status === 0">禁用</span>
+                <span v-else-if="scope.row.status === 1">启用</span>
+              </template>
             </el-table-column>
             <el-table-column
               prop="createTime"
               label="创建时间"
-              width="150"
+              width="160"
               align="center">
             </el-table-column>
             <el-table-column
               prop="address"
               label="操作"
-              width="150"
+              width="160"
               align="center">
               <template slot-scope="{row}">
                 <el-button type="primary" size="mini" @click="updateAdd(3, row)">
@@ -209,81 +223,85 @@
             <el-input v-model="unit.name" maxlength="20" placeholder="请输入名称" />
           </el-form-item>
           <el-form-item label="启用状态" prop="status">
-            <el-radio v-model="unit.status" label="1">是</el-radio>
-            <el-radio v-model="unit.status" label="0">否</el-radio>
+            <el-radio v-model="unit.status" :label="1">是</el-radio>
+            <el-radio v-model="unit.status" :label="0">否</el-radio>
           </el-form-item>
         </el-form>
       </template>
       <template v-else-if="dialogType === 'prop'">
-        <el-form v-loading="diaLoading" ref="specForm" :model="role" label-width="120px" label-position="left" :rules="specRules">
+        <el-form v-loading="diaLoading" ref="propForm" :model="prop" label-width="120px" label-position="left" :rules="propRules">
           <el-form-item label="名称" prop="name">
-            <el-input v-model="role.name" maxlength="20" placeholder="请输入名称" />
+            <el-input v-model="prop.name" maxlength="20" placeholder="请输入名称" />
           </el-form-item>
-          <el-form-item label="属性类型" prop="name">
-            <el-checkbox-group v-model="checkList">
-              <el-checkbox label="单选框"></el-checkbox>
-              <el-checkbox label="复选框"></el-checkbox>
-              <el-checkbox label="下拉框"></el-checkbox>
-              <el-checkbox label="文本输入框" disabled></el-checkbox>
-              <el-checkbox label="地址选择框" disabled></el-checkbox>
-            </el-checkbox-group>
+          <el-form-item label="属性类型" prop="type">
+              <el-radio v-model="prop.type" size="medium" :label="1" border>单选框</el-radio>
+              <el-radio v-model="prop.type" size="medium" :label="2" border>复选框</el-radio>
+              <el-radio v-model="prop.type" size="medium" :label="3" border>下拉框</el-radio>
+              <el-radio v-model="prop.type" size="medium" :label="4" border>文本输入框</el-radio>
+              <el-radio v-model="prop.type" size="medium" :label="0" border>地址选择框</el-radio>
           </el-form-item>
-          <el-form-item label="属性值" prop="name">
-            <el-input v-model="role.name" maxlength="20" placeholder="请输入规格值" style="width: 60%" /><el-button
-            v-waves size="mini" type="danger" plain class="ml10">删除</el-button><el-button
-            v-waves size="mini" type="primary" plain>新增</el-button>
+          <template v-if="prop.type === 1 || prop.type === 2 || prop.type === 3">
+            <el-form-item v-for="(item, index) in prop.list" :key="index" :label="index === 0 ? '属性值' : ''" :prop="'list.' + index +'.value'" :rules="{
+            required: true, message: '属性值不能为空', trigger: 'blur'
+            }">
+              <el-input v-model="prop.list[index].value" maxlength="20" placeholder="请输入规格值" style="width: 60%" /><el-button
+              v-waves v-show="index !== 0 || (index === 0 && prop.list.length > 1)" size="mini" type="danger" plain class="ml10" @click=deleteProp(index)>删除</el-button><el-button
+              v-waves v-show="index === prop.list.length - 1" size="mini" type="primary" plain @click="addProp">新增</el-button>
+            </el-form-item>
+          </template>
+          <el-form-item v-if="prop.type === 4" label="属性值描述">
+            <el-input v-model="prop.textDes" maxlength="20" placeholder="请输入文本框描述" />
           </el-form-item>
-          <el-form-item label="属性值描述" prop="name">
-            <el-input v-model="role.name" maxlength="20" placeholder="请输入规格值" />
-          </el-form-item>
-          <el-form-item label="精确城市等级" prop="name">
-            <el-select v-model="cityValue" placeholder="请选择">
+          <el-form-item v-if="prop.type === 0" label="精确城市等级" prop="level">
+            <el-select v-model="prop.level" placeholder="请选择城市等级">
               <el-option
-                v-for="item in options"
+                v-for="item in cityOptions"
                 :key="item.value"
                 :label="item.label"
                 :value="item.value">
               </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="排序" prop="name">
-            <el-input v-model="role.name" maxlength="20" placeholder="请输入排序" />
+          <el-form-item label="排序" prop="sort">
+            <el-input v-model="prop.sort" maxlength="20" placeholder="请输入排序" />
           </el-form-item>
-          <el-form-item label="提示语" prop="name">
-            <el-input v-model="role.name" maxlength="20" placeholder="请输入提示语" />
+          <el-form-item label="提示语" prop="notice">
+            <el-input v-model="prop.notice" maxlength="20" placeholder="请输入提示语" />
           </el-form-item>
-          <el-form-item label="尾部语" prop="name">
-            <el-input v-model="role.name" maxlength="20" placeholder="请输入名称尾部语" />
+          <el-form-item v-if="prop.type === 4" label="尾部语" prop="afterDes">
+            <el-input v-model="prop.afterDes" maxlength="20" placeholder="请输入名称尾部语" />
           </el-form-item>
-          <el-form-item label="是否必填" prop="name">
-            <el-radio label="1">是</el-radio>
-            <el-radio label="2">否</el-radio>
+          <el-form-item label="是否必填" prop="isRequire">
+            <el-radio v-model="prop.isRequire" :label="1">是</el-radio>
+            <el-radio v-model="prop.isRequire" :label="0">否</el-radio>
           </el-form-item>
-          <el-form-item label="是否搜索" prop="name">
-            <el-radio label="1">是</el-radio>
-            <el-radio label="2">否</el-radio>
+          <el-form-item label="是否搜索" prop="isSearch">
+            <el-radio v-model="prop.isSearch" :label="1">是</el-radio>
+            <el-radio v-model="prop.isSearch" :label="0">否</el-radio>
           </el-form-item>
-          <el-form-item label="启用状态" prop="name">
-            <el-radio label="1">是</el-radio>
-            <el-radio label="2">否</el-radio>
+          <el-form-item label="启用状态" prop="status">
+            <el-radio v-model="prop.status" :label="1">是</el-radio>
+            <el-radio v-model="prop.status" :label="0">否</el-radio>
           </el-form-item>
         </el-form>
       </template>
       <template v-else-if="dialogType === 'spec'">
-        <el-form v-loading="diaLoading" ref="specForm" :model="role" label-width="140px" label-position="left" :rules="specRules">
+        <el-form v-loading="diaLoading" ref="specForm" :model="spec" label-width="120px" label-position="left" :rules="specRules">
           <el-form-item label="属性名称" prop="name">
             <el-input v-model="spec.name" maxlength="20" placeholder="请输入属性名称" />
           </el-form-item>
-          <el-form-item label="是否设定规格值" prop="showType">
-            <el-radio v-model="spec.showType" label="1" border>阶梯方式</el-radio>
-            <el-radio v-model="spec.showType" label="2" border>普通方式</el-radio>
+          <el-form-item label="展示方式" prop="showType">
+            <el-radio v-model="spec.showType" size="medium" :label="1" border>阶梯方式</el-radio>
+            <el-radio v-model="spec.showType" size="medium" :label="2" border>普通方式</el-radio>
           </el-form-item>
-          <el-form-item v-show="spec.showType === '2'" label="规格值后缀" prop="afterDes">
+          <el-form-item v-show="spec.showType === 2" label="规格值后缀" prop="afterDes" :rules="{
+            required: spec.showType === '2', message: '属性值不能为空', trigger: 'blur'
+            }">
             <el-input v-model="spec.afterDes" maxlength="20" placeholder="请输入规格值后缀" style="width: 60%" />
           </el-form-item>
           <el-form-item label="启用状态" prop="status">
-            <el-radio v-model="spec.status" label="1">是</el-radio>
-            <el-radio v-model="spec.status" label="0">否</el-radio>
+            <el-radio v-model="spec.status" :label="1">是</el-radio>
+            <el-radio v-model="spec.status" :label="0">否</el-radio>
           </el-form-item>
         </el-form>
       </template>
@@ -299,101 +317,6 @@
         <el-button type="primary" :disabled="diaDisable" @click="regFun">确定</el-button>
       </div>
     </el-dialog>
-
-    <!-- <el-dialog :visible.sync="dialogVisible" :closeOnClickModal="false" :title="dialogMsg">
-      <el-form :model="form" v-loading="diaLoading" ref="productForm" label-width="100px" label-position="left">
-        <template v-if="dialogType === 'unit'">
-            <el-form-item label="名称" prop="unit.name" :rules="{ required: true, message: '名称必填' }">
-              <el-input v-model="form.unit.name" maxlength="20" placeholder="请输入名称" />
-            </el-form-item>
-            <el-form-item label="启用状态" prop="unit.status" :rules="{ required: true, message: '启用状态必选' }">
-              <el-radio v-model="form.unit.status" label="1">是</el-radio>
-              <el-radio v-model="form.unit.status" label="2">否</el-radio>
-            </el-form-item>
-        </template>
-        <template v-else-if="dialogType === 'spec'">
-            <el-form-item label="名称" prop="spec.name" :rules="{ required: true, message: '名称必填' }">
-              <el-input v-model="form.spec.name" maxlength="20" placeholder="请输入名称" />
-            </el-form-item>
-            <el-form-item label="属性类型" prop="spec.type" :rules="{ required: true, message: '名称必填' }">
-              <el-checkbox-group v-model="form.spec.type">
-                <el-checkbox label="单选框"></el-checkbox>
-                <el-checkbox label="复选框"></el-checkbox>
-                <el-checkbox label="下拉框"></el-checkbox>
-                <el-checkbox label="文本输入框" disabled></el-checkbox>
-                <el-checkbox label="地址选择框" disabled></el-checkbox>
-              </el-checkbox-group>
-            </el-form-item>
-            <el-form-item label="属性值" prop="spec.value" :rules="{ required: true, message: '名称必填' }">
-              <el-input v-model="form.spec.value" maxlength="20" placeholder="请输入规格值" style="width: 60%" /><el-button
-              v-waves size="mini" type="danger" plain class="ml10">删除</el-button><el-button
-              v-waves size="mini" type="primary" plain>新增</el-button>
-            </el-form-item>
-            <el-form-item label="属性值描述" prop="spec.des" :rules="{ required: true, message: '名称必填' }">
-              <el-input v-model="form.spec.des" maxlength="20" placeholder="请输入规格值" />
-            </el-form-item>
-            <el-form-item label="精确城市等级" prop="spec.level" :rules="{ required: true, message: '名称必填' }">
-              <el-select v-model="form.spec.level" placeholder="请选择">
-                <el-option
-                  v-for="item in options"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value">
-                </el-option>
-              </el-select>
-            </el-form-item>
-            <el-form-item label="排序" prop="spec.sort" :rules="{ required: true, message: '名称必填' }">
-              <el-input v-model="form.spec.sort" maxlength="20" placeholder="请输入排序" />
-            </el-form-item>
-            <el-form-item label="提示语" prop="spec.notice" :rules="{ required: true, message: '名称必填' }">
-              <el-input v-model="form.spec.notice" maxlength="20" placeholder="请输入提示语" />
-            </el-form-item>
-            <el-form-item label="尾部语" prop="spec.last" :rules="{ required: true, message: '名称必填' }">
-              <el-input v-model="form.spec.last" maxlength="20" placeholder="请输入名称尾部语" />
-            </el-form-item>
-            <el-form-item label="是否必填" prop="spec.require" :rules="{ required: true, message: '名称必填' }">
-              <el-radio v-model="form.spec.require" label="1">是</el-radio>
-              <el-radio v-model="form.spec.require" label="2">否</el-radio>
-            </el-form-item>
-            <el-form-item label="是否搜索" prop="spec.search" :rules="{ required: true, message: '名称必填' }">
-              <el-radio v-model="form.spec.search" label="1">是</el-radio>
-              <el-radio v-model="form.spec.search" label="2">否</el-radio>
-            </el-form-item>
-            <el-form-item label="启用状态" prop="unit.status" :rules="{ required: true, message: '名称必填' }">
-              <el-radio v-model="form.spec.status" label="1">是</el-radio>
-              <el-radio v-model="form.spec.status" label="2">否</el-radio>
-            </el-form-item>
-        </template>
-
-        <template v-else-if="dialogType === 'prop'">
-            <el-form-item label="属性名称" prop="unit.name" :rules="{ required: true, message: '名称必填' }">
-              <el-input v-model="form.prop.name" maxlength="20" placeholder="请输入属性名称" />
-            </el-form-item>
-            <el-form-item label="是否设定规格值" prop="unit.isSet" :rules="{ required: true, message: '名称必填' }">
-              <el-radio v-model="form.prop.isSet" label="1">是</el-radio>
-              <el-radio v-model="form.prop.isSet" label="2">否</el-radio>
-            </el-form-item>
-            <el-form-item label="规格值" prop="prop.value" :rules="{ required: true, message: '名称必填' }">
-              <el-input v-model="form.prop.value" maxlength="20" placeholder="请输入规格值" style="width: 60%" /><el-button
-              v-waves size="mini" type="danger" plain class="ml10">删除</el-button><el-button
-              v-waves size="mini" type="primary" plain>新增规格值</el-button>
-            </el-form-item>
-            <el-form-item label="启用状态" prop="prop.status" :rules="{ required: true, message: '名称必填' }">
-              <el-radio v-model="form.prop.status" label="1">是</el-radio>
-              <el-radio v-model="form.prop.status" label="2">否</el-radio>
-            </el-form-item>
-        </template>
-        <template v-else-if="dialogType === 'new' || dialogType === 'edit'">
-            <el-form-item label="分类名" prop="role.name" :rules="{ required: true, message: '名称必填' }">
-              <el-input v-model="form.role.name" maxlength="20" placeholder="请输入分类名" />
-            </el-form-item>
-        </template>
-      </el-form>
-      <div style="text-align:right;">
-        <el-button type="danger" @click="dialogVisible=false">取消</el-button>
-        <el-button type="primary" :disabled="diaDisable" @click="regFun">确定</el-button>
-      </div>
-    </el-dialog> -->
   </div>
 </template>
 
@@ -405,22 +328,35 @@ import { getUnitList, insetUnitList, updateUnitList, deleteUnitList, getSpeList,
 import { validWord } from '@/utils/validate'
 let id = 1000;
 const defaultRole = {
-  name: '',
-  id: ''
+  id: '',
+  name: ''
 }
 const defaultUnit = {
   id: '',
   name: '',
-  status: ''
+  status: -1
 }
 const defaultProp = {
+  id: '',
   name: '',
-  status: '' 
+  status: '', 
+  type: -1,
+  level: -1,
+  list: [
+    { value: '' }
+  ],
+  sort: -1,
+  isSearch: -1,
+  isRequire: -1,
+  afterDes: '',
+  notice: ''
 }
 const defaultSpec = {
+  id: '',
   name: '',
-  showType: '',
-  afterDes: ''
+  showType: -1,
+  afterDes: '',
+  status: -1
 }
 
 export default {
@@ -464,30 +400,64 @@ export default {
       },
       unitRules: {
         name: [{
-            required: true,
-            trigger: 'blur',
-            validator: validateName
+          required: true,
+          trigger: 'blur',
+          message: '请填写名称'
         }],
         status: [{
             required: true,
-            trigger: 'blur'
-        }],
+            trigger: 'blur',
+            message: '请选择启用状态'
+        }]
       },
       specRules: {
         name: [{
             required: true,
-            trigger: 'blur'        
+            trigger: 'blur',
+            message: '请填写属性名称'        
           }],
         status: [{
             required: true,
-            trigger: 'blur'
+            trigger: 'blur',
+            message: '请选择启用状态'
         }],
-        showType: [
-
-        ],
-        afterDes: [
-
-        ]
+        showType: [{
+            required: true,
+            trigger: 'blur',
+            message: '请选择展示方式'
+        }],
+      },
+      propRules: {
+        name: [{
+            required: true,
+            trigger: 'blur',
+            message: '请填写属性名称'        
+          }],
+        status: [{
+            required: true,
+            trigger: 'blur',
+            message: '请选择启用状态'
+        }],
+        type: [{
+            required: true,
+            trigger: 'blur',
+            message: '请选择属性类型'
+        }],
+        isRequire: [{
+            required: true,
+            trigger: 'blur',
+            message: '请选择是否必填'
+        }],
+        isSearch: [{
+            required: true,
+            trigger: 'blur',
+            message: '请选择是否可搜索'
+        }],
+        level: [{
+            required: true,
+            trigger: 'blur',
+            message: '请选择城市等级'
+        }]
       },
       form: {
         unit: {
@@ -509,8 +479,14 @@ export default {
       cityValue: '',
       unitData: [],
       propData: [],
-      speData: [],
-      options: [],
+      specData: [],
+      cityOptions: [
+        { value: '0', label: '省级地址' },
+        { value: '1', label: '市级地址' },
+        { value: '2', label: '区级地址' },
+        { value: '3', label: '县级地址' },
+        { value: '4', label: '乡级地址' }
+      ],
       parentId: '',
       node: {},
       nodeData: {},
@@ -520,6 +496,7 @@ export default {
       checkStrictly: false,
       downloadLoading: false,
       listLoading: false,
+      boxLoading: false,
       diaLoading: false,
       diaDisable: false,
       isEdit: false
@@ -529,24 +506,6 @@ export default {
     filterText(val) {
       this.$refs.tree.filter(val);
     }
-  },
-  mounted() {
-    this.rightBoxShow = true
-        getUnitList({ categoryId: '1e39d032421ba13c130d8e1424f03564' }).then(res => {
-          if(Array.isArray(res.data)) {
-            this.unitData = res.data
-          }
-        })
-        getSpeList({ categoryId: '1e39d032421ba13c130d8e1424f03564' }).then(res => {
-          if(Array.isArray(res.data)) {
-            this.speData = res.data
-          }
-        })
-        getPropList({ categoryId: '1e39d032421ba13c130d8e1424f03564' }).then(res => {
-          if(Array.isArray(res.data)) {
-            this.propData = res.data
-          }
-        })
   },
   components: {  },
   computed: {
@@ -608,21 +567,12 @@ export default {
       // 显示四级分类的计量单位、规格管理、属性模板数据
       if(node.level === 4) {
         this.rightBoxShow = true
-        getUnitList({ categoryId: data.id }).then(res => {
-          if(Array.isArray(res.data)) {
-            this.unitData = res.data
-          }
-        })
-        getSpeList({ categoryId: data.id }).then(res => {
-          if(Array.isArray(res.data)) {
-            this.speData = res.data
-          }
-        })
-        getPropList({ categoryId: data.id }).then(res => {
-          if(Array.isArray(res.data)) {
-            this.propData = res.data
-          }
-        })
+        this.unit.id = data.id
+        this.spec.id = data.id 
+        this.prop.id = data.id
+        this.getUnitList()
+        this.getSpeList()
+        this.getPropList()
       } else {
         this.rightBoxShow = false
       }
@@ -738,16 +688,19 @@ export default {
     },
     add(type) {
       // 新增计量单位、规格、属性
+      this.isEdit = false
       if (type === 1) {
         this.dialogType = 'unit'
         this.dialogMsg = '新增计量单位'
-        
+        this.unit = Object.assign({}, defaultUnit)
       } else if (type === 2) {
         this.dialogType = 'spec'
         this.dialogMsg = '新增规格管理'
+        this.spec = Object.assign({}, defaultSpec)
       } else {
         this.dialogType = 'prop'
         this.dialogMsg = '新增属性模板'
+        this.prop = Object.assign({}, defaultProp)
       }
       this.dialogVisible = true
       this.checkStrictly = true
@@ -771,12 +724,61 @@ export default {
     },
     regFun () {
       // 表单校验
-      // this.$refs.productForm.validate(valid => {
-      //   if(valid) {
-      //     this.confirmRole()
-      //   }
-      // })
-      this.confirmRole()
+      if(this.dialogType === 'edit' || this.dialogType === 'new') {
+        this.$refs.productForm.validate(valid => {
+          if(valid) {
+            this.confirmRole()
+          }
+        })
+      } else if(this.dialogType === 'unit') {
+        this.$refs.unitForm.validate(valid => {
+          if(valid) {
+            this.confirmRole()
+          }
+        })
+      } else if(this.dialogType === 'spec') {
+        this.$refs.specForm.validate(valid => {
+          if(valid) {
+            this.confirmRole()
+          }
+        })
+      } else if(this.dialogType === 'prop') {
+        this.$refs.propForm.validate(valid => {
+          if(valid) {
+            this.confirmRole()
+          }
+        })
+      }
+    },
+    getUnitList() {
+      // 获取计量单位表
+      this.listLoading = true
+      getUnitList({ categoryId: this.unit.id }).then(res => {
+        this.listLoading = false
+        if(Array.isArray(res.data)) {
+          this.unitData = res.data
+        }
+      })
+    },
+    getSpeList() {
+      // 获取规格管理表
+      this.listLoading = true
+      getSpeList({ categoryId: this.spec.id }).then(res => {
+        this.listLoading = false
+        if(Array.isArray(res.data)) {
+          this.specData = res.data
+        }
+      })
+    },
+    getPropList(id) {
+      // 获取属性表
+      this.listLoading = true
+      getPropList({ categoryId: this.prop.id }).then(res => {
+        this.listLoading = false
+        if(Array.isArray(res.data)) {
+          this.propData = res.data
+        }
+      })
     },
     async confirmRole() {
       // 弹窗确认操作
@@ -824,22 +826,28 @@ export default {
         this.diaLoading = false
         this.getProductTree()
       } else if (this.dialogType === 'unit') {
+        this.diaDisable = true
+        this.diaLoading = true
         if(this.isEdit) {
           await updateUnitList({
-            categoryId: '1e39d032421ba13c130d8e1424f03564',
+            categoryId: this.unit.id,
             id: this.unit.id,
             name: this.unit.name,
             status: this.unit.status
           })
         } else {
           await insetUnitList({
-            categoryId: '1e39d032421ba13c130d8e1424f03564',
+            categoryId: this.unit.id,
             name: this.unit.name,
             status: this.unit.status
           })
         }
-        
+        this.diaDisable = true
+        this.diaLoading = true
+        this.getUnitList()
       } else if (this.dialogType === 'spec') {
+        this.diaDisable = true
+        this.diaLoading = true
         if(this.isEdit) {
           await updateSpeList({
             categoryId: '1e39d032421ba13c130d8e1424f03564',
@@ -857,9 +865,43 @@ export default {
             valueSuffix: this.spec.showType === '2' ? this.spec.afterDes : ''
           })
         }
-
+        this.diaDisable = true
+        this.diaLoading = true
+        this.getSpeList()
       } else if (this.dialogType === 'prop') {
-
+        this.diaDisable = true
+        this.diaLoading = true
+        let valueStr = ''
+        if(this.prop.type === '1' || this.prop.type === '2' || this.prop.type === '3') {
+          this.prop.list.forEach(item => {
+            valueStr += valueStr.length === 0 ? item.value : ',' + item.value
+          })
+        } else if(this.prop.type === '0') {
+          valueStr = this.prop.level
+        }
+        let insetParams = {
+          categoryId: '1e39d032421ba13c130d8e1424f03564',
+          name: this.prop.name,
+          hint: this.prop.notice,
+          inputType: this.prop.type,
+          isRequire: this.prop.isRequire,
+          isSearch: this.prop.isSearch,
+          sort: this.prop.sort,
+          status: this.prop.status,
+          valueStr: valueStr
+        }
+        if(this.prop.type.id === '4') {
+          insetParams.exp = this.prop.afterDes
+        }
+        if(this.isEdit) {
+          insetParams.id = this.prop.id
+          await updatePropList(insetParams)
+        } else {
+          await insetPropList(insetParams)
+        }
+        this.diaDisable = false
+        this.diaLoading = false
+        this.getPropList()
       }
       this.listLoading = false
       const { name, remark } = this.role
@@ -883,28 +925,46 @@ export default {
       return val
       }
     },
+    addProp() {
+      // 添加属性值
+      this.prop.list.push({
+        value: ''
+      })
+    },
+    deleteProp(index) {
+      // 删除添加的属性值
+      this.prop.list.splice(index, 1)
+    },
     updateAdd(type, row) {
      // 编辑计量单位、规格、属性
-     console.log(row)
+     this.isEdit = true
      if (type === 1) {
         this.unit.id = row.id
         this.unit.name = row.name
-        this.unit.status = String(row.status)
+        this.unit.status = row.status
         this.dialogType = 'unit'
         this.dialogMsg = '编辑计量单位'
-        this.isEdit = true
       } else if (type === 2) {
         this.spec.id = row.id
         this.spec.name = row.name
-        this.spec.status = String(row.status)
-        this.spec.showType = String(row.showStyle)
+        this.spec.status = row.status
+        this.spec.showType = Number(row.showStyle)
         this.spec.afterDes = row.valueSuffix
-        this.isEdit = true
         this.dialogType = 'spec'
         this.dialogMsg = '编辑规格管理'
       } else {
         this.dialogType = 'prop'
         this.dialogMsg = '编辑属性模板'
+        this.prop.id = row.id
+        this.prop.name = row.name
+        this.prop.status = row.status
+        this.prop.afterDes = row.exp
+        this.prop.notice = row.hint
+        this.prop.type = row.inputType
+        this.prop.list = row.valueSet
+        this.prop.isRequire = row.isRequire
+        this.prop.isSearch = row.isSearch
+        this.prop.sort = row.sort
       }
       this.dialogVisible = true
       this.checkStrictly = true
@@ -926,19 +986,33 @@ export default {
         type: 'warning'
       }).then(() => {
         // 判断删除类目下商品数量
-        this.listLoading = true
+        this.boxLoading = true
         if(type === 1) {
-          deleteUnitList()
+          deleteUnitList({ id: id }).then(res => {
+            this.boxLoading = false
+            this.getUnitList()
+          }).catch(err => {
+            this.boxLoading = false
+          })
         } else if(type === 2) {
-          deleteSpeList()
+          deleteSpeList({ id: id }).then(res => {
+            this.boxLoading = false
+            this.getSpeList()
+          }).catch(err => {
+            this.boxLoading = false
+          })
         } else if(type === 3){
-          deletePropList()
+          deletePropList({ categoryAttrId: id }).then(res => {
+            this.boxLoading = false
+            this.getPropList()
+          }).catch(err => {
+            this.boxLoading = false
+          })
         }
-        getProductNum({id: data.id}).then(res => {
-        
-        }).catch(err => {
-          this.listLoading = false
-        })
+        this.$message({
+          type: 'success',
+          message: '删除成功'
+        });  
       }).catch(() => {
         this.$message({
           type: 'info',
@@ -946,20 +1020,17 @@ export default {
         });          
       });
     },
-    handleChange(value) {
-      console.log(value);
-    }
   }
 }
 </script>
 
 <style lang="scss" scoped>
   .left{
-    width: 50%;
+    width: 40%;
     float: left;
   }
   .right{
-    width: 50%;
+    width: 60%;
     float: left;
   }
   .mb5{
@@ -991,7 +1062,7 @@ export default {
     padding-bottom: 30px;
   }
   .data-box{
-    // width: 800px;
+    min-width: 1000px;
     background: #eee;
     padding: 10px 20px 20px 20px;
     margin-bottom: 20px;

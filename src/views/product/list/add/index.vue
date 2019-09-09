@@ -114,14 +114,19 @@
             <el-form-item :prop="'hasMsg'" :rules="{
                 required: activeName === 'first', message: '请填写完整表格信息'
               }">  
+              <!-- <el-form :model="addForm.sku[showStyle.id].list" label-width="100px"> -->
               <div v-if="showStyle.type === '2'">
-                <el-table
+                <!-- <el-table
                   :data="addForm.sku[showStyle.id].list"
                   border
-                  style="max-width: 700px">
+                  > -->
                   <el-table-column  label="起批量" width="220" align="center">
                     <template slot-scope="scope">
+                      <!-- <el-form-item v-for="(item, index1) in formData.phones[index].arr" :key="index1" :prop="'arr.' + index1 +  '.data1'" label="data1" :rules="{
+                      required: true, message: 'data1不能为空', trigger: 'blur'
+                      }"> -->
                       <span class="mr5">起批数</span><el-input class="table-input" v-model.trim="addForm.sku[showStyle.id].list[scope.$index].number" size="small" maxlength="12" />
+                      <!-- </el-form-item> -->
                     </template>
                   </el-table-column>
                   <el-table-column label="价格" width="220" align="center">
