@@ -39,18 +39,17 @@ export default {
     refreshToken() {
       let self = this;
       self.refreshTime = setInterval(() => {
-        console.log(1)
         const token = token;
 
         if (self.expires_in <= 10 && !self.refreshLock) {
           self.refreshLock = true;
-          self.$store.dispatch("RefreshToken").catch(() => {
+          self.$store.dispatch("user/RefreshToken").catch(() => {
             clearInterval(self.refreshTime);
           });
           self.refreshLock = false;
         }
 
-        self.$store.commit("SET_EXPIRES_IN", --self.expires_in);
+        self.$store.commit("user/SET_EXPIRES_IN", --self.expires_in);
       }, 10000);
     }
   }

@@ -4,11 +4,12 @@ import store from '@/store'
 import { getToken } from '@/utils/auth'
 import QS from 'qs'
 
+const baseURL = process.env.NODE_ENV === 'development'?'/api':'/'
 // create an axios instance
 const service = axios.create({
   // baseURL: 'http://192.168.0.202:8000',
   // baseURL: process.env.VUE_APP_BASE_API,
-  baseURL: '/api',
+  baseURL,
   timeout: 5000 // request timeout
 })
 
