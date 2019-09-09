@@ -1,4 +1,4 @@
-import request from '@/utils/request'
+import request from '@/utils/request';
 
 export function login(data) {
   return request({
@@ -7,6 +7,19 @@ export function login(data) {
     data
   })
 }
+
+export const refreshToken = refresh_token => {
+  const grant_type = 'refresh_token'
+  return request({
+    url: '/auth/oauth/token',
+    headers: {
+      isToken: false,
+      Authorization: 'Basic cGlnOnBpZw=='
+    },
+    method: 'post',
+    params: { refresh_token, grant_type, scope }
+  });
+};
 
 export function getInfo(query) {
   return request({
@@ -31,4 +44,3 @@ export function getRoles(query) {
     params: query
   })
 }
-
