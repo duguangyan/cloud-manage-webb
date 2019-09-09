@@ -28,7 +28,6 @@ export default {
     ...mapGetters(["roles"])
   },
   created() {
-    debugger
     this.refreshToken();
     // if (!this.roles.includes('admin')) {
     //   this.currentRole = 'editorDashboard'
@@ -36,9 +35,11 @@ export default {
   },
   methods: {
     // 实时检测刷新token
+
     refreshToken() {
       let self = this;
       self.refreshTime = setInterval(() => {
+        console.log(1)
         const token = token;
 
         if (self.expires_in <= 10 && !self.refreshLock) {

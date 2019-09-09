@@ -209,9 +209,7 @@ export default {
           this.$store
             .dispatch("user/login", this.loginForm)
             .then(() => {
-              debugger;
-              // self.$router.push(this.redirect || '/')
-              self.$router.replace(this.redirect);
+              self.$router.push('/')
 
               this.loading = false;
             })

@@ -34,7 +34,7 @@ service.interceptors.request.use(
     }
     // do something before request is sent
     if (store.getters.token) {
-      config.headers['Authorization'] = 'Bearer ' + getToken()
+      config.headers['Authorization'] = 'Bearer ' + store.getters.token
     } else {
       config.headers['Authorization'] = 'Basic Y21hbmFnZXI6eHg='
     }
@@ -81,7 +81,7 @@ service.interceptors.response.use(
           type: 'warning'
         }).then(() => {
           store.dispatch('user/resetToken').then(() => {
-            location.reload()
+            // location.reload()
           })
         })
       }
