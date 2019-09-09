@@ -1,4 +1,4 @@
-import { login, logout, getInfo } from '@/api/upms/user';
+import { login, logout, getInfo } from '@/api/upms/user'
 import {
   getToken,
   setToken,
@@ -6,10 +6,10 @@ import {
   getUuid,
   setUuid,
   removeUuid
-} from '@/utils/auth';
-import { refreshToken } from '@/utils/request';
-import router, { resetRouter } from '@/router';
-import { getStore, setStore } from '@/store/store';
+} from '@/utils/auth'
+import { refreshToken } from '@/utils/request'
+import router, { resetRouter } from '@/router'
+import { getStore, setStore } from '@/store/store'
 
 const user = {
   namespaced: true,
@@ -22,56 +22,56 @@ const user = {
   },
   mutations: {
     SET_ACCESS_TOKEN: (state, access_token) => {
-      state.access_token = access_token;
+      state.access_token = access_token
       setStore({
         name: 'access_token',
         content: state.access_token,
         type: 'session'
-      });
+      })
     },
     SET_EXPIRES_IN: (state, expires_in) => {
-      state.expires_in = expires_in;
+      state.expires_in = expires_in
       setStore({
         name: 'expires_in',
         content: state.expires_in,
         type: 'session'
-      });
+      })
     },
     SET_REFRESH_TOKEN: (state, rfToken) => {
-      state.refresh_token = rfToken;
+      state.refresh_token = rfToken
       setStore({
         name: 'refresh_token',
         content: state.refresh_token,
         type: 'session'
-      });
+      })
     },
     SET_USER_INFO: (state, userInfo) => {
-      state.userInfo = userInfo;
+      state.userInfo = userInfo
     },
     SET_MENU: (state, menu) => {
-      state.menu = menu;
+      state.menu = menu
       setStore({
         name: 'menu',
         content: state.menu,
         type: 'session'
-      });
+      })
     },
     SET_MENU_ALL: (state, menuAll) => {
-      state.menuAll = menuAll;
+      state.menuAll = menuAll
     },
     SET_ROLES: (state, roles) => {
-      state.roles = roles;
+      state.roles = roles
     },
     SET_PERMISSIONS: (state, permissions) => {
-      const list = {};
+      const list = {}
       for (let i = 0; i < permissions.length; i++) {
-        list[permissions[i]] = true;
+        list[permissions[i]] = true
       }
-      state.permissions = list;
+      state.permissions = list
     },
     SET_USERID: (state, id) => {
       if (id) {
-        state.userId = id;
+        state.userId = id
       }
     }
     // SET_ROLES: (state, roles) => {
@@ -84,27 +84,27 @@ const user = {
       return new Promise((resolve, reject) => {
         refreshToken(state.refresh_token)
           .then(response => {
-            const data = response.data;
-            commit('SET_ACCESS_TOKEN', data.access_token);
-            commit('SET_REFRESH_TOKEN', data.refresh_token);
-            commit('SET_EXPIRES_IN', data.expires_in);
-            commit('CLEAR_LOCK');
-            resolve();
+            const data = response.data
+            commit('SET_ACCESS_TOKEN', data.access_token)
+            commit('SET_REFRESH_TOKEN', data.refresh_token)
+            commit('SET_EXPIRES_IN', data.expires_in)
+            commit('CLEAR_LOCK')
+            resolve()
           })
           .catch(error => {
-            reject(error);
-          });
-      });
+            reject(error)
+          })
+      })
     },
     // user login
     login({ commit }, userInfo) {
-      const uuid = getUuid();
-      const { username, password, authcode } = userInfo;
+      const uuid = getUuid()
+      const { username, password, authcode } = userInfo
       return new Promise((resolve, reject) => {
         login({
           username: username.trim(),
           password: password,
-          grant_type: 'password',
+          grant_type: 'image_code',
           imageCode: authcode,
           deviceId: uuid,
           scope: '1',
@@ -113,16 +113,16 @@ const user = {
           systemId: 1
         })
           .then(response => {
-            const data = response;
-            commit('SET_ACCESS_TOKEN', data.access_token);
-            commit('SET_REFRESH_TOKEN', data.refresh_token);
+            const data = response
+            commit('SET_ACCESS_TOKEN', data.access_token)
+            commit('SET_REFRESH_TOKEN', data.refresh_token)
             // setToken(data.access_token);
-            resolve();
+            resolve()
           })
           .catch(error => {
-            reject(error);
-          });
-      });
+            reject(error)
+          })
+      })
     },
 
     // get user info
@@ -130,34 +130,34 @@ const user = {
       return new Promise((resolve, reject) => {
         getInfo()
           .then(response => {
-            const { data } = response;
+            const { data } = response
 
             if (!data) {
-              reject('Verification failed, please Login again.');
+              reject('Verification failed, please Login again.')
             }
 
-            const { username, avatar, id } = data;
+            const { username, avatar, id } = data
 
-            commit('SET_NAME', username);
-            commit('SET_AVATAR', avatar);
-            commit('SET_USERID', id);
+            commit('SET_NAME', username)
+            commit('SET_AVATAR', avatar)
+            commit('SET_USERID', id)
             // commit('SET_AVATAR', avatar)
-            resolve(data);
+            resolve(data)
           })
           .catch(error => {
-            reject(error);
-          });
-      });
+            reject(error)
+          })
+      })
     },
 
     // user logout
     logout({ commit, state }) {
       return new Promise((resolve, reject) => {
-        commit('SET_NAME', '');
-        commit('SET_ACCESS_TOKEN', '');
-        removeToken();
-        resetRouter();
-        resolve();
+        commit('SET_NAME', '')
+        commit('SET_ACCESS_TOKEN', '')
+        removeToken()
+        resetRouter()
+        resolve()
         // logout({ access_token: state.token }).then(() => {
         //   commit('SET_TOKEN', '')
         //   removeToken()
@@ -166,7 +166,7 @@ const user = {
         // }).catch(error => {
         //   reject(error)
         // })
-      });
+      })
     },
 
     // getRoles({ commit, state }) {
@@ -189,37 +189,41 @@ const user = {
     // remove token
     resetToken({ commit }) {
       return new Promise(resolve => {
-        commit('SET_ACCESS_TOKEN', '');
-        removeToken();
-        resolve();
-      });
+        commit('SET_ACCESS_TOKEN', '')
+        removeToken()
+        resolve()
+      })
     },
 
     // dynamically modify permissions
     changeRoles({ commit, dispatch }, role) {
       return new Promise(async resolve => {
-        const token = role + '-token';
+        const token = role + '-token'
 
-        commit('SET_ACCESS_TOKEN', token);
-        setToken(token);
+        commit('SET_ACCESS_TOKEN', token)
+        setToken(token)
 
-        const { roles } = await dispatch('getInfo');
+        const { roles } = await dispatch('getInfo')
 
-        resetRouter();
+        resetRouter()
 
         // generate accessible routes map based on roles
-        const accessRoutes = await dispatch('permission/generateRoutes', roles, {
-          root: true
-        });
+        const accessRoutes = await dispatch(
+          'permission/generateRoutes',
+          roles,
+          {
+            root: true
+          }
+        )
 
         // dynamically add accessible routes
-        router.addRoutes(accessRoutes);
+        router.addRoutes(accessRoutes)
 
         // reset visited views and cached views
-        dispatch('tagsView/delAllViews', null, { root: true });
+        dispatch('tagsView/delAllViews', null, { root: true })
 
-        resolve();
-      });
+        resolve()
+      })
     }
   }
 }
@@ -230,5 +234,5 @@ const user = {
 //   mutations,
 //   actions
 // };
-
+console.log(user)
 export default user

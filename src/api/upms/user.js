@@ -1,4 +1,4 @@
-import request from '@/utils/request';
+import request from '@/utils/request'
 
 export function login(data) {
   return request({
@@ -18,8 +18,8 @@ export const refreshToken = refresh_token => {
     },
     method: 'post',
     params: { refresh_token, grant_type, scope }
-  });
-};
+  })
+}
 
 export function getInfo(query) {
   return request({
