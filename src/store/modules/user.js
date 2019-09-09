@@ -21,6 +21,14 @@ const user = {
     userId: ''
   },
   mutations: {
+    SET_NAME: (state, name) => {
+      state.name = name
+    },
+    SET_AVATAR: (state, avatar) => {
+      if (avatar) {
+        state.avatar = avatar
+      }
+    },
     SET_ACCESS_TOKEN: (state, access_token) => {
       state.access_token = access_token
       setStore({
@@ -234,5 +242,5 @@ const user = {
 //   mutations,
 //   actions
 // };
-console.log(user)
+// console.log(user)
 export default user
