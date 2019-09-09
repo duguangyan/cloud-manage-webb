@@ -6,8 +6,9 @@ import QS from 'qs'
 
 // create an axios instance
 const service = axios.create({
-  baseURL: 'http://192.168.0.202:8000',
+  // baseURL: 'http://192.168.0.202:8000',
   // baseURL: process.env.VUE_APP_BASE_API,
+  baseURL: '/api',
   timeout: 5000 // request timeout
 })
 
@@ -19,7 +20,8 @@ service.interceptors.request.use(
       config.headers['Content-Type'] = 'application/x-www-form-urlencoded'
     } else {
       config.headers['Content-Type'] = 'application/json'
-      config.baseURL = 'http://192.168.0.111:8000'
+      // config.baseURL = 'http://192.168.0.111:8000'
+
     }
     if (config.method === 'post') {
       if (config.type === 'upload') {
