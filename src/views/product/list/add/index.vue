@@ -114,19 +114,16 @@
             <el-form-item :prop="'hasMsg'" :rules="{
                 required: activeName === 'first', message: '请填写完整表格信息'
               }">  
-              <!-- <el-form :model="addForm.sku[showStyle.id].list" label-width="100px"> -->
+            
               <div v-if="showStyle.type === '2'">
-                <!-- <el-table
+                 <el-table
                   :data="addForm.sku[showStyle.id].list"
                   border
-                  > -->
+                  >
                   <el-table-column  label="起批量" width="220" align="center">
                     <template slot-scope="scope">
-                      <!-- <el-form-item v-for="(item, index1) in formData.phones[index].arr" :key="index1" :prop="'arr.' + index1 +  '.data1'" label="data1" :rules="{
-                      required: true, message: 'data1不能为空', trigger: 'blur'
-                      }"> -->
                       <span class="mr5">起批数</span><el-input class="table-input" v-model.trim="addForm.sku[showStyle.id].list[scope.$index].number" size="small" maxlength="12" />
-                      <!-- </el-form-item> -->
+          
                     </template>
                   </el-table-column>
                   <el-table-column label="价格" width="220" align="center">
@@ -227,7 +224,7 @@
             </div>
           </el-form-item>
           <el-form-item>
-            <el-button v-show="addForm.moreSpec.length < 2 && moreSpecTableShow" type="primary" plain size="medium" v-waves @click="addMoreSpec">添加规格</el-button>
+            <el-button v-show="moreSpecTableShow" type="primary" plain size="medium" v-waves @click="addMoreSpec">添加规格</el-button>
           </el-form-item>
           <el-form-item :prop="'hasSelfMsg'" :rules="{
                 required: activeName === 'second', message: '请填写完整表格信息'
@@ -237,22 +234,14 @@
               :data="addForm.moreSpecData"
               :span-method="arraySpanMethod"
               border>
+         
               <el-table-column
-                v-if="addForm.moreSpec.length > 0 && addForm.moreSpec[0].selectValue.length > 0"
-                :label="addForm.moreSpec[0].selectValue"
+                v-for="(columnItem, columnIndex) in addForm.moreSpec" :key="columnIndex"
+                :label="columnItem.selectValue"
                 align="center"
                 width="220">
                 <template slot-scope="scope">
-                  <span>{{addForm.moreSpecData[scope.$index].one}}</span>
-                </template>
-              </el-table-column>
-              <el-table-column
-                v-if="addForm.moreSpec.length === 2 && addForm.moreSpec[1].selectValue.length > 0 && addForm.moreSpec[1].list[0].value.length > 0"
-                :label="addForm.moreSpec[1].selectValue"
-                align="center"
-                width="220">
-                <template slot-scope="scope">
-                  <span>{{addForm.moreSpecData[scope.$index].two}}</span>
+                  <span>{{addForm.moreSpecData[scope.$index].valueObj}}</span>
                 </template>
               </el-table-column>
               <el-table-column
@@ -529,8 +518,9 @@ let vm = {
         moreSpec: [],
         moreSpecType: 'auto',
         moreSpecData: [{
-          one: '',
-          two: '',
+          valueObj: [{
+            name: ''
+          }],
           startNum: '',
           price: '',
           store: ''
@@ -555,7 +545,8 @@ let vm = {
       dialogImageUrl: '',
       dialogVisible: false,
       dialogProp: false,
-      imgsList: []
+      imgsList: [],
+      spanArr: []
     }
   },
   components: {  },
@@ -676,6 +667,8 @@ let vm = {
     },
     unitChange(val, type, pindex) {
       // 计量单位选择
+      console.log(this.addForm.sku)
+      console.log(this.showStyle)
       if(type === 'auto') {
         this.showStyle.type = this.showAble[val]
         this.showStyle.id = val
@@ -1047,74 +1040,196 @@ let vm = {
       // 报价规格值在table中更新
       if(val.length > 0) {
         let arr = []
-        if(pindex === 0) {
-          this.addForm.moreSpec[0].list.forEach((item, i) => {
-            if(item.value.length > 0) {
-              arr[i] = {
-                one: item.value,
-                two: '',
-                oneSelect: this.addForm.moreSpec[0].selectValue,
-                twoSelect: this.addForm.moreSpec[1] ? this.addForm.moreSpec[1].selectValue : '',
-                startNum: '',
-                price: '',
-                store: ''
-              }
-            }
-          })
-        } else if(pindex === 1) {
+        let length
+        let height = 1
+        for(let i = 0; i < this.addForm.moreSpec.length; i++) {
+          if(this.addForm.moreSpec[i].list.length > 1) {
+            height *= this.addForm.moreSpec[i].list.length
+          } 
+        }
+        let width = this.addForm.moreSpec.length
+        
+        let point /* 原数组的下标指示累加气 */ = 0
+        let counter /* 当前遍历序的累加器，遇到和商相等是从头开始算 */ = 0
+        let listLen = -1
+        let first = true
 
-          this.addForm.moreSpec[0].list.forEach(itemOne => {
-            this.addForm.moreSpec[1].list.forEach(itemTwo => {
-              if(itemTwo.value.length > 0) {
-                arr.push({
-                  one: itemOne.value,
-                  two: itemTwo.value,
-                  oneSelect: this.addForm.moreSpec[0].selectValue,
-                  twoSelect: this.addForm.moreSpec[1].selectValue,
-                  startNum: '',
-                  price: '',
-                  store: ''
-                })
+        console.log(this.addForm.moreSpec)
+        for(let m = 0; m < width; m++) {
+          point = 0
+          counter = 0
+          // let obj = {
+          //   startNum: '',
+          //   price: '',
+          //   store: '',
+          //   valueObj: []
+          // }
+          
+          for(let n = 0; n < height; n++) {
+            if(counter < height / this.addForm.moreSpec[m].list.length) {
+              if(m === 0) {
+                arr[n] = {}
+                arr[n].startNum = this.addForm.moreSpec[m].list[point].value 
+                arr[n].price = '' 
+                arr[n].store = '' 
+                arr[n].valueObj = []
               }
+              arr[n].valueObj.push({
+                name: this.addForm.moreSpec[m].selectValue,
+                value: this.addForm.moreSpec[m].list[point].value
+              })
+              // obj.valueObj.push({
+              //   name: this.addForm.moreSpec[m].selectValue,
+              //   value: this.addForm.moreSpec[m].list[point].value
+              // })
+              // arr.push({
+              //   value: this.addForm.moreSpec[m].list[point].value,
+              //   startNum: 'point',
+              //   price: 'counter',
+              //   store: ''
+              // })
+              counter++
+            } else {
+              counter = 0
+              point++
+              n--
+            }
+          }
+          
+        }
+
+    
+
+       
+        
+        // this.$set(this.addForm, 'moreSpecData', arr)
+       this.addForm.moreSpecData = arr
+       console.log('arrr')
+        console.log(arr)
+        return
+        // if(pindex === 0) {
+        //   this.addForm.moreSpec[0].list.forEach((item, i) => {
+        //     if(item.value.length > 0) {
+        //       arr[i] = {
+        //         one: item.value,
+        //         two: '',
+        //         oneSelect: this.addForm.moreSpec[0].selectValue,
+        //         twoSelect: this.addForm.moreSpec[1] ? this.addForm.moreSpec[1].selectValue : '',
+        //         startNum: '',
+        //         price: '',
+        //         store: ''
+        //       }
+        //     }
+        //   })
+        // } else if(pindex === 1) {
+
+        //   this.addForm.moreSpec[0].list.forEach(itemOne => {
+        //     this.addForm.moreSpec[1].list.forEach(itemTwo => {
+        //       if(itemTwo.value.length > 0) {
+        //         arr.push({
+        //           one: itemOne.value,
+        //           two: itemTwo.value,
+        //           oneSelect: this.addForm.moreSpec[0].selectValue,
+        //           twoSelect: this.addForm.moreSpec[1].selectValue,
+        //           startNum: '',
+        //           price: '',
+        //           store: ''
+        //         })
+        //       }
               
-            })
-          })
-        }
-        let len = 1
-        for(let i = 1; i < arr.length; i++) {
-          if(arr[i].one === arr[0].one) {
-            ++len
+        //     })
+        //   })
+        // }
+        let contactDot = 0;
+        arr.forEach( (item, index) => {
+          if(index===1) {
+              this.spanArr.push(1)
           } else {
-            break
+            if(item.value === arr[index-1].value){
+                this.spanArr[contactDot] += 1;
+                this.spanArr.push(0)
+            }else{
+                contactDot = index
+                this.spanArr.push(1)
+            }
           }
-        }
-        if(len > 1) {
-            this.isCombine = true
-          } else {
-            this.isCombine = false
-          }
-        this.combineLen = len
-        this.addForm.moreSpecData = arr;
+      })
       }
       
     },
-    arraySpanMethod({ row, column, rowIndex, columnIndex }) {
-      if(this.isCombine && columnIndex === 0) {
-          if(this.combineLen > 1 && rowIndex % this.combineLen === 0) {
-            console.log('conbine len:', this.combineLen)
-            console.log('row index', rowIndex)
-            return {
-              rowspan: this.combineLen,
-              colspan: 1
-            }
-          } else {
-            return {
-              rowspan: 0,
-              colspan: 0
-            }
-          }
+    // specValueBlur(e, pindex, val) {
+    //   // 报价规格值在table中更新
+    //   if(val.length > 0) {
+    //     let arr = []
+    //     if(pindex === 0) {
+    //       this.addForm.moreSpec[0].list.forEach((item, i) => {
+    //         if(item.value.length > 0) {
+    //           arr[i] = {
+    //             one: item.value,
+    //             two: '',
+    //             oneSelect: this.addForm.moreSpec[0].selectValue,
+    //             twoSelect: this.addForm.moreSpec[1] ? this.addForm.moreSpec[1].selectValue : '',
+    //             startNum: '',
+    //             price: '',
+    //             store: ''
+    //           }
+    //         }
+    //       })
+    //     } else if(pindex === 1) {
+
+    //       this.addForm.moreSpec[0].list.forEach(itemOne => {
+    //         this.addForm.moreSpec[1].list.forEach(itemTwo => {
+    //           if(itemTwo.value.length > 0) {
+    //             arr.push({
+    //               one: itemOne.value,
+    //               two: itemTwo.value,
+    //               oneSelect: this.addForm.moreSpec[0].selectValue,
+    //               twoSelect: this.addForm.moreSpec[1].selectValue,
+    //               startNum: '',
+    //               price: '',
+    //               store: ''
+    //             })
+    //           }
+              
+    //         })
+    //       })
+    //     }
+    //     let len = 1
+    //     for(let i = 1; i < arr.length; i++) {
+    //       if(arr[i].one === arr[0].one) {
+    //         ++len
+    //       } else {
+    //         break
+    //       }
+    //     }
+    //     if(len > 1) {
+    //         this.isCombine = true
+    //       } else {
+    //         this.isCombine = false
+    //       }
+    //     this.combineLen = len
+    //     this.addForm.moreSpecData = arr;
+    //   }
       
-      }
+    // },
+    arraySpanMethod({ row, column, rowIndex, columnIndex }) {
+      
+      // if(this.isCombine && columnIndex === 0) {
+      //     if(this.combineLen > 1 && rowIndex % this.combineLen === 0) {
+      //       console.log('conbine len:', this.combineLen)
+      //       console.log('row index', rowIndex)
+      //       return {
+      //         rowspan: this.combineLen,
+      //         colspan: 1
+      //       }
+      //     } else {
+      //       return {
+      //         rowspan: 0,
+      //         colspan: 0
+      //       }
+      //     }
+      
+      // }
     
     }
 
