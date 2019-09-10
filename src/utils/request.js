@@ -4,10 +4,12 @@ import store from '@/store'
 import { getToken } from '@/utils/auth'
 import QS from 'qs'
 
+const baseURL = process.env.NODE_ENV === 'development'?'/api':'/'
 // create an axios instance
 const service = axios.create({
-  baseURL: 'http://192.168.0.202:8000',
+  // baseURL: 'http://192.168.0.202:8000',
   // baseURL: process.env.VUE_APP_BASE_API,
+  baseURL,
   timeout: 5000 // request timeout
 })
 
@@ -19,7 +21,8 @@ service.interceptors.request.use(
       config.headers['Content-Type'] = 'application/x-www-form-urlencoded'
     } else {
       config.headers['Content-Type'] = 'application/json'
-      config.baseURL = 'http://192.168.0.111:8000'
+      // config.baseURL = 'http://192.168.0.111:8000'
+
     }
     if (config.method === 'post') {
       if (config.type === 'upload') {
@@ -34,7 +37,7 @@ service.interceptors.request.use(
     }
     // do something before request is sent
     if (store.getters.token) {
-      config.headers['Authorization'] = 'Bearer ' + getToken()
+      config.headers['Authorization'] = 'Bearer ' + store.getters.token
     } else {
       config.headers['Authorization'] = 'Basic Y21hbmFnZXI6eHg='
     }
@@ -60,8 +63,6 @@ service.interceptors.response.use(
    * You can also judge the status by HTTP Status Code
    */
   response => {
-    console.log('res')
-    console.log(response)
     const res = response.data
     // if the custom code is not 20000, it is judged as an error.
     if (res.code !== '1000') {
@@ -83,7 +84,7 @@ service.interceptors.response.use(
           type: 'warning'
         }).then(() => {
           store.dispatch('user/resetToken').then(() => {
-            location.reload()
+            // location.reload()
           })
         })
       }

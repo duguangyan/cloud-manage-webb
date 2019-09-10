@@ -63,7 +63,7 @@ var vm = {
           name: '添加',
           auth: false
         },
-        del: {
+        delete: {
           name: '删除',
           auth: false
         },
@@ -312,7 +312,7 @@ var vm = {
             </el-button>
           </el-tooltip>}
 
-          {vm.btnsPermission.del.auth && <el-tooltip content="删除地域" placement="top">
+          {vm.btnsPermission.delete.auth && <el-tooltip content="删除地域" placement="top">
             <el-button
               size="medium"
               type="text"

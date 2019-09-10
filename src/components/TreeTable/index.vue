@@ -23,7 +23,7 @@
         <template  v-if="index === 0">
           <span v-for="space in scope.row._level" :key="space" class="ms-tree-space"/>
         </template>
-        
+
         <span v-if="iconShow(index,scope.row)" class="tree-ctrl" @click="toggleExpanded(scope.$index)">
           <i v-if="!scope.row._expanded" class="el-icon-plus"/>
           <i v-else class="el-icon-minus"/>
@@ -34,7 +34,7 @@
     <slot/>
   </el-table>
 </template>
- 
+
 <script>
 /**
   Auth: Lei.j1ang
@@ -101,7 +101,7 @@ export default {
     iconShow(index, record) {
       return index === 0 && record.child && record.child.length > 0;
     },
- 
+
     //设置表头全选
     renderHeader(h, data) {
       return h("span", [
@@ -178,7 +178,7 @@ export default {
     },
     //某个复选框被点击时
     toselect(row) {
-      console.log(row);
+      // console.log(row);
       // row._expanded = row.checks;//选中后是否展开
       //1、若有子集先让子选中
       if (row.child) {
@@ -204,7 +204,7 @@ export default {
       var that = this;
       const all = document.getElementById("chooseall");
       all.onchange = function(e) {
-        console.log(all.checked);
+        // console.log(all.checked);
         if (all.checked == true) {
           that.setchildtobeselect(that.formatData, true);
         } else {
@@ -233,7 +233,7 @@ export default {
   }
 }
 </style>
- 
+
 <style scoped>
 .ms-tree-space {
   position: relative;
