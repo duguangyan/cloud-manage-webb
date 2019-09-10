@@ -1038,9 +1038,11 @@ let vm = {
     },
     specValueBlur(e, pindex, val) {
       // 报价规格值在table中更新
+      console.log('!!!')
+      console.log(this.addForm.moreSpec)
       if(val.length > 0) {
         let arr = []
-        let length
+        // let length
         let height = 1
         for(let i = 0; i < this.addForm.moreSpec.length; i++) {
           if(this.addForm.moreSpec[i].list.length > 1) {
@@ -1049,56 +1051,98 @@ let vm = {
         }
         let width = this.addForm.moreSpec.length
         
-        let point /* 原数组的下标指示累加气 */ = 0
-        let counter /* 当前遍历序的累加器，遇到和商相等是从头开始算 */ = 0
-        let listLen = -1
-        let first = true
+        // let point /* 原数组的下标指示累加气 */ = 0
+        // let counter /* 当前遍历序的累加器，遇到和商相等是从头开始算 */ = 0
+        // let listLen = -1
+        // let first = true
 
-        console.log(this.addForm.moreSpec)
-        for(let m = 0; m < width; m++) {
-          point = 0
-          counter = 0
-          // let obj = {
-          //   startNum: '',
-          //   price: '',
-          //   store: '',
-          //   valueObj: []
-          // }
+        // console.log(this.addForm.moreSpec)
+        // for(let m = 0; m < width; m++) {
+        //   point = 0
+        //   counter = 0
+        //   // let obj = {
+        //   //   startNum: '',
+        //   //   price: '',
+        //   //   store: '',
+        //   //   valueObj: []
+        //   // }
           
-          for(let n = 0; n < height; n++) {
-            if(counter < height / this.addForm.moreSpec[m].list.length) {
-              if(m === 0) {
-                arr[n] = {}
-                arr[n].startNum = this.addForm.moreSpec[m].list[point].value 
-                arr[n].price = '' 
-                arr[n].store = '' 
-                arr[n].valueObj = []
+        //   for(let n = 0; n < height; n++) {
+        //     if(counter < height / this.addForm.moreSpec[m].list.length) {
+        //       if(m === 0) {
+        //         arr[n] = {}
+        //         arr[n].startNum = this.addForm.moreSpec[m].list[point].value 
+        //         arr[n].price = '' 
+        //         arr[n].store = '' 
+        //         arr[n].valueObj = []
+        //       }
+        //       arr[n].valueObj.push({
+        //         name: this.addForm.moreSpec[m].selectValue,
+        //         value: this.addForm.moreSpec[m].list[point].value
+        //       })
+        //       // obj.valueObj.push({
+        //       //   name: this.addForm.moreSpec[m].selectValue,
+        //       //   value: this.addForm.moreSpec[m].list[point].value
+        //       // })
+        //       // arr.push({
+        //       //   value: this.addForm.moreSpec[m].list[point].value,
+        //       //   startNum: 'point',
+        //       //   price: 'counter',
+        //       //   store: ''
+        //       // })
+        //       counter++
+        //     } else {
+        //       counter = 0
+        //       point++
+        //       n--
+        //     }
+        //   }
+          
+        // }
+
+        let arrBox = []
+      
+        for(let m = 0; m < this.addForm.moreSpec.length; m++) {
+          let item = {}
+          for(let n = 0; n < this.addForm.moreSpec[m].list.length; n++) {
+            let l = height / this.addForm.moreSpec[m].list.length
+            for(let k = n * l; k < height; k++) {
+              if(k === 0) {
+                arr[k] = {
+                  itemValue: []
+                }
               }
-              arr[n].valueObj.push({
-                name: this.addForm.moreSpec[m].selectValue,
-                value: this.addForm.moreSpec[m].list[point].value
-              })
-              // obj.valueObj.push({
-              //   name: this.addForm.moreSpec[m].selectValue,
-              //   value: this.addForm.moreSpec[m].list[point].value
-              // })
-              // arr.push({
-              //   value: this.addForm.moreSpec[m].list[point].value,
-              //   startNum: 'point',
-              //   price: 'counter',
-              //   store: ''
-              // })
-              counter++
-            } else {
-              counter = 0
-              point++
-              n--
+              if(k % l === 0) {
+                arr[k].itemValue.push({
+                  value: this.addForm.moreSpec[m].list[n].value
+                })
+                  debugger
+                  item[k] =  this.addForm.moreSpec[m].list[n].value
+              } else {
+                item[k] = ''
+              }
+              
             }
           }
-          
+          arrBox.push(item)
         }
 
-    
+        for(let i = 0; i < height; i++) {
+          let obj = {
+            price: '',
+            store: ''
+          }
+          obj.valueObj = []
+          for(let j = 0; j < arrBox.length; j++) {
+            obj.valueObj.push({
+              value: arrBox[j][i]
+            })
+          }
+          arr.push(obj)
+        }
+
+        
+      
 
        
         
@@ -1106,40 +1150,9 @@ let vm = {
        this.addForm.moreSpecData = arr
        console.log('arrr')
         console.log(arr)
+        console.log(arrBox)
         return
-        // if(pindex === 0) {
-        //   this.addForm.moreSpec[0].list.forEach((item, i) => {
-        //     if(item.value.length > 0) {
-        //       arr[i] = {
-        //         one: item.value,
-        //         two: '',
-        //         oneSelect: this.addForm.moreSpec[0].selectValue,
-        //         twoSelect: this.addForm.moreSpec[1] ? this.addForm.moreSpec[1].selectValue : '',
-        //         startNum: '',
-        //         price: '',
-        //         store: ''
-        //       }
-        //     }
-        //   })
-        // } else if(pindex === 1) {
-
-        //   this.addForm.moreSpec[0].list.forEach(itemOne => {
-        //     this.addForm.moreSpec[1].list.forEach(itemTwo => {
-        //       if(itemTwo.value.length > 0) {
-        //         arr.push({
-        //           one: itemOne.value,
-        //           two: itemTwo.value,
-        //           oneSelect: this.addForm.moreSpec[0].selectValue,
-        //           twoSelect: this.addForm.moreSpec[1].selectValue,
-        //           startNum: '',
-        //           price: '',
-        //           store: ''
-        //         })
-        //       }
-              
-        //     })
-        //   })
-        // }
+     
         let contactDot = 0;
         arr.forEach( (item, index) => {
           if(index===1) {
