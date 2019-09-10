@@ -1066,35 +1066,26 @@ let vm = {
           point = 0;
           curRow = 0;
           for(curRow = 0;curRow < rows;curRow++){
-            if(cols < 2){
-              arr[index] = {
+            // if(cols < 2){
+              arr[curRow] = {
                 price: '',
                 store: '',
-                valueObj: [
-                  {
-                    name: '',
-                    value: curList[curRow].value
-                  }
-                ]
+                valueObj: []
               }
-              index++;
-              continue;
-            }
+              arr[curRow].valueObj.push({
+                name: this.addForm.moreSpec[curCol].selectValue,
+                value: this.addForm.moreSpec[curCol].list[point].value
+              })
+              // continue;
+            // }
             if(curRow !== 0 && counter === consult){
               point++;
             }
-            arr[index] = {
-                price: '',
-                store: '',
-                valueObj: [
-                  {
-                    name: '',
-                    value: curList[point].value
-                  }
-                ]
-              }
+            // arr[curRow] = {
+            //     price: '',
+            //     store: '',
+            //   }
             counter++;
-            index++;
           }
         }
 
