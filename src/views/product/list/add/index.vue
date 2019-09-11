@@ -8,339 +8,510 @@
         <!-- <el-cascader :options="addressOptions" :props="addressProps"></el-cascader> -->
       </div>
     </el-card>
-    <el-form v-loading="diaLoading" ref="productForm" :model="addForm" label-position="right" label-width="120px" style="">
-    <el-card class="box-card">
-      <div slot="header" class="clearfix">
-        <span>基本信息</span>
-      </div>
-      <div  class="text item">
-        <el-form-item label="标题" required prop="title">
-          <el-input
-          class="long-input"
-          v-model.trim="addForm.title"
-          size="medium"
-          maxlength="100"
-          show-word-limit
-          :rules="{
+    <el-form
+      v-loading="diaLoading"
+      ref="productForm"
+      :model="addForm"
+      label-position="right"
+      label-width="120px"
+      style
+    >
+      <el-card class="box-card">
+        <div slot="header" class="clearfix">
+          <span>基本信息</span>
+        </div>
+        <div class="text item">
+          <el-form-item label="标题" required prop="title">
+            <el-input
+              class="long-input"
+              v-model.trim="addForm.title"
+              size="medium"
+              maxlength="100"
+              show-word-limit
+              :rules="{
             required: true, message: '标题必填', trigger: 'blur'
           }"
-          placeholder="请输入名称，如：品种+口感+产地+用途等" />
-        </el-form-item>
-        <template v-for="(item, index) in baseData">
-          <el-form-item
-          :key="index"
-          :label="item.name"
-          :rules="{
+              placeholder="请输入名称，如：品种+口感+产地+用途等"
+            />
+          </el-form-item>
+          <template v-for="(item, index) in baseData">
+            <el-form-item
+              :key="index"
+              :label="item.name"
+              :rules="{
             required: true, message: `${item.name}必填`, trigger: 'blur', type: item.inputType === 0 || item.inputType === 2 ? 'array' : ''
           }"
-          :prop="'generate.' + index + '.list'">
-            <template v-if="item.inputType === 0">
-              <el-cascader
-                v-model="addForm.generate[index].list"
-                :placeholder="item.hint"
-                :options="addressOptions"
-                :style="{width: item.length + 'px'}"
-                :props="addressProps"
-                style="width: 200px;"
-                class="filter-item mr20"
-                @change="selectChange"
-                @focus="focus"
-                @keyup.enter.native="handleFilter">
-              </el-cascader>
-              <span v-if="item.exp !== null">{{item.exp}}</span>
-            </template>
-            <template v-else-if="item.inputType === 1">
-              <el-radio-group v-model="addForm.generate[index].list" size="small">
-                <el-radio v-for="(radioItem, radioIndex) in item.valueSet" :key="radioIndex" :label="radioItem.value" border>{{radioItem.value}}</el-radio>
-              </el-radio-group>
-              <span v-if="item.exp !== null">{{item.exp}}</span>
-            </template>
-            <template v-else-if="item.inputType === 2">
-              <el-checkbox-group v-model="addForm.generate[index].list" @change="((val) => checkChange(val, index))">
-                <el-checkbox v-for="(checkboxItem, checkboxIndex) in item.valueSet" :label="checkboxItem.value" :key="checkboxIndex">{{checkboxItem.value}}</el-checkbox>
-              </el-checkbox-group>
-              <el-checkbox :indeterminate="isIndeterminate" v-model="addForm.generate[index].checkAll" @change="((val) => handleCheckAllChange(val, index, item.id))">全选</el-checkbox>
-              <span v-if="item.exp !== null">{{item.exp}}</span>
-            </template>
-            <template v-else-if="item.inputType === 3">
-              <el-select v-model="addForm.generate[index].list" size="medium" maxlength="64" placeholder="请选择">
-                <el-option v-for="(selectItem, selectIndex) in item.valueSet" :key="selectIndex" :label="selectItem.id" :value="selectItem.value"></el-option>
-              </el-select>
-              <span v-if="item.exp !== null">{{item.exp}}</span>
-            </template>
-            <template v-else-if="item.inputType === 4">
-              <el-input class="long-input" v-model.trim="addForm.generate[index].list" size="medium" maxlength="64" :placeholder="item.hint" :style="{width: item.length + 'px'}" />
-              <span v-if="item.exp !== null">{{item.exp}}</span>
-            </template>
-          </el-form-item>
-        </template>
-        <el-form-item v-for="(selfItem, selfIndex) in addForm.selfProp" :key="selfIndex + 'x'" :label="addForm.selfProp[selfIndex].name">
-          <span class="mr40">{{addForm.selfProp[selfIndex].list}}</span>
-          <el-button type="danger" plain size="small" v-waves @click="removeSelfProp(selfIndex)">删除</el-button>
-        </el-form-item>
-        <el-form-item label="" required prop="title">
-          <el-button size="medium" type="primary" plain @click="addSelfProp">
-            新增属性
-          </el-button>
-        </el-form-item>
-      </div>
-    </el-card>
-    <el-card class="box-card">
-      <div slot="header" class="clearfix">
-        <span>销售信息</span>
-      </div>
-      <el-tabs v-model="activeName" @tab-click="handleClick">
-        <el-tab-pane label="默认报价方式" name="first">
-          <div  class="text item">
-            <el-form-item
-              label="计量单位"
-              :prop="'unit'"
-              :rules="{
-                required: activeName === 'first', message: '计量单位必填', trigger: 'blur'
-              }">
-              <el-select v-model="addForm.unit" size="medium" maxlength="64" placeholder="请选择" @change="((val) => unitChange(val, 'auto'))">
-                <el-option v-for="(item, index) in sellData" :key="index" :label="item.name" :value="item.id"></el-option>
-              </el-select>
+              :prop="'generate.' + index + '.list'"
+            >
+              <template v-if="item.inputType === 0">
+                <el-cascader
+                  v-model="addForm.generate[index].list"
+                  :placeholder="item.hint"
+                  :options="addressOptions"
+                  :style="{width: item.length + 'px'}"
+                  :props="addressProps"
+                  style="width: 200px;"
+                  class="filter-item mr20"
+                  @change="selectChange"
+                  @focus="focus"
+                  @keyup.enter.native="handleFilter"
+                ></el-cascader>
+                <span v-if="item.exp !== null">{{item.exp}}</span>
+              </template>
+              <template v-else-if="item.inputType === 1">
+                <el-radio-group v-model="addForm.generate[index].list" size="small">
+                  <el-radio
+                    v-for="(radioItem, radioIndex) in item.valueSet"
+                    :key="radioIndex"
+                    :label="radioItem.value"
+                    border
+                  >{{radioItem.value}}</el-radio>
+                </el-radio-group>
+                <span v-if="item.exp !== null">{{item.exp}}</span>
+              </template>
+              <template v-else-if="item.inputType === 2">
+                <el-checkbox-group
+                  v-model="addForm.generate[index].list"
+                  @change="((val) => checkChange(val, index))"
+                >
+                  <el-checkbox
+                    v-for="(checkboxItem, checkboxIndex) in item.valueSet"
+                    :label="checkboxItem.value"
+                    :key="checkboxIndex"
+                  >{{checkboxItem.value}}</el-checkbox>
+                </el-checkbox-group>
+                <el-checkbox
+                  :indeterminate="isIndeterminate"
+                  v-model="addForm.generate[index].checkAll"
+                  @change="((val) => handleCheckAllChange(val, index, item.id))"
+                >全选</el-checkbox>
+                <span v-if="item.exp !== null">{{item.exp}}</span>
+              </template>
+              <template v-else-if="item.inputType === 3">
+                <el-select
+                  v-model="addForm.generate[index].list"
+                  size="medium"
+                  maxlength="64"
+                  placeholder="请选择"
+                >
+                  <el-option
+                    v-for="(selectItem, selectIndex) in item.valueSet"
+                    :key="selectIndex"
+                    :label="selectItem.id"
+                    :value="selectItem.value"
+                  ></el-option>
+                </el-select>
+                <span v-if="item.exp !== null">{{item.exp}}</span>
+              </template>
+              <template v-else-if="item.inputType === 4">
+                <el-input
+                  class="long-input"
+                  v-model.trim="addForm.generate[index].list"
+                  size="medium"
+                  maxlength="64"
+                  :placeholder="item.hint"
+                  :style="{width: item.length + 'px'}"
+                />
+                <span v-if="item.exp !== null">{{item.exp}}</span>
+              </template>
             </el-form-item>
-            <el-form-item
-              v-if="showStyle.type === '2'"
-              :prop="'sku.'+showStyle.id+'.store'"
-              :rules="{
+          </template>
+          <el-form-item
+            v-for="(selfItem, selfIndex) in addForm.selfProp"
+            :key="selfIndex + 'x'"
+            :label="addForm.selfProp[selfIndex].name"
+          >
+            <span class="mr40">{{addForm.selfProp[selfIndex].list}}</span>
+            <el-button
+              type="danger"
+              plain
+              size="small"
+              v-waves
+              @click="removeSelfProp(selfIndex)"
+            >删除</el-button>
+          </el-form-item>
+          <el-form-item label required prop="title">
+            <el-button size="medium" type="primary" plain @click="addSelfProp">新增属性</el-button>
+          </el-form-item>
+        </div>
+      </el-card>
+      <el-card class="box-card">
+        <div slot="header" class="clearfix">
+          <span>销售信息</span>
+        </div>
+        <el-tabs v-model="activeName" @tab-click="handleClick">
+          <el-tab-pane label="默认报价方式" name="first">
+            <div class="text item">
+              <el-form-item
+                label="计量单位"
+                :prop="'unit'"
+                :rules="{
+                required: activeName === 'first', message: '计量单位必填', trigger: 'blur'
+              }"
+              >
+                <el-select
+                  v-model="addForm.unit"
+                  size="medium"
+                  maxlength="64"
+                  placeholder="请选择"
+                  @change="((val) => unitChange(val, 'auto'))"
+                >
+                  <el-option
+                    v-for="(item, index) in sellData"
+                    :key="index"
+                    :label="item.name"
+                    :value="item.id"
+                  ></el-option>
+                </el-select>
+              </el-form-item>
+              <el-form-item
+                v-if="showStyle.type === '2'"
+                :prop="'sku.'+showStyle.id+'.store'"
+                :rules="{
                 required: activeName === 'first', message: '库存必填，且为数字', trigger: 'blur', pattern:/^\d+$/,
               }"
-              label="库存">
-                <el-input class="short-input" v-model.trim="addForm.sku[showStyle.id].store" size="medium" maxlength="30" />
-            </el-form-item>
-            <el-form-item :prop="'hasMsg'" :rules="{
+                label="库存"
+              >
+                <el-input
+                  class="short-input"
+                  v-model.trim="addForm.sku[showStyle.id].store"
+                  size="medium"
+                  maxlength="30"
+                />
+              </el-form-item>
+              <el-form-item
+                :prop="'hasMsg'"
+                :rules="{
                 required: activeName === 'first', message: '请填写完整表格信息'
-              }">
+              }"
+              >
+                <div v-if="showStyle.type === '2'">
+                  <el-table :data="addForm.sku[showStyle.id].list" border>
+                    <el-table-column label="起批量" width="220" align="center">
+                      <template slot-scope="scope">
+                        <span class="mr5">起批数</span>
+                        <el-input
+                          class="table-input"
+                          v-model.trim="addForm.sku[showStyle.id].list[scope.$index].number"
+                          size="small"
+                          maxlength="12"
+                        />
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="价格" width="220" align="center">
+                      <template slot-scope="scope">
+                        <span class="mr5">单价</span>
+                        <el-input
+                          class="table-input"
+                          v-model.trim="addForm.sku[showStyle.id].list[scope.$index].price"
+                          size="small"
+                          maxlength="12"
+                        />
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="操作" align="center">
+                      <template slot-scope="scope">
+                        <div style="text-align: left;padding-left: 50px;">
+                          <el-button
+                            v-show="scope.$index > 0 || addForm.sku[showStyle.id].list.length > 1"
+                            size="mini"
+                            type="danger"
+                            plain
+                            @click="removeStair(scope.$index, showStyle.id)"
+                          >删除</el-button>
+                          <el-button
+                            v-show="scope.$index === addForm.sku[showStyle.id].list.length - 1"
+                            size="mini"
+                            type="primary"
+                            plain
+                            @click="addStair(scope.$index, showStyle.id)"
+                          >新增规格</el-button>
+                          <!-- <span v-show="scope.$index > 0 || stairArr.length > 1" class="mr10 unit-delete" @click="removeStair(scope.$index, showStyle.id)">删除</span><span v-show="scope.$index === stairArr.length - 1" class="unit-add" @click="addStair(scope.$index, showStyle.id)">新增规格</span> -->
+                        </div>
+                      </template>
+                    </el-table-column>
+                  </el-table>
+                </div>
+                <div v-else-if="showStyle.type === '1'">
+                  <el-table :data="addForm.sku[showStyle.id].list" style="max-width: 1140px" border>
+                    <el-table-column label="规格名称" width="220" align="center">
+                      <template slot-scope="scope">
+                        <el-input
+                          class="table-input mr5"
+                          v-model.trim="addForm.sku[showStyle.id].list[scope.$index].name"
+                          size="small"
+                          maxlength="12"
+                        />
+                        <span>{{showAble[showStyle.id].valueSuffix}}</span>
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="起批量" width="220" align="center">
+                      <template slot-scope="scope">
+                        <el-input
+                          class="table-input"
+                          v-model.trim="addForm.sku[showStyle.id].list[scope.$index].number"
+                          size="small"
+                          maxlength="12"
+                        />
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="价格" width="220" align="center">
+                      <template slot-scope="scope">
+                        <el-input
+                          class="table-input mr5"
+                          v-model.trim="addForm.sku[showStyle.id].list[scope.$index].price"
+                          size="small"
+                          maxlength="12"
+                        />
+                        <span>元</span>
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="库存" width="220" align="center">
+                      <template slot-scope="scope">
+                        <el-input
+                          class="table-input"
+                          v-model.trim="addForm.sku[showStyle.id].list[scope.$index].store"
+                          size="small"
+                          maxlength="12"
+                        />
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="操作" align="center">
+                      <template slot-scope="scope">
+                        <div style="text-align: left;padding-left: 50px;">
+                          <el-button
+                            v-show="scope.$index > 0 || addForm.sku[showStyle.id].list.length > 1"
+                            size="mini"
+                            type="danger"
+                            plain
+                            @click="removeBox(scope.$index, showStyle.id)"
+                          >删除</el-button>
+                          <el-button
+                            v-show="scope.$index === addForm.sku[showStyle.id].list.length - 1"
+                            size="mini"
+                            type="primary"
+                            plain
+                            @click="addBox(scope.$index, showStyle.id)"
+                          >新增规格</el-button>
+                          <!-- <span v-show="scope.$index > 0 || boxArr.length > 1" class="mr10 unit-delete" @click="removeBox(scope.$index, showStyle.id)">删除</span><span v-show="scope.$index === boxArr.length - 1" class="unit-add" @click="addBox(scope.$index, showStyle.id)">新增规格</span> -->
+                        </div>
+                      </template>
+                    </el-table-column>
+                  </el-table>
+                </div>
+              </el-form-item>
+            </div>
+          </el-tab-pane>
 
-              <div v-if="showStyle.type === '2'">
-                 <el-table
-                  :data="addForm.sku[showStyle.id].list"
-                  border
-                  >
-                  <el-table-column  label="起批量" width="220" align="center">
-                    <template slot-scope="scope">
-                      <span class="mr5">起批数</span><el-input class="table-input" v-model.trim="addForm.sku[showStyle.id].list[scope.$index].number" size="small" maxlength="12" />
-
-                    </template>
-                  </el-table-column>
-                  <el-table-column label="价格" width="220" align="center">
-                    <template slot-scope="scope">
-                      <span class="mr5">单价</span><el-input class="table-input" v-model.trim="addForm.sku[showStyle.id].list[scope.$index].price" size="small" maxlength="12" />
-                    </template>
-                  </el-table-column>
-                  <el-table-column label="操作" align="center">
-                    <template slot-scope="scope">
-                      <div style="text-align: left;padding-left: 50px;">
-                        <el-button v-show="scope.$index > 0 || addForm.sku[showStyle.id].list.length > 1" size="mini" type="danger" plain @click="removeStair(scope.$index, showStyle.id)">
-                          删除
-                        </el-button>
-                        <el-button v-show="scope.$index === addForm.sku[showStyle.id].list.length - 1" size="mini" type="primary" plain @click="addStair(scope.$index, showStyle.id)">
-                          新增规格
-                        </el-button>
-                        <!-- <span v-show="scope.$index > 0 || stairArr.length > 1" class="mr10 unit-delete" @click="removeStair(scope.$index, showStyle.id)">删除</span><span v-show="scope.$index === stairArr.length - 1" class="unit-add" @click="addStair(scope.$index, showStyle.id)">新增规格</span> -->
-                      </div>
-                    </template>
-                  </el-table-column>
-                </el-table>
-              </div>
-              <div v-else-if="showStyle.type === '1'">
-                <el-table
-                  :data="addForm.sku[showStyle.id].list"
-                  style="max-width: 1140px"
-                  border>
-                  <el-table-column  label="规格名称" width="220" align="center">
-                    <template slot-scope="scope">
-                      <el-input class="table-input mr5" v-model.trim="addForm.sku[showStyle.id].list[scope.$index].name" size="small" maxlength="12" /><span>{{showAble[showStyle.id].valueSuffix}}</span>
-                    </template>
-                  </el-table-column>
-                  <el-table-column label="起批量" width="220" align="center">
-                    <template slot-scope="scope">
-                      <el-input class="table-input" v-model.trim="addForm.sku[showStyle.id].list[scope.$index].number" size="small" maxlength="12" />
-                    </template>
-                  </el-table-column>
-                  <el-table-column label="价格" width="220" align="center">
-                    <template slot-scope="scope">
-                      <el-input class="table-input mr5" v-model.trim="addForm.sku[showStyle.id].list[scope.$index].price" size="small" maxlength="12" /><span>元</span>
-                    </template>
-                  </el-table-column>
-                  <el-table-column label="库存" width="220" align="center">
-                    <template slot-scope="scope">
-                      <el-input class="table-input" v-model.trim="addForm.sku[showStyle.id].list[scope.$index].store" size="small" maxlength="12" />
-                    </template>
-                  </el-table-column>
-                  <el-table-column label="操作" align="center">
-                    <template slot-scope="scope">
-                      <div style="text-align: left;padding-left: 50px;">
-                        <el-button v-show="scope.$index > 0 || addForm.sku[showStyle.id].list.length > 1" size="mini" type="danger" plain @click="removeBox(scope.$index, showStyle.id)">
-                          删除
-                        </el-button>
-                        <el-button v-show="scope.$index === addForm.sku[showStyle.id].list.length - 1" size="mini" type="primary" plain @click="addBox(scope.$index, showStyle.id)">
-                          新增规格
-                        </el-button>
-                        <!-- <span v-show="scope.$index > 0 || boxArr.length > 1" class="mr10 unit-delete" @click="removeBox(scope.$index, showStyle.id)">删除</span><span v-show="scope.$index === boxArr.length - 1" class="unit-add" @click="addBox(scope.$index, showStyle.id)">新增规格</span> -->
-                      </div>
-                    </template>
-                  </el-table-column>
-                </el-table>
+          <!-- 更多报价方式 -->
+          <el-tab-pane label="更多报价方式" name="second">
+            <el-form-item
+              label="计量单位"
+              :prop="'unitMore'"
+              :rules="{
+              required: activeName === 'second', message: '计量单位必填', trigger: 'blur'
+            }"
+            >
+              <el-select
+                v-model="addForm.unitMore"
+                size="medium"
+                maxlength="64"
+                placeholder="请选择"
+                @change="((val) => unitChange(val, 'more'))"
+              >
+                <el-option
+                  v-for="(item, index) in sellMoreData"
+                  :key="index"
+                  :label="item.name"
+                  :value="item.id"
+                ></el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item
+              v-for="(item, pIndex) in addForm.moreSpec"
+              :key="pIndex"
+              :label="'规格' + (pIndex + 1)"
+              :prop="'unitMore'"
+            >
+              <el-select
+                v-model="addForm.moreSpec[pIndex].selectValue"
+                filterable
+                allow-create
+                size="medium"
+                maxlength="64"
+                placeholder="请选择"
+                @change="((val) => unitChange(val, 'spec', pIndex))"
+              >
+                <el-option
+                  v-for="(item, index) in sellMoreData"
+                  :key="index"
+                  :label="item.name"
+                  :value="item.name"
+                ></el-option>
+              </el-select>
+              <el-button type="danger" plain size="small" v-waves @click="removeMoreSpec(pIndex)">删除</el-button>
+              <div v-show="addForm.moreSpec[pIndex].isSpecSelect">
+                <el-input
+                  v-for="(item, index) in addForm.moreSpec[pIndex].list"
+                  :key="index"
+                  placeholder="请输入规格值"
+                  v-model="addForm.moreSpec[pIndex].list[index].value"
+                  size="mini"
+                  class="table-input mr5"
+                  clearable
+                  @clear="removeMoreSpecValue(pIndex, index)"
+                  @blur="(event) => specValueBlur(event, pIndex, addForm.moreSpec[pIndex].list[index].value)"
+                ></el-input>
+                <el-button
+                  type="primary"
+                  plain
+                  size="mini"
+                  v-waves
+                  @click="addMoreSpecValue(pIndex)"
+                >添加</el-button>
               </div>
             </el-form-item>
-          </div>
-        </el-tab-pane>
-
-        <!-- 更多报价方式 -->
-        <el-tab-pane label="更多报价方式" name="second">
-          <el-form-item
-            label="计量单位"
-            :prop="'unitMore'"
-            :rules="{
-              required: activeName === 'second', message: '计量单位必填', trigger: 'blur'
-            }">
-            <el-select v-model="addForm.unitMore" size="medium" maxlength="64" placeholder="请选择" @change="((val) => unitChange(val, 'more'))">
-              <el-option v-for="(item, index) in sellMoreData" :key="index" :label="item.name" :value="item.id"></el-option>
-            </el-select>
-          </el-form-item>
-          <el-form-item
-            v-for="(item, pIndex) in addForm.moreSpec" :key="pIndex"
-            :label="'规格' + (pIndex + 1)"
-            :prop="'unitMore'"
+            <el-form-item>
+              <el-button
+                v-show="moreSpecTableShow"
+                type="primary"
+                plain
+                size="medium"
+                v-waves
+                @click="addMoreSpec"
+              >添加规格</el-button>
+            </el-form-item>
+            <el-form-item
+              :prop="'hasSelfMsg'"
+              :rules="{
+                required: activeName === 'second', message: '请填写完整表格信息'
+              }"
             >
-            <el-select v-model="addForm.moreSpec[pIndex].selectValue" filterable allow-create size="medium" maxlength="64" placeholder="请选择" @change="((val) => unitChange(val, 'spec', pIndex))">
-              <el-option v-for="(item, index) in sellMoreData" :key="index" :label="item.name" :value="item.name"></el-option>
-            </el-select>
-            <el-button type="danger" plain size="small" v-waves @click="removeMoreSpec(pIndex)">删除</el-button>
-            <div v-show="addForm.moreSpec[pIndex].isSpecSelect">
-              <el-input
-                v-for="(item, index) in addForm.moreSpec[pIndex].list" :key="index"
-                placeholder="请输入规格值"
-                v-model="addForm.moreSpec[pIndex].list[index].value"
-                size="mini"
-                class="table-input mr5"
-                clearable
-                @clear="removeMoreSpecValue(pIndex, index)"
-                @blur="(event) => specValueBlur(event, pIndex, addForm.moreSpec[pIndex].list[index].value)">
-              </el-input>
-              <el-button type="primary" plain size="mini" v-waves @click="addMoreSpecValue(pIndex)">添加</el-button>
+              <el-table
+                v-if="moreSpecTableShow"
+                :data="addForm.moreSpecData"
+                :span-method="arraySpanMethod"
+                border
+              >
+                <el-table-column
+                  v-for="(columnItem, columnIndex) in addForm.moreSpec"
+                  :key="columnIndex"
+                  :label="columnItem.selectValue"
+                  align="center"
+                  width="220"
+                >
+                  <template slot-scope="scope">
+                    <span>{{addForm.moreSpecData[scope.$index].valueObj}}</span>
+                    <!-- <span>{{addForm.moreSpecData[scope.$index].value}}</span> -->
+                  </template>
+                </el-table-column>
+                <el-table-column label="起批量" align="center" width="220">
+                  <template slot-scope="scope">
+                    <el-input
+                      v-model.trim="addForm.moreSpecData[scope.$index].startNum"
+                      class="table-input"
+                      size="small"
+                      maxlength="12"
+                    />
+                  </template>
+                </el-table-column>
+                <el-table-column label="价格" align="center" width="220">
+                  <template slot-scope="scope">
+                    <el-input
+                      v-model.trim="addForm.moreSpecData[scope.$index].price"
+                      class="table-input"
+                      size="small"
+                      maxlength="12"
+                    />
+                  </template>
+                </el-table-column>
+                <el-table-column align="center" label="库存">
+                  <template slot-scope="scope">
+                    <el-input
+                      v-model.trim="addForm.moreSpecData[scope.$index].store"
+                      class="table-input"
+                      size="small"
+                      maxlength="12"
+                    />
+                  </template>
+                </el-table-column>
+              </el-table>
+            </el-form-item>
+          </el-tab-pane>
+        </el-tabs>
+      </el-card>
+      <el-card class="box-card">
+        <div slot="header" class="clearfix">
+          <span>图文视图</span>
+        </div>
+        <div class="text item">
+          <el-form-item label="商品视图" required>
+            <el-upload
+              ref="uplodadImg"
+              action="https://jsonplaceholder.typicode.com/posts/"
+              list-type="picture-card"
+              :http-request="uploadImg"
+              v-model="addForm.imgBox"
+              :on-preview="handlePictureCardPreview"
+              :file-list="imgsList"
+              :on-remove="handleRemove"
+            >
+              <i class="el-icon-plus"></i>
+            </el-upload>
+            <div>
+              <p>还能添加10张图片或视频；</p>
+              <p>* 文件大小不能超过3MB，包括图片和视频；图片建议尺寸500*500；支持JPG、GIF、PNG格式；</p>
+              <p>* 默认第一张图片为商品封面图；</p>
             </div>
           </el-form-item>
-          <el-form-item>
-            <el-button v-show="moreSpecTableShow" type="primary" plain size="medium" v-waves @click="addMoreSpec">添加规格</el-button>
-          </el-form-item>
-          <el-form-item :prop="'hasSelfMsg'" :rules="{
-                required: activeName === 'second', message: '请填写完整表格信息'
-              }">
-            <el-table
-              v-if="moreSpecTableShow"
-              :data="addForm.moreSpecData"
-              :span-method="arraySpanMethod"
-              border>
-
-              <el-table-column
-                v-for="(columnItem, columnIndex) in addForm.moreSpec" :key="columnIndex"
-                :label="columnItem.selectValue"
-                align="center"
-                width="220">
-                <template slot-scope="scope">
-                  <span>{{addForm.moreSpecData[scope.$index].valueObj}}</span>
-                  <!-- <span>{{addForm.moreSpecData[scope.$index].value}}</span> -->
-                </template>
-              </el-table-column>
-              <el-table-column
-                label="起批量"
-                align="center"
-                width="220">
-                <template slot-scope="scope">
-                  <el-input v-model.trim="addForm.moreSpecData[scope.$index].startNum" class="table-input" size="small" maxlength="12" />
-                </template>
-              </el-table-column>
-              <el-table-column
-                label="价格"
-                align="center"
-                width="220">
-                <template slot-scope="scope">
-                  <el-input v-model.trim="addForm.moreSpecData[scope.$index].price" class="table-input" size="small" maxlength="12" />
-                </template>
-              </el-table-column>
-              <el-table-column
-                align="center"
-                label="库存">
-                <template slot-scope="scope">
-                  <el-input v-model.trim="addForm.moreSpecData[scope.$index].store" class="table-input" size="small" maxlength="12" />
-                </template>
-              </el-table-column>
-            </el-table>
-          </el-form-item>
-        </el-tab-pane>
-      </el-tabs>
-    </el-card>
-    <el-card class="box-card">
-      <div slot="header" class="clearfix">
-        <span>图文视图</span>
-      </div>
-      <div  class="text item">
-        <el-form-item
-          label="商品视图" required>
-          <el-upload
-            ref="uplodadImg"
-            action="https://jsonplaceholder.typicode.com/posts/"
-            list-type="picture-card"
-            :http-request="uploadImg"
-            v-model="addForm.imgBox"
-            :on-preview="handlePictureCardPreview"
-            :file-list="imgsList"
-            :on-remove="handleRemove">
-            <i class="el-icon-plus"></i>
-          </el-upload>
-          <div>
-            <p>还能添加10张图片或视频；</p>
-            <p>* 文件大小不能超过3MB，包括图片和视频；图片建议尺寸500*500；支持JPG、GIF、PNG格式；</p>
-            <p>* 默认第一张图片为商品封面图；</p>
-          </div>
-        </el-form-item>
-        <el-form-item
-          label="介绍文案"
-          :rules="{
+          <el-form-item
+            label="介绍文案"
+            :rules="{
             required: true, message: '介绍文案必填', trigger: 'blur'
           }"
-          prop="remark">
-          <el-input
-            class="long-input"
-            v-model.trim="addForm.remark"
-            maxlength="1000"
-            show-word-limit
-            :autosize="{ minRows: 5}"
-            type="textarea"
-            placeholder="请输入介绍内容"
-          />
-        </el-form-item>
-      </div>
-    </el-card>
-    <el-card class="">
-      <div slot="header" class="clearfix">
-        <span>物流信息</span>
-      </div>
-      <div  class="text item">
-        <el-form-item label="物流信息">
-          <el-select v-model="logisticsValue" size="medium" maxlength="64" placeholder="请选择">
-            <el-option
-              v-for="item in addForm.unit"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value">
-            </el-option>
-          </el-select>
-        </el-form-item>
-      </div>
-    </el-card>
-  </el-form>
+            prop="remark"
+          >
+            <el-input
+              class="long-input"
+              v-model.trim="addForm.remark"
+              maxlength="1000"
+              show-word-limit
+              :autosize="{ minRows: 5}"
+              type="textarea"
+              placeholder="请输入介绍内容"
+            />
+          </el-form-item>
+        </div>
+      </el-card>
+      <el-card class>
+        <div slot="header" class="clearfix">
+          <span>物流信息</span>
+        </div>
+        <div class="text item">
+          <el-form-item label="物流信息">
+            <el-select v-model="logisticsValue" size="medium" maxlength="64" placeholder="请选择">
+              <el-option
+                v-for="item in addForm.unit"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              ></el-option>
+            </el-select>
+          </el-form-item>
+        </div>
+      </el-card>
+    </el-form>
     <div class="bottom-box">
       <div>
         <el-button v-waves class="filter-item" @click="preView">预览</el-button>
         <el-button v-waves class="filter-item">保存待上架</el-button>
         <!-- <el-button type="primary" v-waves class="filter-item" @click="onSale">上架出售</el-button> -->
-        <el-button type="primary" v-waves class="filter-item" @click="submitForm('productForm')">上架出售</el-button>
+        <el-button
+          type="primary"
+          v-waves
+          class="filter-item"
+          @click="submitForm('productForm')"
+        >上架出售</el-button>
       </div>
     </div>
     <div class="self-diolog" v-if="previewDialog">
@@ -353,7 +524,8 @@
           </div>
           <div class="title-box">
             <div class="title">
-              ￥9.99~￥24.00 <span>/箱</span>
+              ￥9.99~￥24.00
+              <span>/箱</span>
               <span class="place">山东济南</span>
             </div>
             <div class="des">标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题</div>
@@ -383,26 +555,33 @@
           <div class="product-detail">
             <div class="tc">商品详情</div>
             <p>烟薯25号作为烤薯专用品种，在市场上很受欢迎。烤熟烟薯金黄带有蜜感，口感绵软香甜，甜度比一般红薯都要甜。当然，喜欢的也可以生吃或者蒸煮。此款红薯产自山东荣成，无公害种植</p>
-            <img src="@/assets/img/bg.jpg" alt="">
+            <img src="@/assets/img/bg.jpg" alt />
           </div>
         </div>
         <div class="product-buy">
-            <div class="in">收藏</div>
-            <div class="in">进货单</div>
-            <div class="cart">加入进货单</div>
-            <div class="buy">立即购买</div>
+          <div class="in">收藏</div>
+          <div class="in">进货单</div>
+          <div class="cart">加入进货单</div>
+          <div class="buy">立即购买</div>
         </div>
       </div>
       <div class="self-close" @click="previewDialog = false">×</div>
     </div>
     <el-dialog :visible.sync="dialogProp" :closeOnClickModal="false" title="添加属性">
-      <el-form v-loading="diaLoading" :rules="ruuuu" ref="selfForm" :model="selfProp" label-width="100px" label-position="left">
-          <el-form-item label="属性名" :prop="'name'">
-            <el-input v-model.trim="selfProp.name" maxlength="20" placeholder="请输入属性名" />
-          </el-form-item>
-          <el-form-item label="属性值" :prop="'value'">
-            <el-input v-model.trim="selfProp.value" maxlength="20" placeholder="请输入属性值" />
-          </el-form-item>
+      <el-form
+        v-loading="diaLoading"
+        :rules="ruuuu"
+        ref="selfForm"
+        :model="selfProp"
+        label-width="100px"
+        label-position="left"
+      >
+        <el-form-item label="属性名" :prop="'name'">
+          <el-input v-model.trim="selfProp.name" maxlength="20" placeholder="请输入属性名" />
+        </el-form-item>
+        <el-form-item label="属性值" :prop="'value'">
+          <el-input v-model.trim="selfProp.value" maxlength="20" placeholder="请输入属性值" />
+        </el-form-item>
       </el-form>
       <div style="text-align:right;">
         <el-button type="danger" @click="dialogProp=false">取消</el-button>
@@ -410,576 +589,595 @@
       </div>
     </el-dialog>
     <el-dialog :visible.sync="dialogVisible">
-      <img width="100%" :src="dialogImageUrl" alt="">
+      <img width="100%" :src="dialogImageUrl" alt />
     </el-dialog>
   </div>
 </template>
 
 <script>
-import waves from '@/directive/waves'
-import { getByCategoryId, getUnit, saveGoods, getUnitList, getSpeList } from '@/api/goods/list'
-import { getAd } from '@/api/upms/strict'
-import { fileUpload } from '@/api/goods/upload'
+import waves from "@/directive/waves";
+import {
+  getByCategoryId,
+  getUnit,
+  saveGoods,
+  getUnitList,
+  getSpeList
+} from "@/api/goods/list";
+import { getAd } from "@/api/upms/strict";
+import { fileUpload } from "@/api/goods/upload";
 let id = 0;
 let vm = {
-  name: 'addProduct',
+  name: "addProduct",
   directives: { waves },
   data() {
     vm = this;
     let checkName = (rule, value, callback) => {
-      if(!value) {
-        return callback(new Error('属性名不能为空!'))
-      } else if(value === '标题') {
-        return callback(new Error('属性名已存在'))
+      if (!value) {
+        return callback(new Error("属性名不能为空!"));
+      } else if (value === "标题") {
+        return callback(new Error("属性名已存在"));
       }
 
       this.addForm.generate.forEach(item => {
-        if(item.name === value) {
-          return callback(new Error('属性名已存在'))
+        if (item.name === value) {
+          return callback(new Error("属性名已存在"));
         }
-      })
+      });
       this.addForm.selfProp.forEach(item => {
-        if(item.name === value) {
-          return callback(new Error('属性名已存在'))
+        if (item.name === value) {
+          return callback(new Error("属性名已存在"));
         }
-      })
+      });
       callback();
     };
     return {
-      categoryId: '',
+      categoryId: "",
       baseData: [],
       sellData: [],
       sellMoreData: [
         {
           id: 1,
-          name: '件'
+          name: "件"
         },
         {
           id: 2,
-          name: '斤'
+          name: "斤"
         },
         {
           id: 3,
-          name: '箱'
+          name: "箱"
         }
       ],
       ruuuu: {
-       name: [
-          { required: true, validator: checkName, trigger: 'blur' }
-        ],
+        name: [{ required: true, validator: checkName, trigger: "blur" }],
         value: [
-          { required: true, message: '属性只能不能为空', trigger: 'blur' }
+          { required: true, message: "属性只能不能为空", trigger: "blur" }
         ]
       },
       selfProp: {
-        name: '',
-        value: ''
+        name: "",
+        value: ""
       },
       boxData: [],
       treeProps: {},
-      treeValue: '',
-      productTitle: '',
-      activeName: 'first',
-      id: '',
-      eid: '',
+      treeValue: "",
+      productTitle: "",
+      activeName: "first",
+      id: "",
+      eid: "",
       addressOptions: [],
       checkboxObj: {},
       addressObj: {},
       cascader: [],
       addressProps: {
         lazy: true,
-        lazyLoad (node, resolve) {
-          getAd({ parentId: node.level === 0 ? 0 : node.data.id }).then( res => {
-            if(Array.isArray(res.data)) {
-              res.data.map((item) => {
-                item.leaf = item.haveChild === 0 || parseInt(vm.cascader[0]) == node.level + 1
+        lazyLoad(node, resolve) {
+          getAd({ parentId: node.level === 0 ? 0 : node.data.id }).then(res => {
+            if (Array.isArray(res.data)) {
+              res.data.map(item => {
+                item.leaf =
+                  item.haveChild === 0 ||
+                  parseInt(vm.cascader[0]) == node.level + 1;
               });
               resolve(res.data);
             }
-          })
+          });
         },
         value: "shortName",
         id: "id",
-        label: "shortName",
+        label: "shortName"
       },
       addForm: {
         sku: {},
         generate: [],
         imgsBox: [],
-        unitMore: '',
+        unitMore: "",
         selfProp: [],
-        hasMsg: '',
-        hasSelfMsg: '',
+        hasMsg: "",
+        hasSelfMsg: "",
         selfRules: {
-          name: [
-            { required: true, validator: checkName, trigger: 'blur' }
-          ],
-          value: [
-            { required: true, trigger: 'blur' }
-          ]
+          name: [{ required: true, validator: checkName, trigger: "blur" }],
+          value: [{ required: true, trigger: "blur" }]
         },
         moreSpec: [],
-        moreSpecType: 'auto',
-        moreSpecData: [{
-          valueObj: [{
-            name: ''
-          }],
-          startNum: '',
-          price: '',
-          store: ''
-        }]
+        moreSpecType: "auto",
+        moreSpecData: [
+          {
+            valueObj: [
+              {
+                name: ""
+              }
+            ],
+            startNum: "",
+            price: "",
+            store: ""
+          }
+        ]
       },
       showAble: {},
       showStyle: {
-        type: '',
-        id: '',
+        type: "",
+        id: ""
       },
       role: {
-        name: ''
+        name: ""
       },
       combineLen: 0,
       isCombine: false,
       moreSpecTable: [],
       moreSpecTableShow: false,
       isIndeterminate: false,
-      logisticsValue: '',
+      logisticsValue: "",
       previewDialog: false,
       diaLoading: false,
-      dialogImageUrl: '',
+      dialogImageUrl: "",
       dialogVisible: false,
       dialogProp: false,
       imgsList: [],
       spanArr: []
-    }
+    };
   },
-  components: {  },
-  computed: {
-
-  },
+  components: {},
+  computed: {},
   created() {
-    console.log('add page')
-    console.log(this.$route)
-    this.categoryId = this.$route.query.id
-    this.getByCategoryId(this.categoryId)
-    this.$route.query.des.forEach((item) => {
-      this.productTitle += this.productTitle.length === 0 ? item : '-' + item
-    })
-    this.getUnit(this.$route.query.id)
+    console.log("add page");
+    console.log(this.$route);
+    this.categoryId = this.$route.query.id;
+    this.getByCategoryId(this.categoryId);
+    this.$route.query.des.forEach(item => {
+      this.productTitle += this.productTitle.length === 0 ? item : "-" + item;
+    });
+    this.getUnit(this.$route.query.id);
     // this.getAddress()
   },
   methods: {
     getByCategoryId(id) {
       // 通过ID获取规格模板
-      this.listLoading = true
+      this.listLoading = true;
       getByCategoryId({
-        categoryId : id
+        categoryId: id
       }).then(res => {
-        this.listLoading = false
-        if(Array.isArray(res.data)) {
+        this.listLoading = false;
+        if (Array.isArray(res.data)) {
           res.data.forEach((item, index) => {
-            let obj = {}
-            if(item.inputType === 2) {
-              obj.list= []
-              obj.checkAll = false
-              this.checkboxObj[index] = item.valueSet.map((itemIn) => {
-                return itemIn.value
-              })
+            let obj = {};
+            if (item.inputType === 2) {
+              obj.list = [];
+              obj.checkAll = false;
+              this.checkboxObj[index] = item.valueSet.map(itemIn => {
+                return itemIn.value;
+              });
             } else {
-              obj.list = ''
+              obj.list = "";
             }
-            obj.id = item.id
-            obj.sort = item.sort
-            obj.name = item.name
-            obj.nameGroup = item.nameGroup
-            this.addForm.generate.push(obj)
-            if(item.inputType === 0) {
-              this.cascader.push(item.valueSet[0].value)
+            obj.id = item.id;
+            obj.sort = item.sort;
+            obj.name = item.name;
+            obj.nameGroup = item.nameGroup;
+            this.addForm.generate.push(obj);
+            if (item.inputType === 0) {
+              this.cascader.push(item.valueSet[0].value);
               // this.$set(this.cascader, item.id, item.valueSet[0].value)
             }
           });
-          console.log('add form')
-          console.log(this.addForm)
-          console.log(this.rules)
-          this.baseData = res.data
+          console.log("add form");
+          console.log(this.addForm);
+          console.log(this.rules);
+          this.baseData = res.data;
         }
-      })
+      });
     },
     getUnit(id) {
       // 通过ID获取规格模板
-      this.listLoading = true
+      this.listLoading = true;
       getUnit({
-        categoryId : id
+        categoryId: id
       }).then(res => {
-        this.listLoading = false
-        if(Array.isArray(res.data)) {
-          let skuInitObj = {}
+        this.listLoading = false;
+        if (Array.isArray(res.data)) {
+          let skuInitObj = {};
           res.data.forEach(item => {
-            let itemId = item.id
-            let obj = {}
-            if(item.showStyle == 2) {
-              obj.list = []
+            let itemId = item.id;
+            let obj = {};
+            if (item.showStyle == 2) {
+              obj.list = [];
               obj.list.push({
-                price: '',
-                number: ''
-              })
-              obj.store = ''
-            } else if(item.showStyle == 1) {
-              obj.list = []
+                price: "",
+                number: ""
+              });
+              obj.store = "";
+            } else if (item.showStyle == 1) {
+              obj.list = [];
               obj.list.push({
-                name: '',
-                price: '',
-                number: '',
-                store: ''
-              })
+                name: "",
+                price: "",
+                number: "",
+                store: ""
+              });
             }
-            obj.name = item.name
-            obj.id = item.id
-            obj.showStyle = item.showStyle
-            skuInitObj[itemId] = obj
-            this.showAble[itemId] = item.showStyle
+            obj.name = item.name;
+            obj.id = item.id;
+            obj.showStyle = item.showStyle;
+            skuInitObj[itemId] = obj;
+            this.showAble[itemId] = item.showStyle;
           });
-          this.$set(this.addForm, 'sku', skuInitObj)
-          this.sellData = res.data
+          this.$set(this.addForm, "sku", skuInitObj);
+          this.sellData = res.data;
         }
-      })
+      });
     },
     uploadImg(file) {
-      let formData = new FormData()
-      formData.append('file', file.file)
+      let formData = new FormData();
+      formData.append("file", file.file);
       fileUpload(formData).then(res => {
         this.addForm.imgsBox.push({
           imgUrl: res.data,
           type: 1
-        })
-        console.log('----')
-        console.log(this.$refs.uplodadImg)
-      })
+        });
+        console.log("----");
+        console.log(this.$refs.uplodadImg);
+      });
     },
     handleClick(tab, event) {
       // 报价方式切换
-      if(this.activeName === 'second') {
-        getUnitList({ categoryId: this.categoryId })
+      if (this.activeName === "second") {
+        getUnitList({ categoryId: this.categoryId });
       }
-
     },
     getAddress() {
       // 获取产地信息
       getAd({ parentId: 0 }).then(res => {
-        this.addressOptions = res.data
-      })
+        this.addressOptions = res.data;
+      });
     },
     unitChange(val, type, pindex) {
       // 计量单位选择
-      console.log(this.addForm.sku)
-      console.log(this.showStyle)
-      if(type === 'auto') {
-        this.showStyle.type = this.showAble[val]
-        this.showStyle.id = val
-      } else if(type === 'more') {
-        this.moreSpecTableShow = true
-      } else if(type === 'spec') {
-        this.addForm.moreSpec[pindex].isSpecSelect = true
+      console.log(this.addForm.sku);
+      console.log(this.showStyle);
+      if (type === "auto") {
+        this.showStyle.type = this.showAble[val];
+        this.showStyle.id = val;
+      } else if (type === "more") {
+        this.moreSpecTableShow = true;
+      } else if (type === "spec") {
+        this.addForm.moreSpec[pindex].isSpecSelect = true;
       }
-
-
     },
     addStair(index, id) {
       // 添加阶梯价
-      const currentNum = this.addForm.sku[id].list[index].number
-      const currentPrice = this.addForm.sku[id].list[index].price
-      if(currentNum && currentPrice) {
-        if(index > 0) {
-          const preNum = this.addForm.sku[id].list[index - 1].number
-          const prePrice = this.addForm.sku[id].list[index - 1].price
-          if(Number(currentNum) <= Number(preNum) || Number(currentPrice) >= Number(prePrice)) {
+      const currentNum = this.addForm.sku[id].list[index].number;
+      const currentPrice = this.addForm.sku[id].list[index].price;
+      if (currentNum && currentPrice) {
+        if (index > 0) {
+          const preNum = this.addForm.sku[id].list[index - 1].number;
+          const prePrice = this.addForm.sku[id].list[index - 1].price;
+          if (
+            Number(currentNum) <= Number(preNum) ||
+            Number(currentPrice) >= Number(prePrice)
+          ) {
             this.$message({
-              type: 'warning',
-              message: `阶梯${index + 1}的起批数必须比阶梯${index}的起批数大，阶梯${index + 1}的单价必须比阶梯${index}的单价小!`
+              type: "warning",
+              message: `阶梯${index +
+                1}的起批数必须比阶梯${index}的起批数大，阶梯${index +
+                1}的单价必须比阶梯${index}的单价小!`
             });
-            return
+            return;
           }
         }
       } else {
         this.$message({
-              type: 'warning',
-              message: '请输入起批数和单价!'
+          type: "warning",
+          message: "请输入起批数和单价!"
         });
-        return
+        return;
       }
       this.addForm.sku[id].list.push({
-          number: '',
-          price: ''
-      })
+        number: "",
+        price: ""
+      });
     },
     removeStair(index, id) {
       // 删除阶梯价
-      console.log(this.addForm)
-      console.log(index)
-      console.log('id', id)
-      this.addForm.sku[id].list.splice(index, 1)
+      console.log(this.addForm);
+      console.log(index);
+      console.log("id", id);
+      this.addForm.sku[id].list.splice(index, 1);
     },
     addBox(index, id) {
       // 添加箱
-      const currentNum = this.addForm.sku[id].list[index].number
-      const currentPrice = this.addForm.sku[id].list[index].price
-      const currentName = this.addForm.sku[id].list[index].name
-      const currentStore = this.addForm.sku[id].list[index].store
-      if(currentNum && currentPrice && currentName && currentStore) {
+      const currentNum = this.addForm.sku[id].list[index].number;
+      const currentPrice = this.addForm.sku[id].list[index].price;
+      const currentName = this.addForm.sku[id].list[index].name;
+      const currentStore = this.addForm.sku[id].list[index].store;
+      if (currentNum && currentPrice && currentName && currentStore) {
         this.addForm.sku[id].list.push({
-          number: '',
-          price: '',
-          name: '',
-          store: ''
-        })
+          number: "",
+          price: "",
+          name: "",
+          store: ""
+        });
       } else {
         this.$message({
-              type: 'warning',
-              message: '请输入规格名称、起批量、单价、库存!'
+          type: "warning",
+          message: "请输入规格名称、起批量、单价、库存!"
         });
-        return
+        return;
       }
     },
     removeBox(index, id) {
       // 删除箱
-      this.addForm.sku[id].list.splice(index, 1)
+      this.addForm.sku[id].list.splice(index, 1);
     },
     preView() {
       // 预览
-      this.previewDialog = true
+      this.previewDialog = true;
     },
     addSelfProp() {
       // 添加基础属性
       this.selfProp = {
-        name: '',
-        value: ''
-      }
-      this.dialogProp = true
+        name: "",
+        value: ""
+      };
+      this.dialogProp = true;
     },
     confirm() {
       // 确认添加属性
-      this.$refs.selfForm.validate((valid) => {
-        if(valid) {
+      this.$refs.selfForm.validate(valid => {
+        if (valid) {
           this.addForm.selfProp.push({
             name: this.selfProp.name,
             list: this.selfProp.value,
-            sort: '',
-            id: '',
-            nameGroup: ''
-          })
-          this.dialogProp = false
+            sort: "",
+            id: "",
+            nameGroup: ""
+          });
+          this.dialogProp = false;
         }
-      })
-
+      });
     },
     removeSelfProp(index) {
       // 删除添加的基础属性
-      this.addForm.selfProp.splice(index, 1)
+      this.addForm.selfProp.splice(index, 1);
     },
     submitForm(formName) {
-      if(this.activeName === 'first') {
-        this.addForm.hasMsg = '1'
-        let tableData = this.addForm.sku[this.showStyle.id] ? this.addForm.sku[this.showStyle.id].list : []
-        for(let i = 0; i < tableData.length; i++) {
-          if(tableData[i].number.length === 0 || tableData[i].price.length === 0 || (this.showAble[this.showStyle.id] === '1' && (tableData[i].name.length === 0 || tableData[i].store.length === 0))) {
-            this.addForm.hasMsg = ''
-            break
+      if (this.activeName === "first") {
+        this.addForm.hasMsg = "1";
+        let tableData = this.addForm.sku[this.showStyle.id]
+          ? this.addForm.sku[this.showStyle.id].list
+          : [];
+        for (let i = 0; i < tableData.length; i++) {
+          if (
+            tableData[i].number.length === 0 ||
+            tableData[i].price.length === 0 ||
+            (this.showAble[this.showStyle.id] === "1" &&
+              (tableData[i].name.length === 0 ||
+                tableData[i].store.length === 0))
+          ) {
+            this.addForm.hasMsg = "";
+            break;
           }
         }
-        if(tableData.length === 0) {
-          this.addForm.hasMsg = ''
+        if (tableData.length === 0) {
+          this.addForm.hasMsg = "";
         }
-      } else if(this.activeName === 'second') {
-        this.addForm.hasSelfMsg = '1'
-        let tableData = this.addForm.moreSpecData
-        for(let i = 0; i < tableData.length; i++) {
-          if(tableData[i].price.length === 0 || tableData[i].startNum.length === 0 || tableData[i].store.length === 0) {
-            this.addForm.hasSelfMsg = ''
-            break
+      } else if (this.activeName === "second") {
+        this.addForm.hasSelfMsg = "1";
+        let tableData = this.addForm.moreSpecData;
+        for (let i = 0; i < tableData.length; i++) {
+          if (
+            tableData[i].price.length === 0 ||
+            tableData[i].startNum.length === 0 ||
+            tableData[i].store.length === 0
+          ) {
+            this.addForm.hasSelfMsg = "";
+            break;
           }
         }
-        if(tableData.length === 0) {
-          this.addForm.hasSelfMsg = ''
+        if (tableData.length === 0) {
+          this.addForm.hasSelfMsg = "";
         }
       }
-      this.$refs[formName].validate((valid) => {
+      this.$refs[formName].validate(valid => {
         if (valid) {
-          alert('submit!');
-          this.onSale()
+          alert("submit!");
+          this.onSale();
         } else {
-          console.log('error submit!!');
+          console.log("error submit!!");
           return false;
         }
       });
     },
     onSale() {
       // 上架
-      let goodsVO = {}
+      let goodsVO = {};
       // 商品外部信息
-      goodsVO.categoryId = this.categoryId
-      goodsVO.name = this.addForm.title
-      goodsVO.detail = this.addForm.remark
-      goodsVO.showStyle = this.showStyle.type === '' ? 3 : this.showStyle.type
-      goodsVO.postPayType = 0
-      goodsVO.postPrice = 0
-      goodsVO.postSettingId = 'postSettingId'
+      goodsVO.categoryId = this.categoryId;
+      goodsVO.name = this.addForm.title;
+      goodsVO.detail = this.addForm.remark;
+      goodsVO.showStyle = this.showStyle.type === "" ? 3 : this.showStyle.type;
+      goodsVO.postPayType = 0;
+      goodsVO.postPrice = 0;
+      goodsVO.postSettingId = "postSettingId";
       // 商品动态生成的基础信息
-      goodsVO.goodsAttrList = []
-      let sortList = 0
-      let baseData = this.addForm.generate.concat(this.addForm.selfProp)
+      goodsVO.goodsAttrList = [];
+      let sortList = 0;
+      let baseData = this.addForm.generate.concat(this.addForm.selfProp);
       baseData.forEach(item => {
-        let obj = {}
-        let sortValue = 0
-        obj.name = item.name
-        obj.categoryAttrId = item.id
-        obj.nameGroup = item.nameGroup
-        obj.sort = sortList++
-        obj.goodsAttrValueList = []
-        if(Array.isArray(item.list)) {
+        let obj = {};
+        let sortValue = 0;
+        obj.name = item.name;
+        obj.categoryAttrId = item.id;
+        obj.nameGroup = item.nameGroup;
+        obj.sort = sortList++;
+        obj.goodsAttrValueList = [];
+        if (Array.isArray(item.list)) {
           item.list.forEach(item => {
-            sortValue++
+            sortValue++;
             obj.goodsAttrValueList.push({
               value: item,
               sort: sortValue
-            })
-          })
+            });
+          });
         } else {
           obj.goodsAttrValueList.push({
             value: item.list,
             sort: sortValue
-          })
+          });
         }
 
-        goodsVO.goodsAttrList.push(obj)
-      })
+        goodsVO.goodsAttrList.push(obj);
+      });
       // 商品sku信息
-      goodsVO.goodsSkuList = []
-      goodsVO.goodsSpecList = []
-      if(this.activeName === 'first') {
-        let sku = this.addForm.sku
-        let key = this.showStyle.id
-        let speSort = 0
+      goodsVO.goodsSkuList = [];
+      goodsVO.goodsSpecList = [];
+      if (this.activeName === "first") {
+        let sku = this.addForm.sku;
+        let key = this.showStyle.id;
+        let speSort = 0;
         // for(let key in sku) {
 
-          let speObj = {}
-          let skuSort = 0
-          speObj.sort = speSort++
-          if (this.addForm.sku[key].showStyle === '1') {
-            speObj.goodsSpecValueList = []
-            let boxSort = 0
-            speObj.categorySpecId = sku[key].id
-            speObj.name = sku[key].name
-            sku[key].list.forEach(item => {
-              let skuObj = {}
-              skuObj.sort = skuSort++
-              skuObj.priceType = sku[key].showStyle
-              skuObj.skuAttrValues = [{
+        let speObj = {};
+        let skuSort = 0;
+        speObj.sort = speSort++;
+        if (this.addForm.sku[key].showStyle === "1") {
+          speObj.goodsSpecValueList = [];
+          let boxSort = 0;
+          speObj.categorySpecId = sku[key].id;
+          speObj.name = sku[key].name;
+          sku[key].list.forEach(item => {
+            let skuObj = {};
+            skuObj.sort = skuSort++;
+            skuObj.priceType = sku[key].showStyle;
+            skuObj.skuAttrValues = [
+              {
                 name: sku[key].name + this.showAble[this.showStyle],
                 value: item.name
-              }]
-              skuObj.price = item.price
-              skuObj.startNum = item.number
-              skuObj.stock = item.store
-              skuObj.priceExpList = []
-              skuObj.priceExpList.push({
-                price: item.price,
-                startQuantity: item.number
-              })
-              speObj.goodsSpecValueList.push({
-                value: item.name,
-                sort: boxSort++
-              })
-              goodsVO.goodsSkuList.push(skuObj)
-            })
-
-            goodsVO.goodsSpecList.push(speObj)
-          } else if (this.addForm.sku[key].showStyle === '2') {
-            let skuObj = {}
-            skuObj.priceType = sku[key].showStyle
-            skuObj.sort = speSort++
-            skuObj.priceExpList = []
-            skuObj.stock = sku[key].store
-            speObj.categorySpecId = sku[key].id
-            speObj.name = sku[key].name
-            speObj.goodsSpecValueList = []
-            speObj.goodsSpecValueList.push({
-              value: 1,
-              sort: 1
-            })
-            skuObj.skuAttrValues = [{
-              name: sku[key].name,
-              value: 1
-            }]
-            sku[key].list.forEach(item => {
-              skuObj.priceExpList.push({
-                price: item.price,
-                startQuantity: item.number
-              })
-            })
-            goodsVO.goodsSkuList.push(skuObj)
-            goodsVO.goodsSpecList.push(speObj)
-          }
-        // }
-      } else if(this.activeName === 'second') {
-        let skuSort = 0
-
-          this.addForm.moreSpecData.forEach(item => {
-            let skuObj = {}
-            skuObj.sort = skuSort++
-            skuObj.priceType = 3
-            skuObj.skuAttrValues = []
-            if(item.oneSelect.length > 0) {
-              skuObj.skuAttrValues.push({
-                name: item.oneSelect,
-                value: item.one
-              })
-            }
-            if(item.twoSelect.length > 0) {
-              skuObj.skuAttrValues.push({
-                name: item.twoSelect,
-                value: item.two
-              })
-            }
-            skuObj.price = item.price
-            skuObj.startNum = item.startNum
-            skuObj.stock = item.store
-            skuObj.priceExpList = []
+              }
+            ];
+            skuObj.price = item.price;
+            skuObj.startNum = item.number;
+            skuObj.stock = item.store;
+            skuObj.priceExpList = [];
             skuObj.priceExpList.push({
               price: item.price,
-              startQuantity: item.startNum
-            })
-            goodsVO.goodsSkuList.push(skuObj)
-          })
-          let speOutSort = 0
-          this.addForm.moreSpec.forEach(item => {
-            let speObj = {}
-            let speSort = 0
-            speObj.categorySpecId = ''
-            speObj.name = item.selectValue
-            speObj.sort = speOutSort++
-            speObj.goodsSpecValueList = []
-            item.list.forEach(itemList => {
-              speObj.goodsSpecValueList.push({
-                value: itemList.value,
-                sort: speSort++
-              })
-            })
-            goodsVO.goodsSpecList.push(speObj)
-          })
+              startQuantity: item.number
+            });
+            speObj.goodsSpecValueList.push({
+              value: item.name,
+              sort: boxSort++
+            });
+            goodsVO.goodsSkuList.push(skuObj);
+          });
+
+          goodsVO.goodsSpecList.push(speObj);
+        } else if (this.addForm.sku[key].showStyle === "2") {
+          let skuObj = {};
+          skuObj.priceType = sku[key].showStyle;
+          skuObj.sort = speSort++;
+          skuObj.priceExpList = [];
+          skuObj.stock = sku[key].store;
+          speObj.categorySpecId = sku[key].id;
+          speObj.name = sku[key].name;
+          speObj.goodsSpecValueList = [];
+          speObj.goodsSpecValueList.push({
+            value: 1,
+            sort: 1
+          });
+          skuObj.skuAttrValues = [
+            {
+              name: sku[key].name,
+              value: 1
+            }
+          ];
+          sku[key].list.forEach(item => {
+            skuObj.priceExpList.push({
+              price: item.price,
+              startQuantity: item.number
+            });
+          });
+          goodsVO.goodsSkuList.push(skuObj);
+          goodsVO.goodsSpecList.push(speObj);
+        }
+        // }
+      } else if (this.activeName === "second") {
+        let skuSort = 0;
+
+        this.addForm.moreSpecData.forEach(item => {
+          let skuObj = {};
+          skuObj.sort = skuSort++;
+          skuObj.priceType = 3;
+          skuObj.skuAttrValues = [];
+          if (item.oneSelect.length > 0) {
+            skuObj.skuAttrValues.push({
+              name: item.oneSelect,
+              value: item.one
+            });
+          }
+          if (item.twoSelect.length > 0) {
+            skuObj.skuAttrValues.push({
+              name: item.twoSelect,
+              value: item.two
+            });
+          }
+          skuObj.price = item.price;
+          skuObj.startNum = item.startNum;
+          skuObj.stock = item.store;
+          skuObj.priceExpList = [];
+          skuObj.priceExpList.push({
+            price: item.price,
+            startQuantity: item.startNum
+          });
+          goodsVO.goodsSkuList.push(skuObj);
+        });
+        let speOutSort = 0;
+        this.addForm.moreSpec.forEach(item => {
+          let speObj = {};
+          let speSort = 0;
+          speObj.categorySpecId = "";
+          speObj.name = item.selectValue;
+          speObj.sort = speOutSort++;
+          speObj.goodsSpecValueList = [];
+          item.list.forEach(itemList => {
+            speObj.goodsSpecValueList.push({
+              value: itemList.value,
+              sort: speSort++
+            });
+          });
+          goodsVO.goodsSpecList.push(speObj);
+        });
       }
 
       // 商品图片信息
-      goodsVO.goodsImgList = this.addForm.imgsBox
-      console.log('result')
-      console.log(this.addForm)
-      console.log(goodsVO)
-      saveGoods(goodsVO)
+      goodsVO.goodsImgList = this.addForm.imgsBox;
+      console.log("result");
+      console.log(this.addForm);
+      console.log(goodsVO);
+      saveGoods(goodsVO);
     },
     selectChange(val) {
-      console.log('change', val)
+      console.log("change", val);
     },
-    focus() {
-
-    },
+    focus() {},
     handleCheckAllChange(val, index, id) {
       // 全选
       this.addForm.generate[index].list = val ? this.checkboxObj[index] : [];
@@ -994,9 +1192,11 @@ let vm = {
       this.dialogVisible = true;
     },
     checkChange(value, index) {
-      let checkedCount = value.length
-      this.addForm.generate[index].checkAll = checkedCount === this.checkboxObj[index].length
-      this.isIndeterminate = checkedCount > 0 && checkedCount < this.checkboxObj[index].length
+      let checkedCount = value.length;
+      this.addForm.generate[index].checkAll =
+        checkedCount === this.checkboxObj[index].length;
+      this.isIndeterminate =
+        checkedCount > 0 && checkedCount < this.checkboxObj[index].length;
     },
     addMoreSpec() {
       // 添加更多报价规格
@@ -1004,97 +1204,108 @@ let vm = {
 
       // })
       this.addForm.moreSpec.push({
-        selectValue: '',
+        selectValue: "",
         isSpecSelect: false,
-        list: [{
-          value: ''
-        }]
-      })
+        list: [
+          {
+            value: ""
+          }
+        ]
+      });
     },
     removeMoreSpec(index) {
       // 删除更多报价规格
-      this.addForm.moreSpec.splice(index, 1)
-      if(this.addForm.moreSpec.length > 0) {
-         this.specValueBlur('', 0, 'true')
+      this.addForm.moreSpec.splice(index, 1);
+      if (this.addForm.moreSpec.length > 0) {
+        this.specValueBlur("", 0, "true");
       }
     },
     addMoreSpecValue(pindex) {
       // 添加更多报价规格值
       this.addForm.moreSpec[pindex].list.push({
-        value: ''
-      })
+        value: ""
+      });
     },
     removeMoreSpecValue(pindex, index) {
       // 删除过多报价规格值
-      if(this.addForm.moreSpec[pindex].list.length <= 1) {
-        this.specValueBlur('', 0, 'true')
-        return false
+      if (this.addForm.moreSpec[pindex].list.length <= 1) {
+        this.specValueBlur("", 0, "true");
+        return false;
       } else {
-        this.addForm.moreSpec[pindex].list.splice(index, 1)
-        if(this.addForm.moreSpec.length > 1) {
-          this.specValueBlur('', 1, 'true')
+        this.addForm.moreSpec[pindex].list.splice(index, 1);
+        if (this.addForm.moreSpec.length > 1) {
+          this.specValueBlur("", 1, "true");
         } else {
-          this.specValueBlur('', 0, 'true')
+          this.specValueBlur("", 0, "true");
         }
-
       }
     },
     specValueBlur(e, pindex, val) {
       // 报价规格值在table中更新
-      if(val.length > 0) {
-        let arr = []
-        let total /* 总条目 */ = 1
+      if (val.length > 0) {
+        let total /* 总条目 */ = 1;
         let data = this.addForm.moreSpec;
-        for(let i = 0; i < data.length; i++) {
-          if(data[i].list.length > 1) {
-            total *= data[i].list.length
+        for (let i = 0; i < data.length; i++) {
+          if (data[i].list.length > 1) {
+            total *= data[i].list.length;
           }
         }
         let cols /* 总列数 */ = data.length;
 
-        let rows /* 当前列的总行数 */
-        let curCol,curRow,consult,curList,index=0;
 
-        let point /* 原数组的下标指示累加气 */ = 0
-        let counter /* 当前遍历序的累加器，遇到和商相等是从头开始算 */ = 0
+        function run() {
+          let points = /* 所有列的指针 */ [];
+          let res = /* 结果数组 */ [];
+          let curCol = /* 当前所在列 */ 0;
+          let curList = []
+          for (let t = 0; t < total; t++) {
+            curCol = 0;
+            res.push({
+              price: "",
+              store: "",
+              valueObj: []
+            });
 
-        for(curCol = 0;curCol < cols;curCol++){
-          curList = data[curCol].list;
-          rows = curList.length;
-          consult = total / rows;
-          counter = 0;
-          point = 0;
-          curRow = 0;
-          for(curRow = 0;curRow < rows;curRow++){
-            // if(cols < 2){
-              arr[curRow] = {
-                price: '',
-                store: '',
-                valueObj: []
+            while (curCol < cols) { /* 如果有子元素,往下 */
+              // 找出每列的数量
+              if(points.length < 1){
+                points[curCol] = {
+                  cur: 0,
+                  len: data[curCol].list.length
+                }
               }
-              arr[curRow].valueObj.push({
-                name: this.addForm.moreSpec[curCol].selectValue,
-                value: this.addForm.moreSpec[curCol].list[point].value
-              })
-              // continue;
-            // }
-            if(curRow !== 0 && counter === consult){
-              point++;
+
+              // 每列数据中查询一个放到当前项
+              res[t].valueObj.push({
+                name: data[curCol].selectValue,
+                value: data[curCol].list[points[curCol].cur].value
+              });
+
+              // 如果是最后一列
+              if(curCol === cols - 1){
+                // 最后列的指针自增1
+                ++points[curCol].cur;
+
+                // 如果当前指针超出最大值,前一个指针自增1
+                let c = cols;
+                while(c){
+                  if(points[c-1].cur > points[c-1].len){
+                    points[--c - 1] && ++points[c].cur
+                  }
+                  c--;
+                }
+              }
+              ++curCol;
             }
-            // arr[curRow] = {
-            //     price: '',
-            //     store: '',
-            //   }
-            counter++;
           }
+          return res;
+
+
         }
 
-
         // this.$set(this.addForm, 'moreSpecData', arr)
-       this.addForm.moreSpecData = arr
-       console.log('arrr')
-        console.log(arr)
-        return
+        this.addForm.moreSpecData = run();
+        return;
         // if(pindex === 0) {
         //   this.addForm.moreSpec[0].list.forEach((item, i) => {
         //     if(item.value.length > 0) {
@@ -1129,21 +1340,20 @@ let vm = {
         //   })
         // }
         let contactDot = 0;
-        arr.forEach( (item, index) => {
-          if(index===1) {
-              this.spanArr.push(1)
+        arr.forEach((item, index) => {
+          if (index === 1) {
+            this.spanArr.push(1);
           } else {
-            if(item.value === arr[index-1].value){
-                this.spanArr[contactDot] += 1;
-                this.spanArr.push(0)
-            }else{
-                contactDot = index
-                this.spanArr.push(1)
+            if (item.value === arr[index - 1].value) {
+              this.spanArr[contactDot] += 1;
+              this.spanArr.push(0);
+            } else {
+              contactDot = index;
+              this.spanArr.push(1);
             }
           }
-      })
+        });
       }
-
     },
     // specValueBlur(e, pindex, val) {
     //   // 报价规格值在table中更新
@@ -1201,7 +1411,6 @@ let vm = {
 
     // },
     arraySpanMethod({ row, column, rowIndex, columnIndex }) {
-
       // if(this.isCombine && columnIndex === 0) {
       //     if(this.combineLen > 1 && rowIndex % this.combineLen === 0) {
       //       console.log('conbine len:', this.combineLen)
@@ -1216,261 +1425,260 @@ let vm = {
       //         colspan: 0
       //       }
       //     }
-
       // }
-
     }
-
   }
-}
+};
 export default vm;
 </script>
 
 <style lang="scss" scoped>
-  td{
-    width: 150px;
+td {
+  width: 150px;
+}
+.app-container {
+  padding-bottom: 140px;
+  .mr40 {
+    margin-right: 40px;
   }
-  .app-container{
-    padding-bottom: 140px;
-    .mr40{
-      margin-right: 40px;
-    }
-    .mr5{
-      margin-right: 5px;
-    }
-    .mr10{
-      margin-right: 10px;
-    }
-    .mr20{
-      margin-right: 20px;
-    }
-    .long-input{
-      max-width: 1000px;
-    }
-    .short-input{
-      max-width: 200px;
-    }
-    .table-input{
-      max-width: 120px;
-    }
-    .box-card{
-      margin-bottom: 10px;
-    }
+  .mr5 {
+    margin-right: 5px;
+  }
+  .mr10 {
+    margin-right: 10px;
+  }
+  .mr20 {
+    margin-right: 20px;
+  }
+  .long-input {
+    max-width: 1000px;
+  }
+  .short-input {
+    max-width: 200px;
+  }
+  .table-input {
+    max-width: 120px;
+  }
+  .box-card {
+    margin-bottom: 10px;
+  }
 
-    .unit-delete{
-      color: #ff0000;
-      cursor: pointer;
-    }
-    .unit-add{
-      color: #409EFF;
-      cursor: pointer;
-    }
+  .unit-delete {
+    color: #ff0000;
+    cursor: pointer;
+  }
+  .unit-add {
+    color: #409eff;
+    cursor: pointer;
+  }
 
-    .bottom-box{
-      text-align: center;
-      position: fixed;
-      left: 0;
-      bottom: 0;
-      z-index: 90;
-      width: 100%;
-      height: 120px;
-      background: #eee;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      button{
-        width: 200px;
-        height: 60px;
-      }
+  .bottom-box {
+    text-align: center;
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    z-index: 90;
+    width: 100%;
+    height: 120px;
+    background: #eee;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    button {
+      width: 200px;
+      height: 60px;
     }
-    .self-diolog{
-      width: 100%;
-      height: 100%;
-      position: fixed;
-      top: 0;
-      left: 0;
-      z-index: 100;
-      background: rgba(0, 0, 0, .3);
-      overflow-y: scroll;
-      .preview-box{
-        position: relative;
+  }
+  .self-diolog {
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    background: rgba(0, 0, 0, 0.3);
+    overflow-y: scroll;
+    .preview-box {
+      position: relative;
+      width: 580px;
+      height: 1000px;
+      margin: 0 auto;
+      .preview {
         width: 580px;
         height: 1000px;
-        margin: 0 auto;
-        .preview{
-          width: 580px;
-          height: 1000px;
-          background: #f5f5f5;
+        background: #f5f5f5;
+        position: relative;
+        margin: 80px auto 0 auto;
+        overflow-y: scroll;
+        padding-bottom: 80px;
+        font-size: 18px;
+        color: #000;
+        &::-webkit-scrollbar-track-piece {
+          background: none;
+        }
+
+        &::-webkit-scrollbar {
+          width: 0;
+        }
+
+        &::-webkit-scrollbar-thumb {
+          background: none;
+        }
+        ul,
+        li {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+        }
+        .tc {
+          text-align: center;
+          margin-bottom: 20px;
+        }
+        .calrousel-box {
+          height: 580px;
           position: relative;
-          margin: 80px auto 0 auto;
-          overflow-y: scroll;
-          padding-bottom: 80px;
-          font-size: 18px;
-          color: #000;
-          &::-webkit-scrollbar-track-piece {
-            background: none;
+          .left-icon,
+          .right-icon {
+            width: 40px;
+            height: 40px;
+            position: absolute;
+            top: 45px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.5);
           }
-
-          &::-webkit-scrollbar {
-            width: 0;
+          .left-icon {
+            left: 20px;
           }
-
-          &::-webkit-scrollbar-thumb {
-            background: none;
+          .right-icon {
+            right: 20px;
           }
-          ul,li{
-            list-style: none;
-            padding: 0;
-            margin: 0;
-          }
-          .tc{
+          .num {
+            width: 60px;
+            height: 20px;
+            line-height: 20px;
             text-align: center;
-            margin-bottom: 20px;
+            border-radius: 20px;
+            position: absolute;
+            right: 20px;
+            bottom: 15px;
+            font-size: 18px;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.5);
           }
-          .calrousel-box{
-            height: 580px;
-            position: relative;
-            .left-icon,.right-icon{
-              width: 40px;
-              height: 40px;
-              position: absolute;
-              top: 45px;
-              border-radius: 50%;
-              background: rgba(0, 0, 0, .5)
-            }
-            .left-icon{
-              left: 20px;
-            }
-            .right-icon{
-              right: 20px;
-            }
-            .num{
-              width: 60px;
-              height: 20px;
-              line-height: 20px;
-              text-align: center;
-              border-radius: 20px;
-              position: absolute;
-              right: 20px;
-              bottom: 15px;
+        }
+        .title-box {
+          padding: 25px 20px 15px 25px;
+          margin-bottom: 15px;
+          background: #fff;
+          .title {
+            color: #f5222d;
+            font-size: 24px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            span {
               font-size: 18px;
-              color: #fff;
-              background: rgba(0, 0, 0, .5)
-            }
-          }
-          .title-box{
-            padding: 25px 20px 15px 25px;
-            margin-bottom: 15px;
-            background: #fff;
-            .title{
-              color: #f5222d;
-              font-size: 24px;
-              margin-bottom: 15px;
-              font-weight: bold;
-              span{
-                font-size: 18px;
-                color: #000;
-                font-weight: normal;
-              }
-              .place{
-                color: #999;
-                float: right;
-              }
-            }
-            .des{
               color: #000;
-              font-size: 22px;
-              line-height: 32px;
-              margin-bottom: 15px;
-              font-weight: bold;
+              font-weight: normal;
             }
-            .message-box{
-              background: #e6faed;
-              height: 56px;
-              border-radius: 5px;
-              color: #49c173;
-              font-size: 14px;
-              display: flex;
-              justify-content: space-around;
-              align-items: center;
+            .place {
+              color: #999;
+              float: right;
             }
           }
-          .product-prop{
-            padding-top: 30px;
-            background: #fff;
+          .des {
+            color: #000;
+            font-size: 22px;
+            line-height: 32px;
             margin-bottom: 15px;
-            ul{
-              li{
-                height: 65px;
-                line-height: 65px;
-                color: #999;
-                border-bottom: 1px dotted #f5f5f5;
-                padding-left: 20px;
-                &:last-child{
-                  border-bottom: none;
-                }
-                span{
-                  display: inline-block;
-                }
-                .prop{
-                  width: 125px;
-                }
-              }
-            }
+            font-weight: bold;
           }
-          .product-detail{
-            padding-top: 30px;
-            background: #fff;
-            p{
-              line-height: 36px;
-              padding: 0 20px;
-            }
-            img{
-              max-width: 100%;
-              margin: 20px 0;
+          .message-box {
+            background: #e6faed;
+            height: 56px;
+            border-radius: 5px;
+            color: #49c173;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+          }
+        }
+        .product-prop {
+          padding-top: 30px;
+          background: #fff;
+          margin-bottom: 15px;
+          ul {
+            li {
+              height: 65px;
+              line-height: 65px;
+              color: #999;
+              border-bottom: 1px dotted #f5f5f5;
+              padding-left: 20px;
+              &:last-child {
+                border-bottom: none;
+              }
+              span {
+                display: inline-block;
+              }
+              .prop {
+                width: 125px;
+              }
             }
           }
         }
-        .product-buy{
-            height: 78px;
-            line-height: 78px;
-            text-align: center;
-            background: #fff;
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            .in{
-              float: left;
-              width: 90px;
-              height: 78px;
-            }
-            .buy,.cart{
-              float: left;
-              width: 200px;
-              height: 78px;
-              color: #fff;
-              font-size: 23px;
-              font-weight: bold;
-            }
-            .cart{
-              background: #ffd07f;
-            }
-            .buy{
-              background: #fc2d2d;
-            }
-
+        .product-detail {
+          padding-top: 30px;
+          background: #fff;
+          p {
+            line-height: 36px;
+            padding: 0 20px;
           }
+          img {
+            max-width: 100%;
+            margin: 20px 0;
+          }
+        }
       }
-      .self-close{
-        width: 70px;
-        height: 70px;
-        background: #fff;
-        border-radius: 50%;
-        margin: 20px auto 0 auto;
+      .product-buy {
+        height: 78px;
+        line-height: 78px;
         text-align: center;
-        vertical-align: middle;
-        cursor: pointer;
+        background: #fff;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        .in {
+          float: left;
+          width: 90px;
+          height: 78px;
+        }
+        .buy,
+        .cart {
+          float: left;
+          width: 200px;
+          height: 78px;
+          color: #fff;
+          font-size: 23px;
+          font-weight: bold;
+        }
+        .cart {
+          background: #ffd07f;
+        }
+        .buy {
+          background: #fc2d2d;
+        }
       }
     }
+    .self-close {
+      width: 70px;
+      height: 70px;
+      background: #fff;
+      border-radius: 50%;
+      margin: 20px auto 0 auto;
+      text-align: center;
+      vertical-align: middle;
+      cursor: pointer;
+    }
   }
+}
 </style>
