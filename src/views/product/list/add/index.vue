@@ -1144,7 +1144,6 @@ let vm = {
       } else {
         this.isCombine = false
       }
-
     },
     arraySpanMethod({ row, column, rowIndex, columnIndex }) {
       if(this.isCombine && this.combineObj[columnIndex] > 1) {
