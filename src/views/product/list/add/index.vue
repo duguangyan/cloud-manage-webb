@@ -203,7 +203,6 @@
           <el-form-item 
             v-for="(item, pIndex) in addForm.moreSpec" :key="pIndex"
             :label="'规格' + (pIndex + 1)" 
-            :prop="'unitMore'"
             >
             <el-select v-model="addForm.moreSpec[pIndex].selectValue" filterable allow-create size="medium" maxlength="64" placeholder="请选择" @change="((val) => unitChange(val, 'spec', pIndex))">
               <el-option v-for="(item, index) in sellSpeData" :key="index" :label="item.name" :value-key="item.id" :value="item.id"></el-option>
@@ -288,7 +287,7 @@
             v-model="addForm.imgBox"
             :limit="imgLimit"
             :on-preview="handlePictureCardPreview"
-            :file-list="imgsList"
+            :file-list="addForm.imgsBox"
             :before-upload="beforeImgUpload"
             :on-remove="handleRemove">
             <i class="el-icon-plus"></i>
@@ -324,12 +323,12 @@
       </div>
       <div  class="text item">
         <el-form-item label="物流信息">
-          <el-select v-model="logisticsValue" size="medium" maxlength="64" placeholder="请选择">
+          <el-select v-model="addForm.freight" size="medium" maxlength="64" placeholder="请选择">
             <el-option
-              v-for="item in addForm.unit"
+              v-for="item in freightData"
               :key="item.value"
-              :label="item.label"
-              :value="item.value">
+              :label="item.name"
+              :value="item.id">
             </el-option>
           </el-select>
         </el-form-item>
@@ -418,6 +417,7 @@
 <script>
 import waves from '@/directive/waves'
 import { getByCategoryId, getUnit, saveGoods, getUnitList, getSpeList, getGoodsDetail } from '@/api/goods/list'
+import { getFreight } from '@/api/goods/logistics'
 import { getAd } from '@/api/upms/strict'
 import { fileUpload } from '@/api/goods/upload'
 let id = 0;
@@ -453,6 +453,7 @@ let vm = {
       sellData: [],
       sellMoreData: [],
       sellSpeData: [],
+      freightData: [],
       ruuuu: {
        name: [
           { required: true, validator: checkName, trigger: 'blur' }
@@ -498,10 +499,12 @@ let vm = {
       addForm: {
         title: '',
         remark: '',
+        freight: '',
         sku: {},
         generate: [],
         imgsBox: [],
         unitMore: '',
+        unit: '',
         selfProp: [],
         selfRules: {
           name: [
@@ -543,8 +546,9 @@ let vm = {
       dialogImageUrl: '',
       dialogVisible: false,
       dialogProp: false,
-      imgsList: [],
-      spanArr: []
+      spanArr: [],
+      goodsSkuData: [],
+      skuCounter: 0
     }
   },
   components: {  },
@@ -558,7 +562,7 @@ let vm = {
       this.eiditId = this.$route.query.eid
     }
     this.getByCategoryId()
-    
+    this.getFreight()
     // this.$route.query.des.forEach((item) => {
     //   this.productTitle += this.productTitle.length === 0 ? item : '-' + item
     // })
@@ -602,6 +606,7 @@ let vm = {
           this.baseCenterData = res.data
           this.getGoodsDetail()
           this.getUnitList()
+          this.getSpecList()
         }
       })
     },
@@ -612,10 +617,65 @@ let vm = {
         this.addForm.title = res.data.goods.name
         this.addForm.remark = res.data.goods.detail
         this.addForm.unitMore = res.data.goods.unit
-        this.showStyle.type = res.data.goods.showStyle
         if(res.data.goods.showStyle === '3') {
+          this.showStyle.type = res.data.goods.showStyle
+          // 多规格数据渲染
           this.activeName = 'second'
           this.moreSpecTableShow = true
+          let specData = []
+          res.data.goodsDetailSpecList.forEach(item => {
+            let itemObj = {}
+            itemObj.id = item.categorySpecId
+            itemObj.selectValue = item.name 
+            itemObj.isSpecSelect = true 
+            itemObj.list = []
+            item.goodsDetailSpecValueList.forEach(vItem => {
+              itemObj.list.push({
+                value: vItem.value
+              })
+            })
+            specData.push(itemObj)
+          })
+          this.goodsSkuData = res.data.goodsSkuList
+          this.addForm.moreSpec = specData
+          let imgBox = []
+          res.data.goodsImgVOList.forEach(item => {
+            imgBox.push({
+              url: item.imgUrl,
+              goodId: item.goodId,
+              type: item.type,
+              id: item.id
+            })
+          })
+          this.addForm.imgsBox = imgBox
+          this.specValueBlur('', 'true')
+
+        } else { 
+          let skuObj = {}
+          if(res.data.goods.showStyle === '1') {
+            res.data.goodsDetailSpecList.forEach(item => {
+              skuObj[item.id] = {}
+              skuObj[item.id].list = []
+              res.data.goodsSkuList.forEach(skuItem => {
+                skuObj[item.id].list.push({
+                  name: skuItem.startNum,
+                  price: skuItem.price,
+                  number: '0',
+                  store: skuItem.stock
+                })
+              })
+            })
+          }
+          this.showStyle.id = '28fa1070ef18494899d7f72bced67576'
+           this.showAble['28fa1070ef18494899d7f72bced67576'] = {}
+           this.showAble['28fa1070ef18494899d7f72bced67576'].valueSuffix = 'xx'
+          
+          this.addForm.sku = skuObj
+          this.showStyle.type = res.data.goods.showStyle
+          console.log(skuObj)
+          console.log('xxx')
+          console.log(this.addForm)
+          return
         }
         if(Array.isArray(res.data.goodsDetailAttrList)) {
           res.data.goodsDetailAttrList.forEach((item, index) => {
@@ -643,6 +703,14 @@ let vm = {
         console.log('eidt')
         console.log(this.addForm)
         console.log(editBaseData)
+      })
+    },
+    getFreight() {
+      // 获取运费模板
+      getFreight({ shopId: 1 }).then(res => {
+        if(Array.isArray(res.data)) {
+          this.freightData = res.data
+        }
       })
     },
     getUnit() {
@@ -695,12 +763,23 @@ let vm = {
         this.moreLoading = false
       ])
     },
+    getSpecList() {
+      getSpeList({ categoryId: this.categoryId }).then(res => {
+        this.moreLoading = false
+        if(Array.isArray(res.data)) {
+          this.sellSpeData = res.data
+        }
+        
+      }).catch(err => {
+        this.moreLoading = false
+      })
+    },
     uploadImg(file) {
       let formData = new FormData()
       formData.append('file', file.file)
       fileUpload(formData).then(res => {
         this.addForm.imgsBox.push({
-          imgUrl: res.data,
+          url: res.data,
           type: 1,
           uid: file.file.uid
         })
@@ -736,7 +815,7 @@ let vm = {
           if(item.id === val) {
             this.addForm.moreSpec[pindex].selectValue = item.name
             hasName = false
-            return
+            return false
           }
         })
         if(hasName) {
@@ -1145,10 +1224,20 @@ let vm = {
           this.createTree(obj, deep + 1, limit, result, arr)
         }
       } else {
-        let item = {
-          startNum: '',
-          price: '',
-          store: ''
+        let item = {}
+        if(this.eiditId.length === 0) {
+          item = {
+            startNum: '',
+            price: '',
+            store: ''
+          }
+        } else {
+          item = {
+            startNum: this.goodsSkuData[this.skuCounter].startNum,
+            price: this.goodsSkuData[this.skuCounter].price,
+            store: this.goodsSkuData[this.skuCounter].stock
+          }
+          this.skuCounter++
         }
         let [...itemV] = result
         item.itemValue = itemV
@@ -1196,7 +1285,8 @@ let vm = {
       } else {
         this.isCombine = false
       }
-      
+      console.log('create------')
+      console.log(this.addForm.moreSpecData)
     },
     arraySpanMethod({ row, column, rowIndex, columnIndex }) {
       if(this.isCombine && this.combineObj[columnIndex] > 1) {
