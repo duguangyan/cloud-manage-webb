@@ -38,23 +38,18 @@ const srcReg = /^[A-Za-z]+$/
 function filterAsyncRouter(asyncRouterMap, index) { // 遍历后台传来的路由字符串，转换为组件对象
   const accessedRouters = asyncRouterMap.filter(route => {
     let exsit = true
-    console.log(route.name)
-    console.log(route.url)
     if (route.url) {
-      console.log(route.url)
       route.hidden = false
       if (moduleSource.indexOf(route.url) > -1) {
         route.component = _import(route.url)
         const urlArr = route.url.split('/')
         route.path = urlArr[urlArr.length - 2]
-        // console.log('url', route.path)
         if (route.url === moduleSource[3] || route.url === moduleSource[4] || route.url === moduleSource[5]) {
           route.hidden = true
         }
       } else if (httpReg.test(route.url)) {
         route.component = Layout
         route.path = route.url
-        // console.log('http', route.path)
       } else if (srcReg.test(route.url)) {
         route.component = Layout
         if (redirectSource[route.url]) {
@@ -65,9 +60,7 @@ function filterAsyncRouter(asyncRouterMap, index) { // 遍历后台传来的路�
         } else {
           route.path = route.url
         }
-        // console.log('layout', route.path)
       } else {
-        // console.log('else', route.url)
         exsit = false
       }
       if (exsit) {
@@ -112,8 +105,6 @@ const actions = {
       let accessedRouters = []
       getRoles({ userId: this.getters.userId }).then(res => {
         accessedRouters = filterAsyncRouter(res.data, 0)
-        console.log('ac')
-        console.log(accessedRouters)
         commit('SET_ROUTES', accessedRouters)
         resolve()
       })

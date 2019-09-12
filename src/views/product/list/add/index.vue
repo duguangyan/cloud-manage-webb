@@ -39,13 +39,12 @@
                 v-model="addForm.generate[index].list"
                 :label="item.id"
                 :placeholder="item.hint"
+                @focus="((val) => focus(val, item.id))"
                 :options="addressOptions"
                 :style="{width: item.length + 'px'}"
                 :props="addressProps"
                 style="width: 200px;"
                 class="filter-item mr20"
-                @change="selectChange"
-                @focus="focus"
                 @keyup.enter.native="handleFilter">
               </el-cascader>
               <span v-if="item.exp !== null">{{item.exp}}</span>
@@ -340,9 +339,8 @@
     <div class="bottom-box">
       <div>
         <el-button v-waves class="filter-item" @click="preView">预览</el-button>
-        <el-button v-waves class="filter-item">保存待上架</el-button>
-        <!-- <el-button type="primary" v-waves class="filter-item" @click="onSale">上架出售</el-button> -->
-        <el-button type="primary" v-waves class="filter-item" @click="submitForm('productForm')">上架出售</el-button>
+        <el-button v-waves class="filter-item" @click="submitForm('productForm', 0)">保存待上架</el-button>
+        <el-button type="primary" v-waves class="filter-item" @click="submitForm('productForm', 1)">上架出售</el-button>
       </div>
     </div>
     <div class="self-diolog" v-if="previewDialog">
@@ -476,11 +474,12 @@ let vm = {
       addressOptions: [],
       checkboxObj: {},
       addressObj: {},
-      cascader: [],
+      cascader: {},
       addressProps: {
         lazy: true,
         lazyLoad (node, resolve) {
           console.log(node)
+          console.log(vm.cascader)
           getAd({ parentId: node.level === 0 ? 0 : node.data.id }).then( res => {
             if(Array.isArray(res.data)) {
               res.data.map((item) => {
@@ -491,7 +490,7 @@ let vm = {
           })
         },
         value: "shortName",
-        id: "0",
+        id: "",
         label: "shortName",
       },
       tableShow: false,
@@ -587,8 +586,7 @@ let vm = {
             obj.nameGroup = item.nameGroup
             this.addForm.generate.push(obj)
             if(item.inputType === 0) {
-              this.cascader.push(item.valueSet[0].value)
-              this.addressProps.id +=item.valueSet[0].value
+              this.cascader[item.id] = item.valueSet[0].value
               // this.$set(this.cascader, item.id, item.valueSet[0].value)
             }
           });
@@ -636,7 +634,7 @@ let vm = {
       })
     },
     uploadImg(file) {
-      console.log('file', file)
+      console.log(file)
       let formData = new FormData()
       formData.append('file', file.file)
       fileUpload(formData).then(res => {
@@ -646,6 +644,7 @@ let vm = {
           uid: file.file.uid
         })
         this.imgLimit = 10 - this.addForm.imgsBox.length
+        file.status = 'success'
       })
     },
     handleClick(tab, event) {
@@ -671,8 +670,6 @@ let vm = {
     },
     unitChange(val, type, pindex) {
       // 计量单位选择
-      console.log(val)
-
       if(type === 'auto') {
         this.showStyle.type = this.showAble[val]
         this.showStyle.id = val
@@ -680,7 +677,6 @@ let vm = {
         this.moreSpecTableShow = true
         this.addForm.unit = this.unitMore
       } else if(type === 'spec') {
-        console.log(this.addForm.moreSpec)
         this.addForm.moreSpec[pindex].isSpecSelect = true
         let hasName = true
         this.sellSpeData.forEach(item => {
@@ -698,9 +694,6 @@ let vm = {
         }
         
       }
-      console.log(this.addForm.moreSpec)
-      
-    
     },
     addStair(index, id) {
       // 添加阶梯价
@@ -732,9 +725,6 @@ let vm = {
     },
     removeStair(index, id) {
       // 删除阶梯价
-      console.log(this.addForm)
-      console.log(index)
-      console.log('id', id)
       this.addForm.sku[id].list.splice(index, 1)
     },
     addBox(index, id) {
@@ -794,8 +784,7 @@ let vm = {
       // 删除添加的基础属性
       this.addForm.selfProp.splice(index, 1)
     },
-    submitForm(formName) {
-      console.log(this.addForm)
+    submitForm(formName, type) {
       if(this.activeName === 'first') {
         this.tableShow = false
         let tableData = this.addForm.sku[this.showStyle.id] ? this.addForm.sku[this.showStyle.id].list : []
@@ -817,17 +806,17 @@ let vm = {
       }
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          this.onSale()
+          this.onSale(type)
         } else {
-          console.log('error submit!!')
           return false
         }
       });
     },
-    onSale() {
+    onSale(type) {
       // 上架
       let goodsVO = {}
       // 商品外部信息
+      goodsVO.saveType = type
       goodsVO.categoryId = this.categoryId
       goodsVO.name = this.addForm.title
       goodsVO.detail = this.addForm.remark
@@ -840,29 +829,31 @@ let vm = {
       let sortList = 0
       let baseData = this.addForm.generate.concat(this.addForm.selfProp)
       baseData.forEach(item => {
-        let obj = {}
-        let sortValue = 0
-        obj.name = item.name
-        obj.categoryAttrId = item.id
-        obj.nameGroup = item.nameGroup
-        obj.sort = sortList++
-        obj.goodsAttrValueList = []
-        if(Array.isArray(item.list)) {
-          item.list.forEach(item => {
-            sortValue++
+        if(item.list.length > 0) {
+          let obj = {}
+          let sortValue = 0
+          obj.name = item.name
+          obj.categoryAttrId = item.id
+          obj.nameGroup = item.nameGroup
+          obj.sort = sortList++
+          obj.goodsAttrValueList = []
+          console.log(item.list)
+          if(Array.isArray(item.list)) {
+            item.list.forEach(itemList => {
+              sortValue++
+              obj.goodsAttrValueList.push({
+                value: itemList,
+                sort: sortValue
+              })
+            })
+          } else {
             obj.goodsAttrValueList.push({
-              value: item,
+              value: item.list,
               sort: sortValue
             })
-          })
-        } else {
-          obj.goodsAttrValueList.push({
-            value: item.list,
-            sort: sortValue
-          })
+          }
+          goodsVO.goodsAttrList.push(obj)
         }
-
-        goodsVO.goodsAttrList.push(obj)
       })
       // 商品sku信息
       goodsVO.goodsSkuList = []
@@ -933,9 +924,8 @@ let vm = {
           }
         // }
       } else if(this.activeName === 'second') {
-        goodsVO.unit = addForm.unitMore
+        goodsVO.unit = this.addForm.unitMore
         let skuSort = 0
-       
           this.addForm.moreSpecData.forEach(item => {
             let skuObj = {}
             skuObj.sort = skuSort++
@@ -983,17 +973,15 @@ let vm = {
         this.saveLoading = false
         this.$message({
               type: 'success',
-              message: '上架成功!'
+              message: type === 0 ? '保存待上架成功!' : '上架成功!'
             });
       }).catch(err => {
         this.saveLoading = false
       })
     },
-    selectChange(val) {
-      console.log('change', val)
-    },
-    focus() {
-
+    focus(val, id) {
+      this.addressProps.id = id
+      console.log(this.addressProps)
     },
     handleCheckAllChange(val, index, id) {
       // 全选
