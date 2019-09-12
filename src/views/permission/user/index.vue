@@ -392,6 +392,7 @@ export default {
       this.roleListQuery.userId = this.role.id
       this.dialogVisible = true
       this.checkStrictly = true
+      this.roleTable = []
       this.getRoleList()
     },
     handleLockMul() {
