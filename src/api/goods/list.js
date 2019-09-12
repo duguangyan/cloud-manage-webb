@@ -162,3 +162,12 @@ export function saveGoods(data) {
     data
   })
 }
+
+// 获取商品详情
+export function getGoodsDetail(query) {
+  return request({
+    url: '/goods/goods/findGoodsDetail',
+    method: 'get',
+    params: query
+  })
+}

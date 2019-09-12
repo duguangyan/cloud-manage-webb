@@ -417,7 +417,7 @@
 
 <script>
 import waves from '@/directive/waves'
-import { getByCategoryId, getUnit, saveGoods, getUnitList, getSpeList } from '@/api/goods/list'
+import { getByCategoryId, getUnit, saveGoods, getUnitList, getSpeList, getGoodsDetail } from '@/api/goods/list'
 import { getAd } from '@/api/upms/strict'
 import { fileUpload } from '@/api/goods/upload'
 let id = 0;
@@ -447,7 +447,9 @@ let vm = {
     };
     return {
       categoryId: '',
+      eiditId: '',
       baseData: [],
+      baseCenterData: [],
       sellData: [],
       sellMoreData: [],
       sellSpeData: [],
@@ -469,21 +471,19 @@ let vm = {
       productTitle: '',
       imgLimit: 10,
       activeName: 'first',
-      id: '',
-      eid: '',
       addressOptions: [],
       checkboxObj: {},
       addressObj: {},
       cascader: {},
+      cascaderId: '',
       addressProps: {
         lazy: true,
         lazyLoad (node, resolve) {
-          console.log(node)
-          console.log(vm.cascader)
           getAd({ parentId: node.level === 0 ? 0 : node.data.id }).then( res => {
             if(Array.isArray(res.data)) {
+              let deep = 0
               res.data.map((item) => {
-                item.leaf = item.haveChild === 0 || parseInt(vm.cascader[0]) == node.level + 1
+                item.leaf = item.haveChild === 0 || parseInt(vm.cascader[vm.cascaderId] - 1) <= node.level
               });
               resolve(res.data);
             }
@@ -496,6 +496,8 @@ let vm = {
       tableShow: false,
         moreTableShow: false,
       addForm: {
+        title: '',
+        remark: '',
         sku: {},
         generate: [],
         imgsBox: [],
@@ -550,22 +552,24 @@ let vm = {
 
   },
   created() {
-    console.log('add page')
-    console.log(this.$route)
-    this.categoryId = this.$route.query.id 
-    this.getByCategoryId(this.categoryId)
-    this.$route.query.des.forEach((item) => {
-      this.productTitle += this.productTitle.length === 0 ? item : '-' + item
-    })
-    this.getUnit(this.$route.query.id)
+    console.log(this.$route.query)
+    this.categoryId = this.$route.query.id
+    if(this.$route.query.eid) {
+      this.eiditId = this.$route.query.eid
+    }
+    this.getByCategoryId()
+    
+    // this.$route.query.des.forEach((item) => {
+    //   this.productTitle += this.productTitle.length === 0 ? item : '-' + item
+    // })
     // this.getAddress()
   },
   methods: {
-    getByCategoryId(id) {
+    getByCategoryId() {
       // 通过ID获取规格模板
       this.listLoading = true
       getByCategoryId({
-        categoryId : id
+        categoryId : this.categoryId
       }).then(res => {
         this.listLoading = false
         if(Array.isArray(res.data)) {
@@ -590,15 +594,62 @@ let vm = {
               // this.$set(this.cascader, item.id, item.valueSet[0].value)
             }
           });
-          this.baseData = res.data
+        }
+        if(this.eiditId.length === 0) {
+           this.baseData = res.data
+          this.getUnit()
+        } else {
+          this.baseCenterData = res.data
+          this.getGoodsDetail()
+          this.getUnitList()
         }
       })
     },
-    getUnit(id) {
+    getGoodsDetail() {
+      getGoodsDetail({ goodsId: this.eiditId }).then(res => {
+        let editBaseData = []
+        let generate = []
+        this.addForm.title = res.data.goods.name
+        this.addForm.remark = res.data.goods.detail
+        this.addForm.unitMore = res.data.goods.unit
+        this.showStyle.type = res.data.goods.showStyle
+        if(res.data.goods.showStyle === '3') {
+          this.activeName = 'second'
+          this.moreSpecTableShow = true
+        }
+        if(Array.isArray(res.data.goodsDetailAttrList)) {
+          res.data.goodsDetailAttrList.forEach((item, index) => {
+            this.baseCenterData.forEach((bItem, bIndex) => {
+              if(item.categoryAttrId === bItem.id) {
+                let itemObj = bItem
+                let generateObj = this.addForm.generate[bIndex]
+                editBaseData.push(itemObj)
+                if(bItem.inputType === 0 || bItem.inputType === 2) {
+                  generateObj.list = []
+                  item.goodsDetailAttrValueList.forEach((vItem, vIndex) => {
+                    generateObj.list.push(vItem.value)
+                  })
+                } else {
+                  generateObj.list = item.goodsDetailAttrValueList[0].value
+                }
+                generate.push(generateObj)
+                return false
+              }
+            })
+          });
+        }
+        this.addForm.generate = generate
+        this.baseData = editBaseData
+        console.log('eidt')
+        console.log(this.addForm)
+        console.log(editBaseData)
+      })
+    },
+    getUnit() {
       // 通过ID获取规格模板
       this.listLoading = true
       getUnit({
-        categoryId : id
+        categoryId: this.categoryId
       }).then(res => {
         this.listLoading = false
         if(Array.isArray(res.data)) {
@@ -633,8 +684,18 @@ let vm = {
         }
       })
     },
+    getUnitList() {
+      this.moreLoading = true
+      getUnitList({ categoryId: this.categoryId }).then(res => {
+        this.moreLoading = false
+        if(Array.isArray(res.data)) {
+          this.sellMoreData = res.data
+        }
+      }).catch(err => [
+        this.moreLoading = false
+      ])
+    },
     uploadImg(file) {
-      console.log(file)
       let formData = new FormData()
       formData.append('file', file.file)
       fileUpload(formData).then(res => {
@@ -644,21 +705,13 @@ let vm = {
           uid: file.file.uid
         })
         this.imgLimit = 10 - this.addForm.imgsBox.length
-        file.status = 'success'
+        file.file.status = 'success'
       })
     },
     handleClick(tab, event) {
       // 报价方式切换
       if(this.activeName === 'second') {
-        this.moreLoading = true
-        getUnitList({ categoryId: this.categoryId }).then(res => {
-          this.moreLoading = false
-          if(Array.isArray(res.data)) {
-            this.sellMoreData = res.data
-          }
-        }).catch(err => [
-          this.moreLoading = false
-        ])
+        this.getUnitList()
       }
       
     },
@@ -837,7 +890,6 @@ let vm = {
           obj.nameGroup = item.nameGroup
           obj.sort = sortList++
           obj.goodsAttrValueList = []
-          console.log(item.list)
           if(Array.isArray(item.list)) {
             item.list.forEach(itemList => {
               sortValue++
@@ -980,8 +1032,8 @@ let vm = {
       })
     },
     focus(val, id) {
-      this.addressProps.id = id
-      console.log(this.addressProps)
+      // this.addressProps.id = id
+      this.cascaderId = id
     },
     handleCheckAllChange(val, index, id) {
       // 全选
