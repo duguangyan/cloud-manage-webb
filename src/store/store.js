@@ -11,7 +11,7 @@ export const setStore = (params = {}) => {
     type: type,
     datetime: new Date().getTime()
   }
-  if (type) window.sessionStorage.setItem(name, JSON.stringify(obj))
+  if (type) window.localStorage.setItem(name, JSON.stringify(obj))
   else window.localStorage.setItem(name, JSON.stringify(obj))
 }
 /**
@@ -23,7 +23,7 @@ export const getStore = (params = {}) => {
   name = keyName + name
   let obj = {},
     content
-  obj = window.sessionStorage.getItem(name)
+  obj = window.localStorage.getItem(name)
   // if (validatenull(obj)) obj = window.localStorage.getItem(name);
   // if (validatenull(obj)) return;
   if (obj === null) {
@@ -32,7 +32,7 @@ export const getStore = (params = {}) => {
   if (obj === null) {
     return
   }
-  obj = window.sessionStorage.getItem(name)
+  obj = window.localStorage.getItem(name)
   try {
     obj = JSON.parse(obj)
   } catch {
@@ -59,7 +59,7 @@ export const removeStore = (params = {}) => {
   let { name, type } = params
   name = keyName + name
   if (type) {
-    window.sessionStorage.removeItem(name)
+    window.localStorage.removeItem(name)
   } else {
     window.localStorage.removeItem(name)
   }
@@ -72,11 +72,11 @@ export const getAllStore = (params = {}) => {
   let list = []
   let { type } = params
   if (type) {
-    for (let i = 0; i <= window.sessionStorage.length; i++) {
+    for (let i = 0; i <= window.localStorage.length; i++) {
       list.push({
-        name: window.sessionStorage.key(i),
+        name: window.localStorage.key(i),
         content: getStore({
-          name: window.sessionStorage.key(i),
+          name: window.localStorage.key(i),
           type: 'session'
         })
       })
@@ -100,7 +100,7 @@ export const getAllStore = (params = {}) => {
 export const clearStore = (params = {}) => {
   let { type } = params
   if (type) {
-    window.sessionStorage.clear()
+    window.localStorage.clear()
   } else {
     window.localStorage.clear()
   }

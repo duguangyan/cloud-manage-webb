@@ -14,7 +14,7 @@ import { getStore, setStore } from '@/store/store'
 const user = {
   namespaced: true,
   state: {
-    access_token: getToken(),
+    access_token: getStore({ name: 'access_token' }),
     refreshToken: '',
     name: '',
     avatar: '',
