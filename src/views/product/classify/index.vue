@@ -341,7 +341,7 @@ const defaultProp = {
   name: '',
   status: '', 
   type: -1,
-  level: -1,
+  level: '',
   list: [
     { value: '' }
   ],
@@ -481,17 +481,20 @@ export default {
       propData: [],
       specData: [],
       cityOptions: [
-        { value: '0', label: '省级地址' },
-        { value: '1', label: '市级地址' },
-        { value: '2', label: '区级地址' },
-        { value: '3', label: '县级地址' },
-        { value: '4', label: '乡级地址' }
+        { value: 0, label: '省级地址' },
+        { value: 1, label: '市级地址' },
+        { value: 2, label: '区级地址' },
+        { value: 3, label: '县级地址' },
+        { value: 4, label: '乡级地址' }
       ],
       parentId: '',
       node: {},
       nodeData: {},
       dialogType: 'new',
       dialogMsg: '新增一级分类',
+      unitId: '',
+      propId: '',
+      specId: '',
       dialogVisible: false,
       checkStrictly: false,
       downloadLoading: false,
@@ -567,9 +570,9 @@ export default {
       // 显示四级分类的计量单位、规格管理、属性模板数据
       if(node.level === 4) {
         this.rightBoxShow = true
-        this.unit.id = data.id
-        this.spec.id = data.id 
-        this.prop.id = data.id
+        this.unitId = data.id
+        this.specId = data.id 
+        this.propId = data.id
         this.getUnitList()
         this.getSpeList()
         this.getPropList()
@@ -753,7 +756,7 @@ export default {
     getUnitList() {
       // 获取计量单位表
       this.listLoading = true
-      getUnitList({ categoryId: this.unit.id }).then(res => {
+      getUnitList({ categoryId: this.unitId }).then(res => {
         this.listLoading = false
         if(Array.isArray(res.data)) {
           this.unitData = res.data
@@ -763,7 +766,7 @@ export default {
     getSpeList() {
       // 获取规格管理表
       this.listLoading = true
-      getSpeList({ categoryId: this.spec.id }).then(res => {
+      getSpeList({ categoryId: this.specId }).then(res => {
         this.listLoading = false
         if(Array.isArray(res.data)) {
           this.specData = res.data
@@ -773,7 +776,7 @@ export default {
     getPropList(id) {
       // 获取属性表
       this.listLoading = true
-      getPropList({ categoryId: this.prop.id }).then(res => {
+      getPropList({ categoryId: this.propId }).then(res => {
         this.listLoading = false
         if(Array.isArray(res.data)) {
           this.propData = res.data
@@ -782,8 +785,10 @@ export default {
     },
     async confirmRole() {
       // 弹窗确认操作
-      this.listLoading = true
+      let succMsg = ''
+      
       if (this.dialogType === 'edit') {
+        succMsg = '分类名编辑成功'
         this.diaDisable = true
         this.diaLoading = true
         await updateProduct({
@@ -797,6 +802,7 @@ export default {
         this.diaDisable = false
         this.diaLoading = false
       } else if(this.dialogType === 'new') {
+        succMsg = '分类新增成功'
         this.diaDisable = true
         this.diaLoading = true
         const { data } = await insertProduct({
@@ -816,6 +822,7 @@ export default {
         this.node.expanded = true
         this.keyArr.push(this.nodeData.id)
       } else if(this.dialogType === 'root') {
+        succMsg = '一级分类新增成功'
         this.diaDisable = true
         this.diaLoading = true
         await insertRootProduct({ name: this.role.name }).catch(err => {
@@ -829,58 +836,76 @@ export default {
         this.diaDisable = true
         this.diaLoading = true
         if(this.isEdit) {
+          succMsg = '计量单位编辑成功'
           await updateUnitList({
-            categoryId: this.unit.id,
+            categoryId: this.unitId,
             id: this.unit.id,
             name: this.unit.name,
             status: this.unit.status
+          }).catch(err => {
+            this.diaDisable = false
+            this.diaLoading = false
           })
         } else {
+          succMsg = '计量单位新增成功'
           await insetUnitList({
-            categoryId: this.unit.id,
+            categoryId: this.unitId,
             name: this.unit.name,
             status: this.unit.status
+          }).catch(err => {
+            this.diaDisable = false
+            this.diaLoading = false
           })
         }
-        this.diaDisable = true
-        this.diaLoading = true
+        this.diaDisable = false
+        this.diaLoading = false
         this.getUnitList()
       } else if (this.dialogType === 'spec') {
         this.diaDisable = true
         this.diaLoading = true
         if(this.isEdit) {
+          succMsg = '规格管理编辑成功'
           await updateSpeList({
-            categoryId: '1e39d032421ba13c130d8e1424f03564',
+            categoryId: this.specId,
             id: this.spec.id,
             name: this.spec.name,
             showStyle: this.spec.showType,
             status: this.spec.status
+          }).catch(err => {
+            this.diaDisable = false
+            this.diaLoading = false
           })
         } else {
+          succMsg = '规格管理新增成功'
           await insetSpeList({
-            categoryId: '1e39d032421ba13c130d8e1424f03564',
+            categoryId: this.unitId,
             name: this.spec.name,
             showStyle: this.spec.showType,
             status: this.spec.status,
             valueSuffix: this.spec.showType === '2' ? this.spec.afterDes : ''
+          }).catch(err => {
+            this.diaDisable = false
+            this.diaLoading = false
           })
         }
-        this.diaDisable = true
-        this.diaLoading = true
+        this.diaDisable = false
+        this.diaLoading = false
         this.getSpeList()
       } else if (this.dialogType === 'prop') {
         this.diaDisable = true
         this.diaLoading = true
         let valueStr = ''
-        if(this.prop.type === '1' || this.prop.type === '2' || this.prop.type === '3') {
+        console.log('xxxx')
+        console.log(this.prop)
+        if(this.prop.type === 1 || this.prop.type === 2 || this.prop.type === 3) {
           this.prop.list.forEach(item => {
             valueStr += valueStr.length === 0 ? item.value : ',' + item.value
           })
-        } else if(this.prop.type === '0') {
+        } else if(this.prop.type === 0) {
           valueStr = this.prop.level
         }
         let insetParams = {
-          categoryId: '1e39d032421ba13c130d8e1424f03564',
+          categoryId: this.propId,
           name: this.prop.name,
           hint: this.prop.notice,
           inputType: this.prop.type,
@@ -895,24 +920,28 @@ export default {
         }
         if(this.isEdit) {
           insetParams.id = this.prop.id
-          await updatePropList(insetParams)
+          succMsg = '模板属性编辑成功'
+          insetParams.id = this.prop.id
+          await updatePropList(insetParams).catch(err => {
+            this.diaDisable = false
+            this.diaLoading = false
+          })
         } else {
-          await insetPropList(insetParams)
+          succMsg = '模板属性新增成功'
+          await insetPropList(insetParams).catch(err => {
+            this.diaDisable = false
+            this.diaLoading = false
+          })
         }
         this.diaDisable = false
         this.diaLoading = false
         this.getPropList()
       }
-      this.listLoading = false
-      const { name, remark } = this.role
       this.dialogVisible = false
       this.$notify({
         title: 'Success',
         dangerouslyUseHTMLString: true,
-        message: `
-            <div>字典名: ${name}</div>
-            <div>备注: ${remark}</div>
-          `,
+        message: succMsg,
         type: 'success'
       })
     },

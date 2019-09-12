@@ -50,7 +50,6 @@ function filterAsyncRouter(asyncRouterMap, index) { // 遍历后台传来的路�
       } else if (httpReg.test(route.url)) {
         route.component = Layout
         route.path = route.url
-        route.operation = 0
       } else if (srcReg.test(route.url)) {
         route.component = Layout
         if (redirectSource[route.url]) {
@@ -72,6 +71,8 @@ function filterAsyncRouter(asyncRouterMap, index) { // 遍历后台传来的路�
         }
         route.target = route.operation === 0 ? '' : '_blank'
       }
+    } else {
+      return false
     }
     if (route.children && route.children.length > 0) {
       route.children = filterAsyncRouter(route.children, 1)
