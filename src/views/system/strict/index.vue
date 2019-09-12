@@ -1,6 +1,6 @@
 <template>
   <div class="strict">
-    <el-button class="topest" type="primary" size="small" @click="createTopest">创建顶级</el-button>
+    <el-button v-if="btnsPermission.add.auth" class="topest" type="primary" size="small" @click="createTopest">创建顶级</el-button>
 
     <!-- 地区树 -->
     <el-tree
