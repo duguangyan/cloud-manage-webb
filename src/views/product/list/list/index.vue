@@ -144,7 +144,7 @@
       </el-table-column>
       <el-table-column align="center" label="操作" min-width="300">
         <template slot-scope="scope">
-          <el-button v-if="btnsPermission.edit.auth" type="primary" size="small" @click="msgEdit(scope)">{{btnsPermission.edit.name}}</el-button>
+          <el-button v-if="btnsPermission.edit.auth && (saleType === '1' || saleType === '4')" type="primary" size="small" @click="msgEdit(scope)">{{btnsPermission.edit.name}}</el-button>
           <el-button v-if="btnsPermission.onSale.auth && (saleType === '1' || saleType === '4')" type="primary" size="small" @click="saleChange('one', 0, scope)">{{btnsPermission.onSale.name}}</el-button>
           <el-button v-if="btnsPermission.offSale.auth && saleType === '3'" type="primary" size="small" @click="saleChange('one', 1, scope)">{{btnsPermission.offSale.name}}</el-button>
         </template>
@@ -292,7 +292,11 @@ export default {
     msgEdit(scope) {
       // 编辑商品
       if(scope.row.id.length > 0) {
-        this.$router.push({path: 'list/add', query:{ eid: scope.row.id}})
+        alert(scope.row.id)
+        this.$router.push({path: 'list/add', query:{ 
+          id: scope.row.categoryId,
+          eid: scope.row.id
+          }})
       }
     },
     selectChange(val) {

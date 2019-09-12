@@ -18,20 +18,20 @@
         :rules="{
             required: true, message: '标题必填', trigger: 'blur'
         }">
-          <el-input
-          class="long-input"
-          v-model.trim="addForm.title"
-          size="medium"
-          maxlength="100"
+          <el-input 
+          class="long-input" 
+          v-model.trim="addForm.title" 
+          size="medium" 
+          maxlength="100" 
           show-word-limit
           placeholder="请输入名称，如：品种+口感+产地+用途等" />
         </el-form-item>
         <template v-for="(item, index) in baseData">
-          <el-form-item
-          :key="index"
-          :label="item.name"
+          <el-form-item 
+          :key="index" 
+          :label="item.name" 
           :rules="{
-            required: item.isRequire === 1, message: `${item.name}必填`, trigger: 'blur', type: (item.inputType === 0 || item.inputType === 2) ? 'array' : ''
+            required: item.isRequire === 1, message: `${item.name}必填`, trigger: 'blur', type: (item.inputType === 0 || item.inputType === 2) ? 'array' : '' 
           }"
           :prop="'generate.' + index + '.list'">
             <template v-if="item.inputType === 0">
@@ -72,7 +72,7 @@
               <el-input class="long-input" v-model.trim="addForm.generate[index].list" size="medium" maxlength="64" :placeholder="item.hint" :style="{width: item.length + 'px'}" />
               <span v-if="item.exp !== null">{{item.exp}}</span>
             </template>
-          </el-form-item>
+          </el-form-item>         
         </template>
         <el-form-item v-for="(selfItem, selfIndex) in addForm.selfProp" :key="selfIndex + 'x'" :label="addForm.selfProp[selfIndex].name">
           <span class="mr40">{{addForm.selfProp[selfIndex].list}}</span>
@@ -92,18 +92,18 @@
       <el-tabs v-loading="moreLoading" v-model="activeName" @tab-click="handleClick">
         <el-tab-pane label="默认报价方式" name="first">
           <div  class="text item">
-            <el-form-item
-              label="计量单位"
+            <el-form-item 
+              label="计量单位" 
               :prop="'unit'"
               :rules="{
-                required: activeName === 'first', message: '计量单位必填', trigger: 'blur'
+                required: activeName === 'first', message: '计量单位必填', trigger: 'blur'     
               }">
               <el-select v-model="addForm.unit" size="medium" maxlength="64" placeholder="请选择" @change="((val) => unitChange(val, 'auto'))">
                 <el-option v-for="(item, index) in sellData" :key="index" :label="item.name" :value="item.id"></el-option>
               </el-select>
             </el-form-item>
-            <el-form-item
-              v-if="showStyle.type === '2'"
+            <el-form-item 
+              v-if="showStyle.type === '2'" 
               :prop="'sku.'+showStyle.id+'.store'"
               :rules="{
                 required: activeName === 'first', message: '库存必填，且为数字', trigger: 'blur', pattern:/^\d+$/,
@@ -111,7 +111,7 @@
               label="库存">
                 <el-input class="short-input" v-model.trim="addForm.sku[showStyle.id].store" size="medium" maxlength="30" />
             </el-form-item>
-            <el-form-item>
+            <el-form-item>  
               <div v-if="showStyle.type === '2'">
                  <el-table
                   :data="addForm.sku[showStyle.id].list"
@@ -120,7 +120,7 @@
                   <el-table-column  label="起批量" width="220" align="center">
                     <template slot-scope="scope">
                       <span class="mr5">起批数</span><el-input class="table-input" v-model.trim="addForm.sku[showStyle.id].list[scope.$index].number" size="small" maxlength="12" />
-
+          
                     </template>
                   </el-table-column>
                   <el-table-column label="价格" width="220" align="center">
@@ -190,19 +190,19 @@
           </div>
         </el-tab-pane>
         <el-tab-pane label="更多报价方式" name="second">
-          <el-form-item
-            label="计量单位"
+          <el-form-item 
+            label="计量单位" 
             :prop="'unitMore'"
             :rules="{
-              required: activeName === 'second', message: '计量单位必填', trigger: 'blur'
+              required: activeName === 'second', message: '计量单位必填', trigger: 'blur'     
             }">
             <el-select v-model="addForm.unitMore" size="medium" maxlength="64" placeholder="请选择" @change="((val) => unitChange(val, 'more'))">
               <el-option v-for="(item, index) in sellMoreData" :key="index" :label="item.name" :value="item.id"></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item
+          <el-form-item 
             v-for="(item, pIndex) in addForm.moreSpec" :key="pIndex"
-            :label="'规格' + (pIndex + 1)"
+            :label="'规格' + (pIndex + 1)" 
             :prop="'unitMore'"
             >
             <el-select v-model="addForm.moreSpec[pIndex].selectValue" filterable allow-create size="medium" maxlength="64" placeholder="请选择" @change="((val) => unitChange(val, 'spec', pIndex))">
@@ -226,7 +226,7 @@
           <el-form-item>
             <el-button v-show="moreSpecTableShow" type="primary" plain size="medium" v-waves @click="addMoreSpec">添加规格</el-button>
           </el-form-item>
-          <el-form-item>
+          <el-form-item>  
             <el-table
               v-if="moreSpecTableShow"
               :data="addForm.moreSpecData"
@@ -241,7 +241,7 @@
                   <span>{{addForm.moreSpecData[scope.$index].itemValue[columnIndex].value}}</span>
                 </template>
               </el-table-column>
-
+              
               <el-table-column
                 label="起批量"
                 align="center"
@@ -269,7 +269,7 @@
             <div v-if="moreTableShow" class="el-form-item__error">
               请填写完整表格信息
             </div>
-          </el-form-item>
+          </el-form-item> 
         </el-tab-pane>
       </el-tabs>
     </el-card>
@@ -278,7 +278,7 @@
         <span>图文视图</span>
       </div>
       <div  class="text item">
-        <el-form-item
+        <el-form-item 
           label="商品视图" required>
           <el-upload
             ref="uplodadImg"
@@ -300,8 +300,8 @@
             <p>* 默认第一个文件为商品封面图，如果是视频则取第一帧画面作为封面图。</p>
           </div>
         </el-form-item>
-        <el-form-item
-          label="介绍文案"
+        <el-form-item 
+          label="介绍文案" 
           :rules="{
             required: true, message: '介绍文案必填', trigger: 'blur'
           }"
@@ -417,7 +417,7 @@
 
 <script>
 import waves from '@/directive/waves'
-import { getByCategoryId, getUnit, saveGoods, getUnitList, getSpeList } from '@/api/goods/list'
+import { getByCategoryId, getUnit, saveGoods, getUnitList, getSpeList, getGoodsDetail } from '@/api/goods/list'
 import { getAd } from '@/api/upms/strict'
 import { fileUpload } from '@/api/goods/upload'
 let id = 0;
@@ -431,8 +431,8 @@ let vm = {
         return callback(new Error('属性名不能为空!'))
       } else if(value === '标题') {
         return callback(new Error('属性名已存在'))
-      }
-
+      } 
+      
       this.addForm.generate.forEach(item => {
         if(item.name === value) {
           return callback(new Error('属性名已存在'))
@@ -447,7 +447,9 @@ let vm = {
     };
     return {
       categoryId: '',
+      eiditId: '',
       baseData: [],
+      baseCenterData: [],
       sellData: [],
       sellMoreData: [],
       sellSpeData: [],
@@ -469,21 +471,19 @@ let vm = {
       productTitle: '',
       imgLimit: 10,
       activeName: 'first',
-      id: '',
-      eid: '',
       addressOptions: [],
       checkboxObj: {},
       addressObj: {},
       cascader: {},
+      cascaderId: '',
       addressProps: {
         lazy: true,
         lazyLoad (node, resolve) {
-          console.log(node)
-          console.log(vm.cascader)
           getAd({ parentId: node.level === 0 ? 0 : node.data.id }).then( res => {
             if(Array.isArray(res.data)) {
+              let deep = 0
               res.data.map((item) => {
-                item.leaf = item.haveChild === 0 || parseInt(vm.cascader[0]) == node.level + 1
+                item.leaf = item.haveChild === 0 || parseInt(vm.cascader[vm.cascaderId] - 1) <= node.level
               });
               resolve(res.data);
             }
@@ -496,6 +496,8 @@ let vm = {
       tableShow: false,
         moreTableShow: false,
       addForm: {
+        title: '',
+        remark: '',
         sku: {},
         generate: [],
         imgsBox: [],
@@ -550,22 +552,24 @@ let vm = {
 
   },
   created() {
-    console.log('add page')
-    console.log(this.$route)
+    console.log(this.$route.query)
     this.categoryId = this.$route.query.id
-    this.getByCategoryId(this.categoryId)
-    this.$route.query.des.forEach((item) => {
-      this.productTitle += this.productTitle.length === 0 ? item : '-' + item
-    })
-    this.getUnit(this.$route.query.id)
+    if(this.$route.query.eid) {
+      this.eiditId = this.$route.query.eid
+    }
+    this.getByCategoryId()
+    
+    // this.$route.query.des.forEach((item) => {
+    //   this.productTitle += this.productTitle.length === 0 ? item : '-' + item
+    // })
     // this.getAddress()
   },
   methods: {
-    getByCategoryId(id) {
+    getByCategoryId() {
       // 通过ID获取规格模板
       this.listLoading = true
       getByCategoryId({
-        categoryId : id
+        categoryId : this.categoryId
       }).then(res => {
         this.listLoading = false
         if(Array.isArray(res.data)) {
@@ -582,7 +586,7 @@ let vm = {
             }
             obj.id = item.id
             obj.sort = item.sort
-            obj.name = item.name
+            obj.name = item.name 
             obj.nameGroup = item.nameGroup
             this.addForm.generate.push(obj)
             if(item.inputType === 0) {
@@ -590,21 +594,68 @@ let vm = {
               // this.$set(this.cascader, item.id, item.valueSet[0].value)
             }
           });
-          this.baseData = res.data
+        }
+        if(this.eiditId.length === 0) {
+           this.baseData = res.data
+          this.getUnit()
+        } else {
+          this.baseCenterData = res.data
+          this.getGoodsDetail()
+          this.getUnitList()
         }
       })
     },
-    getUnit(id) {
+    getGoodsDetail() {
+      getGoodsDetail({ goodsId: this.eiditId }).then(res => {
+        let editBaseData = []
+        let generate = []
+        this.addForm.title = res.data.goods.name
+        this.addForm.remark = res.data.goods.detail
+        this.addForm.unitMore = res.data.goods.unit
+        this.showStyle.type = res.data.goods.showStyle
+        if(res.data.goods.showStyle === '3') {
+          this.activeName = 'second'
+          this.moreSpecTableShow = true
+        }
+        if(Array.isArray(res.data.goodsDetailAttrList)) {
+          res.data.goodsDetailAttrList.forEach((item, index) => {
+            this.baseCenterData.forEach((bItem, bIndex) => {
+              if(item.categoryAttrId === bItem.id) {
+                let itemObj = bItem
+                let generateObj = this.addForm.generate[bIndex]
+                editBaseData.push(itemObj)
+                if(bItem.inputType === 0 || bItem.inputType === 2) {
+                  generateObj.list = []
+                  item.goodsDetailAttrValueList.forEach((vItem, vIndex) => {
+                    generateObj.list.push(vItem.value)
+                  })
+                } else {
+                  generateObj.list = item.goodsDetailAttrValueList[0].value
+                }
+                generate.push(generateObj)
+                return false
+              }
+            })
+          });
+        }
+        this.addForm.generate = generate
+        this.baseData = editBaseData
+        console.log('eidt')
+        console.log(this.addForm)
+        console.log(editBaseData)
+      })
+    },
+    getUnit() {
       // 通过ID获取规格模板
       this.listLoading = true
       getUnit({
-        categoryId : id
+        categoryId: this.categoryId
       }).then(res => {
         this.listLoading = false
         if(Array.isArray(res.data)) {
           let skuInitObj = {}
           res.data.forEach(item => {
-            let itemId = item.id
+            let itemId = item.id 
             let obj = {}
             if(item.showStyle == 2) {
               obj.list = []
@@ -633,8 +684,18 @@ let vm = {
         }
       })
     },
+    getUnitList() {
+      this.moreLoading = true
+      getUnitList({ categoryId: this.categoryId }).then(res => {
+        this.moreLoading = false
+        if(Array.isArray(res.data)) {
+          this.sellMoreData = res.data
+        }
+      }).catch(err => [
+        this.moreLoading = false
+      ])
+    },
     uploadImg(file) {
-      console.log(file)
       let formData = new FormData()
       formData.append('file', file.file)
       fileUpload(formData).then(res => {
@@ -644,23 +705,15 @@ let vm = {
           uid: file.file.uid
         })
         this.imgLimit = 10 - this.addForm.imgsBox.length
-        file.status = 'success'
+        file.file.status = 'success'
       })
     },
     handleClick(tab, event) {
       // 报价方式切换
       if(this.activeName === 'second') {
-        this.moreLoading = true
-        getUnitList({ categoryId: this.categoryId }).then(res => {
-          this.moreLoading = false
-          if(Array.isArray(res.data)) {
-            this.sellMoreData = res.data
-          }
-        }).catch(err => [
-          this.moreLoading = false
-        ])
+        this.getUnitList()
       }
-
+      
     },
     getAddress() {
       // 获取产地信息
@@ -692,7 +745,7 @@ let vm = {
         } else {
           this.addForm.moreSpec[pindex].id = val
         }
-
+        
       }
     },
     addStair(index, id) {
@@ -778,7 +831,7 @@ let vm = {
           this.dialogProp = false
         }
       })
-
+      
     },
     removeSelfProp(index) {
       // 删除添加的基础属性
@@ -837,7 +890,6 @@ let vm = {
           obj.nameGroup = item.nameGroup
           obj.sort = sortList++
           obj.goodsAttrValueList = []
-          console.log(item.list)
           if(Array.isArray(item.list)) {
             item.list.forEach(itemList => {
               sortValue++
@@ -863,7 +915,7 @@ let vm = {
         let key = this.showStyle.id
         let speSort = 0
         // for(let key in sku) {
-
+          
           let speObj = {}
           let skuSort = 0
           speObj.sort = speSort++
@@ -894,7 +946,7 @@ let vm = {
               })
               goodsVO.goodsSkuList.push(skuObj)
             })
-
+            
             goodsVO.goodsSpecList.push(speObj)
           } else if (this.addForm.sku[key].showStyle === '2') {
             let skuObj = {}
@@ -965,7 +1017,7 @@ let vm = {
             goodsVO.goodsSpecList.push(speObj)
           })
       }
-
+      
       // 商品图片信息
       goodsVO.goodsImgList = this.addForm.imgsBox
       this.saveLoading = true
@@ -980,8 +1032,8 @@ let vm = {
       })
     },
     focus(val, id) {
-      this.addressProps.id = id
-      console.log(this.addressProps)
+      // this.addressProps.id = id
+      this.cascaderId = id
     },
     handleCheckAllChange(val, index, id) {
       // 全选
@@ -1028,7 +1080,7 @@ let vm = {
           if(Array.isArray(res.data)) {
             this.sellSpeData = res.data
           }
-
+          
         }).catch(err => {
           this.moreLoading = false
         })
@@ -1043,7 +1095,7 @@ let vm = {
           }]
         })
         this.specValueBlur('', 'true')
-
+      
     },
     removeMoreSpec(index) {
       // 删除更多报价规格
@@ -1088,7 +1140,7 @@ let vm = {
         for(let i = 0; i < obj[deep].list.length; i++) {
           result[deep] = {
             name: obj[deep].selectValue,
-            value: obj[deep].list[i].value
+            value: obj[deep].list[i].value 
           }
           this.createTree(obj, deep + 1, limit, result, arr)
         }
@@ -1104,7 +1156,7 @@ let vm = {
         result = []
         return
       }
-
+      
     },
     specValueBlur(e, val) {
       // 报价规格值在table中更新
@@ -1114,7 +1166,7 @@ let vm = {
         let limit = this.addForm.moreSpec.length
         let result = []
         this.createTree(this.addForm.moreSpec, 0, limit, result, arr)
-
+        
         let combineObj = {}
         let combineLen = 0
         let combineIndex = 0
@@ -1144,6 +1196,7 @@ let vm = {
       } else {
         this.isCombine = false
       }
+      
     },
     arraySpanMethod({ row, column, rowIndex, columnIndex }) {
       if(this.isCombine && this.combineObj[columnIndex] > 1) {
@@ -1158,7 +1211,7 @@ let vm = {
               colspan: 0
             }
           }
-
+      
       }
     },
     changeType() {
@@ -1172,9 +1225,9 @@ let vm = {
         this.$message({
           type: 'info',
           message: '已取消删除'
-        })
+        })       
       })
-
+        
     }
 
   }
@@ -1212,7 +1265,7 @@ export default vm;
     .box-card{
       margin-bottom: 10px;
     }
-
+  
     .unit-delete{
       color: #ff0000;
       cursor: pointer;
