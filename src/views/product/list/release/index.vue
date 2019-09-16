@@ -329,6 +329,13 @@ export default {
   created() {
     this.getProductTree()
   },
+  mounted() {
+    let dom = document.querySelector('.el-cascader-menu__wrap')
+    console.log('x')
+    console.log(dom)
+    dom.style.height = 'auto'
+    dom.maxHeight = '1000px'
+  },
   methods: {
     back() {
       // 返回
@@ -358,12 +365,10 @@ export default {
     selectChange(val) {
       // 商品类型选择
       if (val.length === 4) {
-        const arr = this.$refs['cascaderAddr'].getCheckedNodes()
-       
-        this.treeDes[3] = arr[0].label
-        this.treeDes[2] = arr[0].parent.label
-        this.treeDes[1] = arr[0].parent.parent.label
-        this.treeDes[0] = arr[0].parent.parent.parent.label
+        const arr = this.$refs['cascaderAddr'].getCheckedNodes()[0].pathLabels
+        for(let i = 0; i < arr.length; i++) {
+          this.treeDes[i] = arr[i]
+        }
         this.chooseId = val[3]
         this.next = true
       } else {
