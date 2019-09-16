@@ -163,6 +163,16 @@ export function saveGoods(data) {
   })
 }
 
+// 编辑商品
+export function editGoods(data) {
+  return request({
+    url: '/goods/goods/editGoods',
+    method: 'post',
+    type: 'json',
+    data
+  })
+}
+
 // 获取商品详情
 export function getGoodsDetail(query) {
   return request({

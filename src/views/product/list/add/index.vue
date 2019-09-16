@@ -155,7 +155,7 @@
                   border>
                   <el-table-column  label="规格名称" width="220" align="center">
                     <template slot-scope="scope">
-                      <el-input class="table-input mr5" v-model.trim="addForm.sku[showStyle.id].list[scope.$index].name" size="small" maxlength="12" /><span>{{valueSuffixObj[showStyle.id].valueSuffix}}</span>
+                      <el-input class="table-input mr5" v-model.trim="addForm.sku[showStyle.id].list[scope.$index].name" size="small" maxlength="12" /><span>{{valueSuffixObj[showStyle.id]}}</span>
                     </template>
                   </el-table-column>
                   <el-table-column label="起批量" width="220" align="center">
@@ -279,7 +279,7 @@
     </el-card>
     <el-card class="box-card">
       <div slot="header" class="clearfix">
-        <span>图文视图</span>
+        <span>图文描述</span>
       </div>
       <div  class="text item">
         <el-form-item 
@@ -421,7 +421,7 @@
 
 <script>
 import waves from '@/directive/waves'
-import { getByCategoryId, getUnit, saveGoods, getUnitList, getSpeList, getGoodsDetail } from '@/api/goods/list'
+import { getByCategoryId, getUnit, saveGoods, editGoods, getUnitList, getSpeList, getGoodsDetail } from '@/api/goods/list'
 import { getFreight } from '@/api/goods/logistics'
 import { getAd } from '@/api/upms/strict'
 import { fileUpload } from '@/api/goods/upload'
@@ -455,6 +455,8 @@ let vm = {
       categoryId: '',
       eiditId: '',
       baseData: [],
+      skuId: '',
+      specId: '',
       baseCenterData: [],
       sellData: [],
       sellMoreData: [],
@@ -563,7 +565,6 @@ let vm = {
 
   },
   created() {
-    console.log(this.$route.query)
     this.categoryId = this.$route.query.id
     if(this.$route.query.eid) {
       this.eiditId = this.$route.query.eid
@@ -658,7 +659,6 @@ let vm = {
                   } else {
                     generateObj.list = item.goodsDetailAttrValueList[0].value
                   }
-                  console.log(generateObj)
                   generate.push(generateObj)
                   return false
                 }
@@ -713,7 +713,9 @@ let vm = {
                 name: item.skuDesc,
                 price: item.price,
                 number: item.startNum,
-                store: item.stock
+                store: item.stock,
+                skuId: item.id,
+                specId: item.id
               })
             })
             this.getUnit(res.data.goods.showStyle, skuArr)
@@ -724,6 +726,8 @@ let vm = {
               skuArr.push({
                 price: item.price,
                 number: item.startQuantity,
+                skuId: res.data.goodsSkuList[0].id,
+                specId: res.data.goodsDetailSpecList[0].id
               })
             })
             this.getUnit(res.data.goods.showStyle, skuArr, store)
@@ -890,7 +894,8 @@ let vm = {
       }
       this.addForm.sku[id].list.push({
           number: '',
-          price: ''
+          price: '',
+          id: ''
       })
     },
     removeStair(index, id) {
@@ -1032,6 +1037,7 @@ let vm = {
         }
       })
       // 商品sku信息
+      console.log(this.addForm)
       goodsVO.goodsSkuList = []
       goodsVO.goodsSpecList = []
       if(this.activeName === 'first') {
@@ -1041,6 +1047,7 @@ let vm = {
         let speObj = {}
         let skuSort = 0
         speObj.sort = speSort++
+        
         if (this.addForm.sku[key].showStyle === '1') {
           speObj.goodsSpecValueList = []
           let boxSort = 0
@@ -1048,6 +1055,13 @@ let vm = {
           speObj.name = sku[key].name
           sku[key].list.forEach(item => {
             let skuObj = {}
+            if(this.eiditId.length > 0 && !skuObj.id) {
+              speObj.id = item.specId
+              skuObj.id = item.skuId
+            }
+            if(this.eiditId.length > 0) {
+              skuObj.id = item.id
+            }
             skuObj.sort = skuSort++
             skuObj.priceType = sku[key].showStyle
             skuObj.skuAttrValues = [{
@@ -1079,26 +1093,40 @@ let vm = {
           speObj.categorySpecId = sku[key].id
           speObj.name = sku[key].name
           speObj.goodsSpecValueList = []
-          speObj.goodsSpecValueList.push({
-            value: 1,
-            sort: 1
-          })
           skuObj.skuAttrValues = [{
             name: sku[key].name,
             value: 1
           }]
           sku[key].list.forEach(item => {
+            if(this.eiditId.length > 0 && !skuObj.id) {
+              speObj.id = item.specId
+              skuObj.id = item.skuId
+            }
             skuObj.priceExpList.push({
               price: item.price,
               startQuantity: item.number
             })
           })
+          if(this.eiditId.length > 0) {
+            speObj.goodsSpecValueList.push({
+              goodsSpecId: speObj.id,
+              value: 1,
+              sort: 1
+            })
+          } else {
+            speObj.goodsSpecValueList.push({
+              value: 1,
+              sort: 1
+            })
+          }
           goodsVO.goodsSkuList.push(skuObj)
           goodsVO.goodsSpecList.push(speObj)
         }
       } else if(this.activeName === 'second') {
         goodsVO.unit = this.addForm.unitMore
         let skuSort = 0
+        console.log('----')
+        console.log(this.addForm.moreSpecData)
           this.addForm.moreSpecData.forEach(item => {
             let skuObj = {}
             skuObj.sort = skuSort++
@@ -1111,6 +1139,9 @@ let vm = {
                 value: itemV.value
               })
             })
+            if(this.eiditId.length > 0) {
+              skuObj.id = item.skuId
+            }
             skuObj.price = item.price
             skuObj.startNum = item.startNum
             skuObj.stock = item.store
@@ -1147,15 +1178,28 @@ let vm = {
       })
       
       this.saveLoading = true
-      saveGoods(goodsVO).then(res => {
-        this.saveLoading = false
-        this.$message({
-              type: 'success',
-              message: type === 0 ? '保存待上架成功!' : '上架成功!'
-            });
-      }).catch(err => {
-        this.saveLoading = false
-      })
+      if(this.eiditId.length === 0) {
+        saveGoods(goodsVO).then(res => {
+          this.saveLoading = false
+          this.$message({
+                type: 'success',
+                message: type === 0 ? '保存待上架成功!' : '上架成功!'
+              });
+        }).catch(err => {
+          this.saveLoading = false
+        })
+      } else {
+        goodsVO.goodsId = this.eiditId
+        editGoods(goodsVO).then(res => {
+          this.saveLoading = false
+          this.$message({
+                type: 'success',
+                message: '编辑成功'
+              });
+        }).catch(err => {
+          this.saveLoading = false
+        })
+      }
     },
     focus(val, id) {
       // this.addressProps.id = id
@@ -1200,6 +1244,7 @@ let vm = {
     async addMoreSpec() {
       // 添加更多报价规格
       if(this.sellSpeData.length === 0) {
+        console.log(1)
         this.moreLoading = true
         await getSpeList({ categoryId: this.categoryId }).then(res => {
           this.moreLoading = false
@@ -1211,7 +1256,7 @@ let vm = {
           this.moreLoading = false
         })
       }
-
+  console.log(2)
       this.addForm.moreSpec.push({
           selectValue: '',
           isSpecSelect: false,
@@ -1276,13 +1321,15 @@ let vm = {
           item = {
             startNum: '',
             price: '',
-            store: ''
+            store: '',
+            id: ''
           }
         } else {
           item = {
             startNum: this.goodsSkuData[this.skuCounter].startNum,
             price: this.goodsSkuData[this.skuCounter].price,
-            store: this.goodsSkuData[this.skuCounter].stock
+            store: this.goodsSkuData[this.skuCounter].stock,
+            skuId: this.goodsSkuData[this.skuCounter].id
           }
           this.skuCounter++
         }
@@ -1302,7 +1349,6 @@ let vm = {
         let limit = this.addForm.moreSpec.length
         let result = []
         this.createTree(this.addForm.moreSpec, 0, limit, result, arr)
-        
         let combineObj = {}
         let combineLen = 0
         let combineIndex = 0
