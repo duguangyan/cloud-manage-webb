@@ -150,7 +150,7 @@
                   border>
                   <el-table-column  label="规格名称" width="220" align="center">
                     <template slot-scope="scope">
-                      <el-input class="table-input mr5" v-model.trim="addForm.sku[showStyle.id].list[scope.$index].name" size="small" maxlength="12" /><span>{{showAble[showStyle.id].valueSuffix}}</span>
+                      <el-input class="table-input mr5" v-model.trim="addForm.sku[showStyle.id].list[scope.$index].name" size="small" maxlength="12" /><span>{{valueSuffixObj[showStyle.id].valueSuffix}}</span>
                     </template>
                   </el-table-column>
                   <el-table-column label="起批量" width="220" align="center">
@@ -420,6 +420,7 @@ import { getByCategoryId, getUnit, saveGoods, getUnitList, getSpeList, getGoodsD
 import { getFreight } from '@/api/goods/logistics'
 import { getAd } from '@/api/upms/strict'
 import { fileUpload } from '@/api/goods/upload'
+import { constants } from 'crypto';
 let id = 0;
 let vm = {
   name: 'addProduct',
@@ -533,6 +534,7 @@ let vm = {
       role: {
         name: ''
       },
+      valueSuffixObj: {},
       combineObj: {},
       saveLoading: false,
       isCombine: false,
@@ -601,13 +603,14 @@ let vm = {
         }
         if(this.eiditId.length === 0) {
            this.baseData = res.data
-          this.getUnit()
+           this.getUnit()
         } else {
           this.baseCenterData = res.data
+          // this.getUnitList()
           this.getGoodsDetail()
-          this.getUnitList()
-          this.getSpecList()
+          
         }
+       
       })
     },
     getGoodsDetail() {
@@ -617,66 +620,6 @@ let vm = {
         this.addForm.title = res.data.goods.name
         this.addForm.remark = res.data.goods.detail
         this.addForm.unitMore = res.data.goods.unit
-        if(res.data.goods.showStyle === '3') {
-          this.showStyle.type = res.data.goods.showStyle
-          // 多规格数据渲染
-          this.activeName = 'second'
-          this.moreSpecTableShow = true
-          let specData = []
-          res.data.goodsDetailSpecList.forEach(item => {
-            let itemObj = {}
-            itemObj.id = item.categorySpecId
-            itemObj.selectValue = item.name 
-            itemObj.isSpecSelect = true 
-            itemObj.list = []
-            item.goodsDetailSpecValueList.forEach(vItem => {
-              itemObj.list.push({
-                value: vItem.value
-              })
-            })
-            specData.push(itemObj)
-          })
-          this.goodsSkuData = res.data.goodsSkuList
-          this.addForm.moreSpec = specData
-          let imgBox = []
-          res.data.goodsImgVOList.forEach(item => {
-            imgBox.push({
-              url: item.imgUrl,
-              goodId: item.goodId,
-              type: item.type,
-              id: item.id
-            })
-          })
-          this.addForm.imgsBox = imgBox
-          this.specValueBlur('', 'true')
-
-        } else { 
-          let skuObj = {}
-          if(res.data.goods.showStyle === '1') {
-            res.data.goodsDetailSpecList.forEach(item => {
-              skuObj[item.id] = {}
-              skuObj[item.id].list = []
-              res.data.goodsSkuList.forEach(skuItem => {
-                skuObj[item.id].list.push({
-                  name: skuItem.startNum,
-                  price: skuItem.price,
-                  number: '0',
-                  store: skuItem.stock
-                })
-              })
-            })
-          }
-          this.showStyle.id = '28fa1070ef18494899d7f72bced67576'
-           this.showAble['28fa1070ef18494899d7f72bced67576'] = {}
-           this.showAble['28fa1070ef18494899d7f72bced67576'].valueSuffix = 'xx'
-          
-          this.addForm.sku = skuObj
-          this.showStyle.type = res.data.goods.showStyle
-          console.log(skuObj)
-          console.log('xxx')
-          console.log(this.addForm)
-          return
-        }
         if(Array.isArray(res.data.goodsDetailAttrList)) {
           res.data.goodsDetailAttrList.forEach((item, index) => {
             this.baseCenterData.forEach((bItem, bIndex) => {
@@ -700,9 +643,72 @@ let vm = {
         }
         this.addForm.generate = generate
         this.baseData = editBaseData
-        console.log('eidt')
-        console.log(this.addForm)
-        console.log(editBaseData)
+        let imgBox = []
+        res.data.goodsImgVOList.forEach(item => {
+          imgBox.push({
+            url: item.imgUrl,
+            goodId: item.goodId,
+            type: item.type,
+            id: item.id
+          })
+        })
+        this.addForm.imgsBox = imgBox
+        if(res.data.goods.showStyle === '3') {
+          this.showStyle.type = res.data.goods.showStyle
+          this.getUnitList()
+          this.getSpecList()
+          // 多规格数据渲染
+          this.activeName = 'second'
+          this.moreSpecTableShow = true
+          let specData = []
+          res.data.goodsDetailSpecList.forEach(item => {
+            let itemObj = {}
+            itemObj.id = item.categorySpecId
+            itemObj.selectValue = item.name 
+            itemObj.isSpecSelect = true 
+            itemObj.list = []
+            item.goodsDetailSpecValueList.forEach(vItem => {
+              itemObj.list.push({
+                value: vItem.value
+              })
+            })
+            specData.push(itemObj)
+          })
+          this.goodsSkuData = res.data.goodsSkuList
+          this.addForm.moreSpec = specData
+          this.specValueBlur('', 'true')
+        } else { 
+          let skuArr = []
+          // this.showAble[showStyle.id].valueSuffix = 'xx'
+           this.showStyle.id = res.data.goodsDetailSpecList[0].categorySpecId
+           this.addForm.unit = res.data.goodsDetailSpecList[0].categorySpecId
+          if (res.data.goods.showStyle === '1') {
+            res.data.goodsSkuList.forEach(item => {
+              skuArr.push({
+                name: item.attrValueList[0].value,
+                price: item.price,
+                number: item.startNum,
+                store: item.stock
+              })
+            })
+            this.getUnit(res.data.goods.showStyle, skuArr)
+          } else if(res.data.goods.showStyle === '2') {
+            let store = ''
+            res.data.goodsSkuList.forEach(item => {
+              store = item.stock
+              skuArr.push({
+                name: item.attrValueList[0].value,
+                price: item.price,
+                number: item.startNum,
+              })
+            })
+            this.getUnit(res.data.goods.showStyle, skuArr, store)
+          }
+        
+    
+          
+        }
+        
       })
     },
     getFreight() {
@@ -713,10 +719,10 @@ let vm = {
         }
       })
     },
-    getUnit() {
+    getUnit(style, arr, stock) {
       // 通过ID获取规格模板
       this.listLoading = true
-      getUnit({
+       getUnit({
         categoryId: this.categoryId
       }).then(res => {
         this.listLoading = false
@@ -746,15 +752,23 @@ let vm = {
             obj.showStyle = item.showStyle
             skuInitObj[itemId] = obj
             this.showAble[itemId] = item.showStyle
+            this.valueSuffixObj[itemId] = item.valueSuffix
           });
           this.$set(this.addForm, 'sku', skuInitObj)
           this.sellData = res.data
         }
+        if(style !== undefined) {
+          this.addForm.sku[this.showStyle.id].list = arr
+          if(stock !== undefined) {
+            this.addForm.sku[this.showStyle.id].store = stock
+          }
+          this.showStyle.type = style
+        }
       })
     },
-    getUnitList() {
+    async getUnitList() {
       this.moreLoading = true
-      getUnitList({ categoryId: this.categoryId }).then(res => {
+      await getUnitList({ categoryId: this.categoryId }).then(res => {
         this.moreLoading = false
         if(Array.isArray(res.data)) {
           this.sellMoreData = res.data
@@ -1098,7 +1112,13 @@ let vm = {
       }
       
       // 商品图片信息
-      goodsVO.goodsImgList = this.addForm.imgsBox
+      goodsVO.goodsImgList = []
+      this.addForm.imgsBox.forEach(imgItem => {
+        goodsVO.goodsImgList.push({
+          imgUrl: imgItem.url
+        })
+      })
+      
       this.saveLoading = true
       saveGoods(goodsVO).then(res => {
         this.saveLoading = false
@@ -1285,8 +1305,6 @@ let vm = {
       } else {
         this.isCombine = false
       }
-      console.log('create------')
-      console.log(this.addForm.moreSpecData)
     },
     arraySpanMethod({ row, column, rowIndex, columnIndex }) {
       if(this.isCombine && this.combineObj[columnIndex] > 1) {

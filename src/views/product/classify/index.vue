@@ -786,7 +786,7 @@ export default {
     async confirmRole() {
       // 弹窗确认操作
       let succMsg = ''
-      
+      let isFalse = false
       if (this.dialogType === 'edit') {
         succMsg = '分类名编辑成功'
         this.diaDisable = true
@@ -811,6 +811,7 @@ export default {
         }).catch(err => { 
           this.diaDisable = false
           this.diaLoading = false
+          isFalse = true
         })
         this.diaDisable = false
         this.diaLoading = false
@@ -828,7 +829,11 @@ export default {
         await insertRootProduct({ name: this.role.name }).catch(err => {
           this.diaDisable = false
           this.diaLoading = false
+          isFalse = true
         })
+        if(isFalse) {
+          return false
+        }
         this.diaDisable = false
         this.diaLoading = false
         this.getProductTree()
@@ -845,6 +850,7 @@ export default {
           }).catch(err => {
             this.diaDisable = false
             this.diaLoading = false
+            isFalse = true
           })
         } else {
           succMsg = '计量单位新增成功'
@@ -855,7 +861,11 @@ export default {
           }).catch(err => {
             this.diaDisable = false
             this.diaLoading = false
+            isFalse = true
           })
+        }
+        if(isFalse) {
+          return false
         }
         this.diaDisable = false
         this.diaLoading = false
@@ -870,10 +880,12 @@ export default {
             id: this.spec.id,
             name: this.spec.name,
             showStyle: this.spec.showType,
-            status: this.spec.status
+            status: this.spec.status,
+            valueSuffix: this.spec.afterDes
           }).catch(err => {
             this.diaDisable = false
             this.diaLoading = false
+            isFalse = true
           })
         } else {
           succMsg = '规格管理新增成功'
@@ -886,7 +898,11 @@ export default {
           }).catch(err => {
             this.diaDisable = false
             this.diaLoading = false
+            isFalse = true
           })
+        }
+        if(isFalse) {
+          return false
         }
         this.diaDisable = false
         this.diaLoading = false
@@ -895,8 +911,6 @@ export default {
         this.diaDisable = true
         this.diaLoading = true
         let valueStr = ''
-        console.log('xxxx')
-        console.log(this.prop)
         if(this.prop.type === 1 || this.prop.type === 2 || this.prop.type === 3) {
           this.prop.list.forEach(item => {
             valueStr += valueStr.length === 0 ? item.value : ',' + item.value
@@ -925,13 +939,18 @@ export default {
           await updatePropList(insetParams).catch(err => {
             this.diaDisable = false
             this.diaLoading = false
+            isFalse = true
           })
         } else {
           succMsg = '模板属性新增成功'
           await insetPropList(insetParams).catch(err => {
             this.diaDisable = false
             this.diaLoading = false
+            isFalse = true
           })
+        }
+        if(isFalse) {
+          return false
         }
         this.diaDisable = false
         this.diaLoading = false

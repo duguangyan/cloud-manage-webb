@@ -292,7 +292,6 @@ export default {
     msgEdit(scope) {
       // 编辑商品
       if(scope.row.id.length > 0) {
-        alert(scope.row.id)
         this.$router.push({path: 'list/add', query:{ 
           id: scope.row.categoryId,
           eid: scope.row.id
