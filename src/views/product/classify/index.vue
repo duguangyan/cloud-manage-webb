@@ -294,7 +294,7 @@
             <el-radio v-model="spec.showType" size="medium" :label="1" border>阶梯方式</el-radio>
             <el-radio v-model="spec.showType" size="medium" :label="2" border>普通方式</el-radio>
           </el-form-item>
-          <el-form-item v-show="spec.showType === 2" label="规格值后缀" prop="afterDes" :rules="{
+          <el-form-item v-show="spec.showType === 1" label="规格值后缀" prop="afterDes" :rules="{
             required: spec.showType === '2', message: '属性值不能为空', trigger: 'blur'
             }">
             <el-input v-model="spec.afterDes" maxlength="20" placeholder="请输入规格值后缀" style="width: 60%" />
@@ -345,7 +345,7 @@ const defaultProp = {
   list: [
     { value: '' }
   ],
-  sort: -1,
+  sort: '',
   isSearch: -1,
   isRequire: -1,
   afterDes: '',

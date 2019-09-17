@@ -480,7 +480,9 @@ let vm = {
       productTitle: '',
       imgLimit: 10,
       activeName: 'first',
-      addressOptions: [],
+      addressOptions: [
+
+      ],
       checkboxObj: {},
       addressObj: {},
       cascader: {},
@@ -488,18 +490,16 @@ let vm = {
       addressProps: {
         lazy: true,
         lazyLoad (node, resolve) {
-          console.log(node)
           getAd({ parentId: node.level === 0 ? 0 : node.data.id }).then( res => {
             if(Array.isArray(res.data)) {
               res.data.map((item) => {
-                item.leaf = item.haveChild === 0 || parseInt(vm.cascader[vm.cascaderId] - 1) <= node.level
-              });
+                item.leaf = item.haveChild === 0 || parseInt(vm.cascader[vm.cascaderId] - 1) === node.level
+              })
               resolve(res.data);
             }
           })
         },
         value: "id",
-        id: "",
         label: "shortName",
       },
       tableShow: false,
@@ -656,6 +656,7 @@ let vm = {
                     item.goodsDetailAttrValueList.forEach((vItem, vIndex) => {
                       generateObj.list.push(vItem.value)
                     })
+                    this.cascaderId = bItem.id
                   } else {
                     generateObj.list = item.goodsDetailAttrValueList[0].value
                   }
@@ -702,7 +703,7 @@ let vm = {
           })
           this.goodsSkuData = res.data.goodsSkuList
           this.addForm.moreSpec = specData
-          this.specValueBlur('', 'true')
+          this.specValueBlur('', 'true', true)
         } else { 
           let skuArr = []
            this.showStyle.id = res.data.goodsDetailSpecList[0].categorySpecId
@@ -1013,31 +1014,36 @@ let vm = {
           obj.sort = sortList++
           obj.goodsAttrValueList = []
           if(Array.isArray(item.list)) {
-            item.list.forEach(itemList => {
-              sortValue++
-              obj.goodsAttrValueList.push({
-                value: itemList,
-                sort: sortValue
+            if(item.isRemark) {
+              obj.remark = ''
+              let ref = String(item.id)
+              this.$refs[ref][0].getCheckedNodes()[0].pathNodes.forEach(rItem => {
+                obj.remark += obj.remark.length === 0 ? rItem.label : ('-' + rItem.label)
+                sortValue++
+                obj.goodsAttrValueList.push({
+                  value: rItem.data.id,
+                  sort: sortValue
+                })
               })
-            })
+            } else {
+              item.list.forEach(itemList => {
+                sortValue++
+                obj.goodsAttrValueList.push({
+                  value: itemList,
+                  sort: sortValue
+                })
+              })
+            }
           } else {
             obj.goodsAttrValueList.push({
               value: item.list,
               sort: sortValue
             })
           }
-          if(item.isRemark) {
-            obj.remark = ''
-            let ref = String(item.id)
-            this.$refs[ref][0].getCheckedNodes()[0].pathLabels.forEach(rItem => {
-              obj.remark += obj.remark.length === 0 ? rItem : ('-' + rItem)
-            })
-          }
           goodsVO.goodsAttrList.push(obj)
         }
       })
       // 商品sku信息
-      console.log(this.addForm)
       goodsVO.goodsSkuList = []
       goodsVO.goodsSpecList = []
       if(this.activeName === 'first') {
@@ -1125,8 +1131,6 @@ let vm = {
       } else if(this.activeName === 'second') {
         goodsVO.unit = this.addForm.unitMore
         let skuSort = 0
-        console.log('----')
-        console.log(this.addForm.moreSpecData)
           this.addForm.moreSpecData.forEach(item => {
             let skuObj = {}
             skuObj.sort = skuSort++
@@ -1244,7 +1248,6 @@ let vm = {
     async addMoreSpec() {
       // 添加更多报价规格
       if(this.sellSpeData.length === 0) {
-        console.log(1)
         this.moreLoading = true
         await getSpeList({ categoryId: this.categoryId }).then(res => {
           this.moreLoading = false
@@ -1256,7 +1259,6 @@ let vm = {
           this.moreLoading = false
         })
       }
-  console.log(2)
       this.addForm.moreSpec.push({
           selectValue: '',
           isSpecSelect: false,
@@ -1306,18 +1308,18 @@ let vm = {
         }
         return tree;
     },
-    createTree(obj, deep, limit, result, arr) {
+    createTree(obj, deep, limit, result, arr, isInit) {
       if(deep < limit) {
         for(let i = 0; i < obj[deep].list.length; i++) {
           result[deep] = {
             name: obj[deep].selectValue,
             value: obj[deep].list[i].value 
           }
-          this.createTree(obj, deep + 1, limit, result, arr)
+          this.createTree(obj, deep + 1, limit, result, arr, isInit)
         }
       } else {
         let item = {}
-        if(this.eiditId.length === 0) {
+        if(this.eiditId.length === 0 || !isInit) {
           item = {
             startNum: '',
             price: '',
@@ -1341,14 +1343,18 @@ let vm = {
       }
       
     },
-    specValueBlur(e, val) {
+    specValueBlur(e, val, isInit) {
       // 报价规格值在table中更新
       this.isCombine = false
       if(val.length > 0) {
         let arr = []
         let limit = this.addForm.moreSpec.length
         let result = []
-        this.createTree(this.addForm.moreSpec, 0, limit, result, arr)
+        if(isInit) {
+           this.createTree(this.addForm.moreSpec, 0, limit, result, arr, true)
+        } else {
+           this.createTree(this.addForm.moreSpec, 0, limit, result, arr, false)
+        }
         let combineObj = {}
         let combineLen = 0
         let combineIndex = 0
