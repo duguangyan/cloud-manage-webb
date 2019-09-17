@@ -305,7 +305,7 @@
           </el-form-item>
         </el-form>
       </template>
-      <template v-else-if="dialogType === 'new' || dialogType === 'edit'">
+      <template v-else-if="dialogType === 'new' || dialogType === 'edit' || dialogType === 'root'">
         <el-form v-loading="diaLoading" ref="productForm" :model="role" label-width="80px" label-position="left" :rules="productRules">
           <el-form-item label="分类名" prop="name">
             <el-input v-model="role.name" maxlength="20" placeholder="请输入分类名" />
@@ -727,7 +727,7 @@ export default {
     },
     regFun () {
       // 表单校验
-      if(this.dialogType === 'edit' || this.dialogType === 'new') {
+      if(this.dialogType === 'edit' || this.dialogType === 'new' || this.dialogType === 'root') {
         this.$refs.productForm.validate(valid => {
           if(valid) {
             this.confirmRole()
