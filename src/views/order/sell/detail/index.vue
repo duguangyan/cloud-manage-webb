@@ -1,9 +1,11 @@
 <template>
   <div class="app-container">
-      <div class="filter-container mb20">
-        <el-card class="box-card">
+      <div class="filter-container mb10">
+        <el-card class="box-card order-box">
           <div slot="header" class="clearfix">
-            <span>订单状态</span>
+            <span class="mr10">订单状态</span>
+            <span class="order-status">待付款</span>
+            <el-button class="fr" type="primary" size="medium">返回</el-button>
           </div>
           <el-steps :active="2" align-center finish-status="success">
             <el-step title="提交订单" description="2017-07-19 15:43:23"></el-step>
@@ -13,7 +15,7 @@
           </el-steps>
         </el-card>
       </div>
-    <el-card class="box-card">
+    <el-card class="box-card mb10">
       <div slot="header" class="clearfix">
         <span>基本信息</span>
       </div>
@@ -36,7 +38,7 @@
         </el-table-column>
       </el-table>
     </el-card>
-    <el-card class="box-card">
+    <el-card class="box-card mb10">
       <div slot="header" class="clearfix">
         <span>收货人信息</span>
       </div>
@@ -59,7 +61,7 @@
         </el-table-column>
       </el-table>
     </el-card>
-    <el-card class="box-card">
+    <el-card class="box-card mb10">
       <div slot="header" class="clearfix">
         <span>商品信息</span>
       </div>
@@ -219,14 +221,23 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  .mb20{
-    margin-bottom: 20px;
+  .mb10{
+    margin-bottom: 10px;
+  }
+  .mr10{
+    margin-right: 10px;
   }
   .fr{
     float: right;
   }
   .filter-container{
     min-width: 1500px;
+  }
+  .order-box{
+    color: #FF6600;
+    .order-status{
+      font-size: 24px;
+    }
   }
 </style>
 <style lang="scss">

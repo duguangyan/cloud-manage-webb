@@ -76,7 +76,7 @@ function filterAsyncRouter(asyncRouterMap, index) { // 遍历后台传来的路�
           icon: route.icon,
           id: route.id
         }
-        route.target = route.operation === 0 ? '' : '_blank'
+        route.target = route.operation === 2 ? '_blank' : ''
       }
     } else {
       return false
