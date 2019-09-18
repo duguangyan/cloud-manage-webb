@@ -280,9 +280,17 @@ export default {
     },
     orderDetail(row) {
       // 查看订单
-      this.$router.push({path: 'sell/detail', query:{ 
-        id: row.orderId
-      }})
+      this.$router.push({
+        path: 'sell/detail', 
+        query:{ 
+          id: row.orderId,
+          createTimeBegin: this.order.createTimeBegin,
+          createTimeEnd: this.order.createTimeEnd,
+          orderId: this.order.orderId,
+          pageIndex: this.order.pageIndex,
+          userName: this.order.userName
+        }
+      })
     },
   }
 }
