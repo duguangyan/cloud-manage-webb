@@ -72,7 +72,7 @@
               width="180">
               <template slot-scope="scope">
                 <span v-if="scope.row.status === 0">禁用</span>
-                <span v-else-if="scope.row.staus === 1">启用</span>
+                <span v-else-if="scope.row.status === 1">启用</span>
               </template>
             </el-table-column>
             <el-table-column
