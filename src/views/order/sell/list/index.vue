@@ -45,11 +45,13 @@
         <el-table
           ref="orderTable"
           :data="orderData"
+          border
           tooltip-effect="dark"
           style="width: 100%"
           @selection-change="handleSelectionChange">
           <el-table-column
             type="selection"
+            align="center"
             width="55">
           </el-table-column>
           <el-table-column
@@ -101,14 +103,9 @@
           </el-table-column>
           <el-table-column
             label="操作"
-           
             align="center">
             <template slot-scope="scope">
-              <div class="btn-box">
-                <el-button type="primary" size="small" @click="orderDetail(scope.row)">查看</el-button>
-                <el-button v-if="btnsPermission.cancle.auth && scope.row.status === 0" type="danger" plain size="small">{{btnsPermission.cancle.name}}</el-button>
-                <el-button v-if="btnsPermission.confirm.auth && scope.row.status === 3"  type="primary" size="small">{{btnsPermission.confirm.name}}</el-button>
-              </div>
+              <el-button type="primary" size="small" @click="orderDetail(scope.row)">查看</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -150,14 +147,6 @@ export default {
         },
         export: {
           name: '导出',
-          auth: false
-        },
-        cancle: {
-          name: '取消订单',
-          auth: false
-        },
-        confirm: {
-          name: '确认',
           auth: false
         }
       },
@@ -216,6 +205,18 @@ export default {
 
   },
   created() {
+    if(this.$route.query.orderStatus !== undefined) {
+      this.orderStatus = this.$route.query.orderStatus
+      this.order.pageIndex = this.$route.query.pageIndex
+      this.order.pageSize = this.$route.query.pageSize
+      this.order.userId = this.$route.query.userId
+      this.order.userName = this.$route.query.userName
+      this.order.shopId = this.$route.query.shopId
+      this.order.status = this.$route.query.status
+      this.order.createTimeBegin = this.$route.query.createTimeBegin
+      this.order.createTimeEnd = this.$route.query.createTimeEnd
+      this.order.orderId = this.$route.query.orderId
+    }
     this.getOrderList()
   },
   mounted() {
@@ -288,13 +289,18 @@ export default {
           createTimeEnd: this.order.createTimeEnd,
           orderId: this.order.orderId,
           pageIndex: this.order.pageIndex,
-          userName: this.order.userName
+          userName: this.order.userName,
+          pageSize: this.order.pageSize,
+          shopId: this.order.shopId,
+          userId: this.order.userId,
+          status: this.order.status,
+          orderStatus: this.orderStatus
         },
         params: {
           id: 1234
         }
       })
-    },
+    }
   }
 }
 </script>
@@ -308,10 +314,5 @@ export default {
   }
   .filter-container{
     min-width: 1500px;
-  }
-  .btn-box{
-    display: inline-block;
-    min-width: 285px;
-    text-align: left;
   }
 </style>

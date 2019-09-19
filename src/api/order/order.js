@@ -18,11 +18,3 @@ export function getOrderDetail(query) {
   })
 }
 
-// 确认收货
-export function confirmReceipt(data) {
-  return request({
-    url: '/order/order/confirm',
-    method: 'post',
-    data
-  })
-}

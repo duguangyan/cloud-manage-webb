@@ -295,7 +295,7 @@
             <el-radio v-model="spec.showType" size="medium" :label="2" border>普通方式</el-radio>
           </el-form-item>
           <el-form-item v-show="spec.showType === 1" label="规格值后缀" prop="afterDes" :rules="{
-            required: spec.showType === '2', message: '属性值不能为空', trigger: 'blur'
+            required: spec.showType === 1, message: '属性值不能为空', trigger: 'blur'
             }">
             <el-input v-model="spec.afterDes" maxlength="20" placeholder="请输入规格值后缀" style="width: 60%" />
           </el-form-item>
@@ -873,29 +873,26 @@ export default {
       } else if (this.dialogType === 'spec') {
         this.diaDisable = true
         this.diaLoading = true
+        let specObj = {
+          categoryId: this.specId,
+          name: this.spec.name,
+          showStyle: this.spec.showType,
+          status: this.spec.status,
+        }
+        if(this.spec.showType === 1) {
+          specObj.valueSuffix = this.spec.afterDes
+        }
         if(this.isEdit) {
+          specObj.id = this.spec.id
           succMsg = '规格管理编辑成功'
-          await updateSpeList({
-            categoryId: this.specId,
-            id: this.spec.id,
-            name: this.spec.name,
-            showStyle: this.spec.showType,
-            status: this.spec.status,
-            valueSuffix: this.spec.afterDes
-          }).catch(err => {
+          await updateSpeList(specObj).catch(err => {
             this.diaDisable = false
             this.diaLoading = false
             isFalse = true
           })
         } else {
           succMsg = '规格管理新增成功'
-          await insetSpeList({
-            categoryId: this.unitId,
-            name: this.spec.name,
-            showStyle: this.spec.showType,
-            status: this.spec.status,
-            valueSuffix: this.spec.showType === '2' ? this.spec.afterDes : ''
-          }).catch(err => {
+          await insetSpeList(specObj).catch(err => {
             this.diaDisable = false
             this.diaLoading = false
             isFalse = true

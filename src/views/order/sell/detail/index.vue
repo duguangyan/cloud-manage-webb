@@ -122,7 +122,7 @@
         </el-table-column>
       </el-table>
     </el-card>
-    <el-card class="box-card">
+    <el-card class="box-card mb10">
       <div slot="header" class="clearfix">
         <span>费用信息</span>
       </div>
@@ -159,6 +159,29 @@
           </template>
         </el-table-column>
       </el-table>
+    </el-card>
+    <el-card v-if="status > 3" class="box-card mb10">
+      <div slot="header" class="clearfix">
+        <span>物流信息</span>
+      </div>
+      <el-row :gutter="20">
+        <el-col :span="4">
+          <div class="grid-content bg-purple">
+            <p>货运单号：{{express.num}}</p>
+            <p style="font-size: 14px;">快递公司：{{express.name}}</p>
+            <p style="font-size: 14px;">发货时间：{{express.time}}</p>
+          </div>
+        </el-col>
+        <el-col :span="10">
+          <div class="grid-content bg-purple">
+            <el-steps direction="vertical" :active="expressHistory.length">
+              <el-step v-for="(item, index) in expressHistory" :key="index" :title="item.time" :description="item.context"></el-step>
+            </el-steps>
+          </div>
+        </el-col>
+      </el-row>
+    </el-card>
+    <el-card class="box-card mb10">
       <div class="send-box">
         <el-button v-if="status === 2" type="primary" @click="shipping">发货</el-button>
         <el-button v-if="status === 3" type="primary" @click="editShipping">修改运单号</el-button>
@@ -178,10 +201,10 @@
           </el-select>
         </el-form-item>
         <el-form-item label="运单号" prop="num">
-          <el-input v-model="express.num" maxlength="20" placeholder="请填写运单号" />
+          <el-input v-model.trim="express.num" maxlength="20" placeholder="请填写运单号" />
         </el-form-item>
         <el-form-item label="邮寄人手机号" prop="phone">
-          <el-input v-model="express.phone" maxlength="20" placeholder="请填写手机号码" />
+          <el-input v-model.trim="express.phone" maxlength="11" placeholder="请填写手机号码" />
         </el-form-item>
       </el-form>
       <div style="text-align:right;">
@@ -196,11 +219,30 @@
 import waves from '@/directive/waves'
 import { getOrderDetail } from '@/api/order/order'
 import { getExpress, sendExpress, editExpress } from '@/api/order/express'
+import { validTelphone } from '@/utils/validate'
 
 export default {
   name: 'OrderDetail',
   directives: { waves },
   data() {
+    const validateTelphone = (rule, value, callback) => {
+      if(rule.required) {
+        if(value === '') { 
+          callback(new Error('顺丰必填'))
+        }else if (!validTelphone(value)) {
+          callback(new Error('请输入正确的手机号码'))
+        }else {
+          callback()
+        }
+      } else {
+        if(value !== '' && !validTelphone(value)) {
+          callback(new Error('请输入正确的手机号码'))
+        } else {
+          callback()
+        }
+      }
+      
+    }
     return {
       id: '',
       shopId: '',
@@ -217,9 +259,23 @@ export default {
         code: '',
         id: '',
         name: '',
-        phone: ''
+        phone: '',
+        time: ''
+      },
+      order: {
+        orderStatus: 'all',
+        createTimeBegin: '',
+        createTimeEnd: '',
+        orderId: '',
+        pageIndex: '',
+        pageSize: '',
+        shopId: '',
+        status: '',
+        userId: '',
+        userName: ''
       },
       expressData: [],
+      expressHistory: [],
       expressSelect: [],
       hasCompany: false,
       value: '',
@@ -236,8 +292,8 @@ export default {
         }],
         phone: [{
           required: false,
-          message: '顺丰必填',
-          trigger: 'blur'
+          trigger: 'blur',
+          validator: validateTelphone
         }]
       },
       dialogType: 'new',
@@ -247,12 +303,18 @@ export default {
     }
   },
   components: {  },
-  computed: {
-
-  },
   created() {
-    console.log(this.$route)
     this.id = this.$route.query.id
+    this.order.orderStatus = this.$route.query.orderStatus
+    this.order.createTimeBegin = this.$route.query.createTimeBegin
+    this.order.createTimeEnd = this.$route.query.createTimeEnd
+    this.order.orderId = this.$route.query.orderId
+    this.order.pageIndex = this.$route.query.pageIndex
+    this.order.userName = this.$route.query.userName
+    this.order.shopId = this.$route.query.shopId
+    this.order.status = this.$route.query.status
+    this.order.pageSize = this.$route.query.pageSize
+    this.order.userId = this.$route.query.userId
     this.getOrderDetail()
   },
    mounted() {
@@ -296,6 +358,14 @@ export default {
             this.time[3] = res.data.shopOrder.finishTime
             if(this.status > 3) {
               this.activeStep = 4 
+              if(Array.isArray(res.data.logisticsQueryResults)) {
+                this.expressHistory = res.data.logisticsQueryResults.reverse()
+              }
+              if(res.data.orderShipping !== null) {
+                this.express.num = res.data.orderShipping.courierNum
+                this.express.name = res.data.orderShipping.courierCompany
+              }
+              this.express.time = res.data.shopOrder.sendTime
             } else if(this.status > 2) {
               this.activeStep = 3
             } else if(this.status > 0) {
@@ -348,7 +418,7 @@ export default {
     },
     shipping() {
       // 发货按钮事件
-      this.hasCompany = false
+      this.hasCompany = true
       this.dialogType = 'new'
       this.dialogVisible = true
       this.getExpress({ status: 1, pageIndex: 1, pageSize: 20 })
@@ -363,11 +433,21 @@ export default {
     back() {
       // 返回事件
       this.$router.push({path: '/order/sell', query:{ 
-        pageIndex: 1
+        pageIndex: this.order.pageIndex,
+        createTimeBegin: this.order.createTimeBegin,
+        createTimeEnd: this.order.createTimeEnd,
+        orderId: this.order.orderId,
+        userName: this.order.userName,
+        userId: this.order.userId,
+        shopId: this.order.shopId,
+        status: this.order.status,
+        pageSize: this.order.pageSize,
+        orderStatus: this.order.orderStatus
       }})
     },
     regFun() {
       // 表单校验
+      this.rule.phone[0].required = false
       this.expressData.forEach(item => {
         if(item.id === this.express.id) {
           this.express.name = item.name
@@ -378,6 +458,7 @@ export default {
           return false
         }
       })
+      console.log(this.rule)
       this.$refs.expressForm.validate(valid => {
         if(valid) {
           this.confirm()

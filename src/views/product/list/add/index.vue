@@ -3,12 +3,12 @@
   <div v-loading="saveLoading" class="app-container">
     <el-card class="box-card">
       <div class="text item">
-        {{productTitle}}
+        <span style="#303133">当前分类：</span>{{productTitle}}
         <el-button type="primary" size="medium" v-waves class="filter-item" @click="changeType">切换分类</el-button>
         <!-- <el-cascader :options="addressOptions" :props="addressProps"></el-cascader> -->
       </div>
     </el-card>
-    <el-form v-loading="diaLoading" ref="productForm" :model="addForm" label-position="right" label-width="120px" style="">
+    <el-form v-loading="diaLoading" ref="productForm" :model="addForm" label-position="right" label-width="165px" style="">
     <el-card class="box-card">
       <div slot="header" class="clearfix">
         <span>基本信息</span>
@@ -83,7 +83,7 @@
           <span class="mr40">{{addForm.selfProp[selfIndex].list}}</span>
           <el-button type="danger" plain size="small" v-waves @click="removeSelfProp(selfIndex)">删除</el-button>
         </el-form-item>
-        <el-form-item label="" required prop="title">
+        <el-form-item>
           <el-button size="medium" type="primary" plain @click="addSelfProp">
             新增属性
           </el-button>
@@ -98,7 +98,7 @@
         <el-tab-pane label="默认报价方式" name="first">
           <div  class="text item">
             <el-form-item 
-              label="计量单位" 
+              label="规格（计量单位共用）" 
               :prop="'unit'"
               :rules="{
                 required: activeName === 'first', message: '计量单位必填', trigger: 'blur'     
@@ -342,7 +342,7 @@
   </el-form>
     <div class="bottom-box">
       <div>
-        <el-button v-waves class="filter-item" @click="preView">预览</el-button>
+        <el-button v-waves class="filter-item" @click="submitForm('productForm', 2)">预览</el-button>
         <el-button v-if="eiditId.length === 0" v-waves class="filter-item" @click="submitForm('productForm', 0)">保存待上架</el-button>
         <el-button type="primary" v-waves class="filter-item" @click="submitForm('productForm', 1)">上架出售</el-button>
       </div>
@@ -350,44 +350,65 @@
     <div class="self-diolog" v-if="previewDialog">
       <div class="preview-box">
         <div class="preview">
-          <div class="calrousel-box" style="background: #eee">
-            <div class="left-icon"></div>
-            <div class="right-icon"></div>
-            <div class="num">1/10</div>
+          <div class="calrousel-box" :style="{ background: 'no-repeat url(' + goodsVo.goodsImgList[0].imgUrl + ')', backgroundSize: 'cover' }">
+            <div class="left-icon">
+              <i class="el-icon-arrow-left"></i>
+            </div>
+            <div class="right-icon">
+              <i class="el-icon-share"></i>
+            </div>
+            <div class="num">1/{{goodsVo.goodsImgList.length}}</div>
           </div>
           <div class="title-box">
-            <div class="title">
-              ￥9.99~￥24.00 <span>/箱</span>
-              <span class="place">山东济南</span>
+            <div v-if="showStyle.type === '1'" class="title">
+              <span v-if="goodsVo.goodsSkuList.length > 1" class="price">
+                {{goodsVo.goodsSkuList[0].price | money}} ~ {{goodsVo.goodsSkuList[goodsVo.goodsSkuList.length - 1].price | money}}
+              </span>
+              <span v-else class="unit">
+                {{goodsVo.goodsSkuList[0].price | money}}
+              </span>
+              <span>/{{goodsVo.goodsSkuList[0].skuAttrValues[0].name}}</span>
+              <span class="place">{{placeProduct}}</span>
             </div>
-            <div class="des">标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题</div>
+            <div v-else-if="showStyle.type === '2'" class="title">
+              <span class="price">{{goodsVo.goodsSkuList[0].priceExpList[0].price | money}}</span>
+              <span class="uinit">/{{goodsVo.goodsSkuList[0].skuAttrValues[0].name}}</span>
+              <span class="place">{{placeProduct}}</span>
+            </div>
+            <div class="des">{{goodsVo.name}}</div>
             <div class="message-box">
-              <span>12200人看过</span>
+              <span>0人看过</span>
               <span>订单数0</span>
               <span>全国包邮</span>
             </div>
           </div>
+          <div v-if="showStyle.type === '1'" class="product-prop">
+            <div class="tc">规格</div>
+            <ul>
+              <li class="clearfix" v-for="(item, index) in goodsVo.goodsSkuList" :key="index">
+                <span class="prop">{{item.skuAttrValues[0].value}} {{valueSuffixObj[showStyle.id]}}</span>
+                <span class="value tr pr20">{{item.price | money}}</span>
+              </li>
+            </ul>
+          </div>
           <div class="product-prop">
             <div class="tc">商品属性</div>
             <ul>
-              <li>
-                <span class="prop">皮颜色</span>
-                <span>红</span>
-              </li>
-              <li>
-                <span class="prop">口感</span>
-                <span>甜</span>
-              </li>
-              <li>
-                <span class="prop">口感</span>
-                <span>甜</span>
+              <li class="clearfix" v-for="(item, index) in goodsVo.goodsAttrList" :key="index">
+                <span class="prop">{{item.name}}</span>
+                <template v-if="item.remark">
+                  <span class="value">{{item.remark}}</span>
+                </template>
+                <template v-else>
+                  <span class="mr5 value" v-for="(vItem, vIndex) in item.goodsAttrValueList" :key="vIndex">{{vItem.value}}</span>
+                </template>
               </li>
             </ul>
           </div>
           <div class="product-detail">
             <div class="tc">商品详情</div>
-            <p>烟薯25号作为烤薯专用品种，在市场上很受欢迎。烤熟烟薯金黄带有蜜感，口感绵软香甜，甜度比一般红薯都要甜。当然，喜欢的也可以生吃或者蒸煮。此款红薯产自山东荣成，无公害种植</p>
-            <img src="@/assets/img/bg.jpg" alt="">
+            <p>{{goodsVo.detail}}</p>
+            <img v-for="(item, index) in goodsVo.goodsImgList" :key="index" :src="item.imgUrl" alt="">
           </div>
         </div>
         <div class="product-buy">
@@ -397,7 +418,9 @@
             <div class="buy">立即购买</div>
         </div>
       </div>
-      <div class="self-close" @click="previewDialog = false">×</div>
+      <div class="self-close" @click="previewDialog = false">
+        <i class="el-icon-close"></i>
+      </div>
     </div>
     <el-dialog :visible.sync="dialogProp" :closeOnClickModal="false" title="添加属性">
       <el-form v-loading="diaLoading" :rules="ruuuu" ref="selfForm" :model="selfProp" label-width="100px" label-position="left">
@@ -457,11 +480,19 @@ let vm = {
       baseData: [],
       skuId: '',
       specId: '',
+      goodsVo: {
+        goodsAttrList: [],
+        goodsImgList: [],
+        goodsSkuList: [],
+        name: '',
+        detail: ''
+      },
       baseCenterData: [],
       sellData: [],
       sellMoreData: [],
       sellSpeData: [],
       freightData: [],
+      placeProduct: '',
       ruuuu: {
        name: [
           { required: true, validator: checkName, trigger: 'blur' }
@@ -571,9 +602,9 @@ let vm = {
     }
     this.getByCategoryId()
     this.getFreight()
-    // this.$route.query.des.forEach((item) => {
-    //   this.productTitle += this.productTitle.length === 0 ? item : '-' + item
-    // })
+    this.$route.query.des.forEach((item) => {
+      this.productTitle += this.productTitle.length === 0 ? item : '-' + item
+    })
     // this.getAddress()
   },
   methods: {
@@ -632,6 +663,7 @@ let vm = {
         this.addForm.title = res.data.goods.name
         this.addForm.remark = res.data.goods.detail
         this.addForm.unitMore = res.data.goods.unit
+        this.productTitle = res.data.categoryPath
         if(Array.isArray(res.data.goodsDetailAttrList)) {
           res.data.goodsDetailAttrList.forEach((item, index) => {
             if(item.categoryAttrId === '') {
@@ -1025,6 +1057,7 @@ let vm = {
                   sort: sortValue
                 })
               })
+              this.placeProduct = obj.remark
             } else {
               item.list.forEach(itemList => {
                 sortValue++
@@ -1129,6 +1162,7 @@ let vm = {
           goodsVO.goodsSpecList.push(speObj)
         }
       } else if(this.activeName === 'second') {
+        console.log(this.addForm)
         goodsVO.unit = this.addForm.unitMore
         let skuSort = 0
           this.addForm.moreSpecData.forEach(item => {
@@ -1136,13 +1170,15 @@ let vm = {
             skuObj.sort = skuSort++
             skuObj.priceType = 3
             skuObj.skuAttrValues = []
-
-            item.itemValue.forEach(itemV => {
-              skuObj.skuAttrValues.push({
-                name: itemV.name,
-                value: itemV.value
+            if(Array.isArray(item.itemValue)) {
+              item.itemValue.forEach(itemV => {
+                skuObj.skuAttrValues.push({
+                  name: itemV.name,
+                  value: itemV.value
+                })
               })
-            })
+            }
+            
             if(this.eiditId.length > 0) {
               skuObj.id = item.skuId
             }
@@ -1180,30 +1216,36 @@ let vm = {
           imgUrl: imgItem.url
         })
       })
-      
-      this.saveLoading = true
-      if(this.eiditId.length === 0) {
-        saveGoods(goodsVO).then(res => {
-          this.saveLoading = false
-          this.$message({
-                type: 'success',
-                message: type === 0 ? '保存待上架成功!' : '上架成功!'
-              });
-        }).catch(err => {
-          this.saveLoading = false
-        })
+      if(type === 2) {
+        console.log(goodsVO)
+        this.goodsVo = goodsVO
+        this.preView()
       } else {
-        goodsVO.goodsId = this.eiditId
-        editGoods(goodsVO).then(res => {
-          this.saveLoading = false
-          this.$message({
-                type: 'success',
-                message: '编辑成功'
-              });
-        }).catch(err => {
-          this.saveLoading = false
-        })
+        this.saveLoading = true
+        if(this.eiditId.length === 0) {
+          saveGoods(goodsVO).then(res => {
+            this.saveLoading = false
+            this.$message({
+                  type: 'success',
+                  message: type === 0 ? '保存待上架成功!' : '上架成功!'
+                });
+          }).catch(err => {
+            this.saveLoading = false
+          })
+        } else {
+          goodsVO.goodsId = this.eiditId
+          editGoods(goodsVO).then(res => {
+            this.saveLoading = false
+            this.$message({
+                  type: 'success',
+                  message: '编辑成功'
+                });
+          }).catch(err => {
+            this.saveLoading = false
+          })
+        }
       }
+      
     },
     focus(val, id) {
       // this.addressProps.id = id
@@ -1428,6 +1470,12 @@ export default vm;
   }
   .app-container{
     padding-bottom: 140px;
+    .tr{
+      text-align: right;
+    }
+    .pr20{
+      padding-right: 20px;
+    }
     .mr40{
       margin-right: 40px;
     }
@@ -1529,6 +1577,10 @@ export default vm;
             .left-icon,.right-icon{
               width: 40px;
               height: 40px;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              font-size: 40px;
               position: absolute;
               top: 45px;
               border-radius: 50%;
@@ -1559,11 +1611,13 @@ export default vm;
             margin-bottom: 15px;
             background: #fff;
             .title{
-              color: #f5222d;
-              font-size: 24px;
-              margin-bottom: 15px;
-              font-weight: bold;
-              span{
+              .price{
+                color: #f5222d;
+                font-size: 24px;
+                margin-bottom: 15px;
+                font-weight: bold;
+              }
+              .unit{
                 font-size: 18px;
                 color: #000;
                 font-weight: normal;
@@ -1597,7 +1651,7 @@ export default vm;
             margin-bottom: 15px;
             ul{
               li{
-                height: 65px;
+                min-height: 65px;
                 line-height: 65px;
                 color: #999;
                 border-bottom: 1px dotted #f5f5f5;
@@ -1610,6 +1664,11 @@ export default vm;
                 }
                 .prop{
                   width: 125px;
+                  float: left;
+                }
+                .value{
+                  width: 430px;
+                  float: left;
                 }
               }
             }
@@ -1658,6 +1717,10 @@ export default vm;
           }
       }
       .self-close{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 40px;
         width: 70px;
         height: 70px;
         background: #fff;
@@ -1666,6 +1729,7 @@ export default vm;
         text-align: center;
         vertical-align: middle;
         cursor: pointer;
+        color: #666;
       }
     }
   }
