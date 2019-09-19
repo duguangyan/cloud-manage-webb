@@ -120,7 +120,7 @@
 
 <script>
 import waves from '@/directive/waves'
-import { getOrderList } from '@/api/order/sell'
+import { getOrderList } from '@/api/order/order'
 import Pagination from '@/components/Pagination'
 import { getUserBtnByPId } from '@/api/upms/menu'
 
@@ -289,6 +289,9 @@ export default {
           orderId: this.order.orderId,
           pageIndex: this.order.pageIndex,
           userName: this.order.userName
+        },
+        params: {
+          id: 1234
         }
       })
     },
