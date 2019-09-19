@@ -388,10 +388,6 @@ export default {
       this.$notify({
         title: '成功',
         dangerouslyUseHTMLString: true,
-        message: `
-            <div>Role Nmae: ${name}</div>
-            <div>Description: ${description}</div>
-          `,
         type: 'success'
       })
     },

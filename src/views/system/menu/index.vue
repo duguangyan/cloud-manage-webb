@@ -8,19 +8,19 @@
         状态：
         <el-select v-model="listQuery.status" class="mr10" placeholder="请选择">
           <el-option
-            v-for="(val, key) in statusData"
-            :key="key"
-            :label="val"
-            :value="val">
+            v-for="item in statusData"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value">
           </el-option>
         </el-select>
         类型：
         <el-select v-model="listQuery.type" class="mr10" placeholder="请选择">
           <el-option
-            v-for="(val, key) in typeData"
-            :key="key"
-            :label="val"
-            :value="val">
+            v-for="item in typeData"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value">
           </el-option>
         </el-select>
       </template>
@@ -52,10 +52,14 @@
         </template>
       </el-table-column>
       <el-table-column
-        prop="type"
         label="类型"
         align="center"
         width="60">
+        <template slot-scope="scope">
+          <span v-if="scope.row.type === 0">菜单</span>
+          <span v-else-if="scope.row.type === 1">按钮</span>
+          <span v-else-if="scope.row.type === 2">接口</span>
+        </template>
       </el-table-column>
       <el-table-column
         prop="url"
@@ -64,22 +68,34 @@
         width="500">
       </el-table-column>
       <el-table-column
-        prop="status"
         label="状态"
         width="60"
         align="center">
+        <template slot-scope="scope">
+          <span v-if="scope.row.status === 0">禁用</span>
+          <span v-else-if="scope.row.status === 1">启用</span>
+        </template>
       </el-table-column>
       <el-table-column
-        prop="operation"
         label="事件"
         width="150"
         align="center">
+        <template slot-scope="scope">
+          <span v-if="scope.row.operation === 0">--</span>
+          <span v-else-if="scope.row.operation === 1">tab打开</span>
+          <span v-else-if="scope.row.operation === 2">窗口打开</span>
+        </template>
       </el-table-column>
       <el-table-column
-        prop="auth"
         label="授权"
           width="100"
         align="center">
+        <template slot-scope="scope">
+          <span v-if="scope.row.auth === -1">禁止</span>
+          <span v-else-if="scope.row.auth === 0">不需要认证</span>
+          <span v-else-if="scope.row.auth === 1">已认证</span>
+          <span v-else-if="scope.row.auth === 2">角色</span>
+        </template>
       </el-table-column>
       <el-table-column
         prop="sort"
@@ -121,10 +137,14 @@
         </template>
       </el-table-column>
       <el-table-column
-        prop="type"
         label="类型"
         align="center"
         width="60">
+        <template slot-scope="scope">
+          <span v-if="scope.row.type === 0">菜单</span>
+          <span v-else-if="scope.row.type === 1">按钮</span>
+          <span v-else-if="scope.row.type === 2">接口</span>
+        </template>
       </el-table-column>
       <el-table-column
         prop="url"
@@ -133,21 +153,33 @@
         width="250">
       </el-table-column>
       <el-table-column
-        prop="status"
         label="状态"
           width="60"
         align="center">
+        <template slot-scope="scope">
+          <span v-if="scope.row.status === 0">禁用</span>
+          <span v-else-if="scope.row.status === 1">启用</span>
+        </template>
       </el-table-column>
       <el-table-column
-        prop="operation"
         label="事件"
         align="center">
+        <template slot-scope="scope">
+          <span v-if="scope.row.operation === 0">--</span>
+          <span v-else-if="scope.row.operation === 1">tab打开</span>
+          <span v-else-if="scope.row.operation === 2">窗口打开</span>
+        </template>
       </el-table-column>
       <el-table-column
-        prop="auth"
         label="授权"
           width="100"
         align="center">
+        <template slot-scope="scope">
+          <span v-if="scope.row.auth === -1">禁止</span>
+          <span v-else-if="scope.row.auth === 0">不需要认证</span>
+          <span v-else-if="scope.row.auth === 1">已认证</span>
+          <span v-else-if="scope.row.auth === 2">角色</span>
+        </template>
       </el-table-column>
       <el-table-column
         prop="sort"
@@ -187,50 +219,50 @@
         <el-form-item label="类型">
           <el-select v-model="role.type" placeholder="请选择" @change="typeChange">
             <el-option
-              v-for="(val, key) in typeData"
-              :key="key"
-              :label="val"
-              :value="val">
+              v-for="item in typeData"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item v-if="role.type === '按钮'" label="按钮code">
+        <el-form-item v-if="role.type === 1" label="按钮code">
           <el-input v-model="role.code" maxlength="11" placeholder="请输入按钮code" />
         </el-form-item>
-         <el-form-item v-if="role.type === '菜单' || role.type === '接口'" label="链接地址">
+         <el-form-item v-if="role.type === 0 || role.type === 2" label="链接地址">
           <el-input v-model="role.url" maxlength="255" placeholder="请输入链接地址" />
         </el-form-item>
-        <el-form-item v-if="role.type === '菜单' || role.typ === '按钮'" label="图标">
+        <el-form-item v-if="role.type === 0 || role.type === 1" label="图标">
           <svg-icon v-if="role && role.icon" :icon-class="role.icon" class="mr10" />
           <el-button v-waves class="filter-item" size="small" @click="selectIcon">选择图标</el-button>
         </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="role.status" placeholder="请选择">
             <el-option
-              v-for="(val, key) in statusData"
-              :key="key"
-              :label="val"
-              :value="val">
+              v-for="item in statusData"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item v-if="role.type === '菜单'" label="事件">
+        <el-form-item v-if="role.type === 0" label="事件">
           <el-select v-model="role.operation" placeholder="请选择">
             <el-option
-              v-for="(val, key) in operaData"
-              :key="key"
-              :label="val"
-              :value="val">
+              v-for="item in operaData"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item v-if="role.type === '接口'" label="授权">
+        <el-form-item v-if="role.type === 2" label="授权">
           <el-select v-model="role.auth" placeholder="请选择">
             <el-option
-              v-for="(val, key) in authData"
-              :key="key"
-              :label="val"
-              :value="val">
+              v-for="item in authData"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
@@ -347,46 +379,62 @@ export default {
           auth: false
         }
       },
-      statusData: {
-        '0': '禁止',
-        '1': '启用',
-      },
-      statusDataN: {
-        '禁止': 0,
-        '启用': 1
-      },
-      typeData: {
-        '0': '菜单',
-        '1': '按钮',
-        '2': '接口',
-      },
-      typeDataN: {
-        '菜单': 0,
-        '按钮': 1,
-        '接口': 2
-      },
-      operaData: {
-        '0': '--',
-        '1': 'tab打开',
-        '2': '窗口打开',
-      },
-      operaDataN: {
-        '--': '',
-        'tab打开': 0,
-        '窗口打开': 1
-      },
-      authData: {
-        '-1': '禁止',
-        '0': '不需要认证',
-        '1': '已认证',
-        '2': '角色',
-      },
-      authDataN: {
-        '禁止': -1,
-        '不需要认证': 0,
-        '已认证': 1,
-        '角色': 2
-      },
+      statusData: [
+        {
+          value: 0,
+          label: '禁止'
+        },
+        {
+          value: 1,
+          label: '启用'
+        }
+      ],
+      typeData: [
+        {
+          value: 0,
+          label: '菜单'
+        },
+        {
+          value: 1,
+          label: '按钮'
+        },
+        {
+          value: 2,
+          label: '接口'
+        }
+      ],
+      operaData: [
+        {
+          value: 0,
+          label: '--'
+        },
+        {
+          value: 1,
+          label: 'tab打开'
+        },
+        {
+          value: 2,
+          label: '窗口打开'
+        }
+      ],
+      authData: [
+        {
+          value: -1,
+          label: '禁止'
+        },
+        {
+          value: 0,
+          label: '不需要认证'
+        },
+        {
+          value: 1,
+          label: '已认证'
+        },
+        {
+          value: 2,
+          label: '角色'
+        }
+      ],
       routes: [],
       rolesList: [],
       resourceData: [],
@@ -430,7 +478,6 @@ export default {
             this.btnsPermission[val.code].auth = val.checked === 1
             this.btnsPermission[val.code].name = val.name
           }
-          
         })
       }
     })
@@ -458,10 +505,10 @@ export default {
               icon: res.data[i].icon,
               url: res.data[i].url,
               sort: typeof(res.data[i].sort) === 'number'? res.data[i].sort: 0,
-              status: this.statusData[String(res.data[i].status)],
-              operation: this.operaData[String(res.data[i].operation)],
-              auth: this.authData[String(res.data[i].auth)],
-              type: this.typeData[String(res.data[i].type)],
+              status: res.data[i].status,
+              operation: res.data[i].operation,
+              auth: res.data[i].auth,
+              type: res.data[i].type,
               remark: res.data[i].remark === null? '': res.data[i].remark,
               hasChildren: res.data[i].haveChild === 1? true: false
             }
@@ -487,11 +534,11 @@ export default {
               code: res.data[i].code,
               icon: res.data[i].icon,
               url: res.data[i].url,
-               sort: typeof(res.data[i].sort) === 'number'? res.data[i].sort: 0,
-              status: this.statusData[String(res.data[i].status)],
-              operation: this.operaData[String(res.data[i].operation)],
-              auth: this.authData[String(res.data[i].auth)],
-              type: this.typeData[String(res.data[i].type)],
+              sort: typeof(res.data[i].sort) === 'number'? res.data[i].sort: 0,
+              status: res.data[i].status,
+              operation: res.data[i].operation,
+              auth: res.data[i].auth,
+              type: res.data[i].type,
               remark: res.data[i].remark === null? '': res.data[i].remark,
               hasChildren: res.data[i].haveChild === 1? true: false
             }
@@ -568,39 +615,18 @@ export default {
       this.searchLoading = true
       resourceSearch({
         name: this.listQuery.name,
-        type: this.typeDataN[this.listQuery.type],
-        status: this.statusDataN[this.listQuery.status]
+        type: this.listQuery.type,
+        status: this.listQuery.status
       }).then(res => {
         this.searchLoading = false
         this.meanData = []
         this.isLazy = false
         if(Array.isArray(res.data)) {
-          this.searchData = this.filterData(res.data)
+          this.searchData = res.data
         }
       }).catch(err => {
         this.searchLoading = false
       })
-    },
-    filterData(data) {
-      const result = data.filter(val => {
-        if(val.status != null) {
-          val.status = this.statusData[val.status]
-        }
-        if(val.type != null) {
-          val.type = this.typeData[val.type]
-        }
-        if(val.operation != null) {
-          val.operation = this.operaData[val.operation]
-        }
-        if(val.auth != null) {
-          val.auth = this.authData[val.auth]
-        }
-        if(val.children && val.children.length > 0) {
-          val.children = this.filterData(val.children)
-        }
-        return true
-      })
-      return result
     },
     resetResource() {
       // 重置事件
@@ -626,14 +652,11 @@ export default {
     },
     async handleAddResource() {
       this.role = Object.assign({}, defaultRole)
-      this.role.operation = '--'
       this.dialogType = 'new'
       this.checkStrictly = true
       this.dialogVisible = true
     },
     msgEdit(row) {
-      console.log(row)
-      this.dialogType = 'edit'
       this.dialogVisible = true
       this.checkStrictly = true
       this.role = deepClone(row)
@@ -642,7 +665,6 @@ export default {
       const pName = row.name
       const pId = row.id
       this.role = Object.assign({}, defaultRole)
-      this.role.operation = '--'
       this.role.parentName = pName
       this.role.parentId = pId
       this.checkParentId = pId
@@ -660,12 +682,7 @@ export default {
       await this.getRoutes()
     },
     typeChange(val) {
-      if(val !== '接口') {
-        this.role.auth = ''
-      }
-      if(val !== '事件') {
-        this.role.operation = '--'
-      }
+      // console.log(val)
     },
     selectIcon() {
       // 选择图标
@@ -727,11 +744,11 @@ export default {
            icon: this.role.icon,
            code: this.role.code,
            parentId: this.checkParentName.length > 0? this.checkParentId: this.role.parentId,
-           status: this.statusDataN[this.role.status],
+           status: this.role.status,
            url: this.role.url,
-           type: this.typeDataN[this.role.type],
-           operation: this.operaDataN[this.role.operation],
-           auth: this.role.auth === '' ? '' : this.authDataN[this.role.auth],
+           type: this.role.type,
+           operation: this.role.operation,
+           auth: this.role.auth,
            remark: this.role.remark
          }).catch(err => {
            this.diaDisable = false
@@ -750,9 +767,6 @@ export default {
       } else {
         this.diaDisable = true
         this.diaLoading = true
-        console.log('row -------------')
-        console.log(this.role)
-        console.log(this.role.sort)
         const { data } = await addResource({
           name: this.role.name,
           sort: this.role.sort,
@@ -760,9 +774,9 @@ export default {
           code: this.role.code,
           parentId: this.checkParentId,
           url: this.role.url,
-          type: this.typeDataN[this.role.type],
-          operation: this.operaDataN[this.role.operation],
-          auth: this.authDataN[this.role.auth],
+          type: this.role.type,
+          operation: this.role.operation,
+          auth: this.role.auth,
           remark: this.role.remark
         }).catch(err => {
           this.diaDisable = false

@@ -11,7 +11,8 @@ const moduleSource = [
   'product/list/detail/index',
   'product/list/add/index',
   'stat/analyze/index',
-  'order/sellOrder/index',
+  'order/sell/index',
+  'order/sell/detail/index',
   'activity/banner/index',
   'activity/column/index',
   'permission/role/index',
@@ -23,11 +24,17 @@ const moduleSource = [
   'freight/list/index',
   'freight/edit/index'
 ]
+const hiddenData = [
+  'product/list/release/index',
+  'product/list/detail/index',
+  'product/list/add/index',
+  'order/sell/detail/index',
+]
 // 重定向路由
 const redirectSource = {
   product: 'product/classify',
   stat: 'stat/analyze',
-  order: 'order/sellOrder',
+  order: 'order/sell',
   acitvity: 'activity/banner',
   system: 'system/menu'
 }
@@ -46,7 +53,7 @@ function filterAsyncRouter(asyncRouterMap, index) { // 遍历后台传来的路�
         route.component = _import(route.url)
         const urlArr = route.url.split('/')
         route.path = urlArr[urlArr.length - 2]
-        if (route.url === moduleSource[3] || route.url === moduleSource[4] || route.url === moduleSource[5]) {
+        if (hiddenData.includes(route.url)) {
           route.hidden = true
         }
       } else if (httpReg.test(route.url)) {
@@ -71,7 +78,7 @@ function filterAsyncRouter(asyncRouterMap, index) { // 遍历后台传来的路�
           icon: route.icon,
           id: route.id
         }
-        route.target = route.operation === 0 ? '' : '_blank'
+        route.target = route.operation === 2 ? '_blank' : ''
       }
     } else {
       return false

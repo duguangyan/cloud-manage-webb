@@ -24,6 +24,7 @@
           type="text"
           tabindex="1"
           auto-complete="on"
+          @keyup.enter.native="handleLogin"
         />
       </el-form-item>
 
@@ -56,9 +57,9 @@
           placeholder="验证码"
           name="authcode"
           type="text"
-          tabindex="1"
+          tabindex="3"
           maxlength="16"
-          style
+          @keyup.enter.native="handleLogin"
         />
         <div class="authcode">
           <img :src="authImg" alt />

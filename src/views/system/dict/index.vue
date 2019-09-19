@@ -291,7 +291,6 @@ export default {
     },
     async confirmRole() {
       const isEdit = this.dialogType === 'edit'
-      console.log(this.role)
       if (isEdit) {
         this.diaDisable = true
         this.diaLoading = true

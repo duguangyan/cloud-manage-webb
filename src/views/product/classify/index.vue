@@ -72,7 +72,7 @@
               width="180">
               <template slot-scope="scope">
                 <span v-if="scope.row.status === 0">禁用</span>
-                <span v-else-if="scope.row.staus === 1">启用</span>
+                <span v-else-if="scope.row.status === 1">启用</span>
               </template>
             </el-table-column>
             <el-table-column
@@ -294,7 +294,7 @@
             <el-radio v-model="spec.showType" size="medium" :label="1" border>阶梯方式</el-radio>
             <el-radio v-model="spec.showType" size="medium" :label="2" border>普通方式</el-radio>
           </el-form-item>
-          <el-form-item v-show="spec.showType === 2" label="规格值后缀" prop="afterDes" :rules="{
+          <el-form-item v-show="spec.showType === 1" label="规格值后缀" prop="afterDes" :rules="{
             required: spec.showType === '2', message: '属性值不能为空', trigger: 'blur'
             }">
             <el-input v-model="spec.afterDes" maxlength="20" placeholder="请输入规格值后缀" style="width: 60%" />
@@ -305,7 +305,7 @@
           </el-form-item>
         </el-form>
       </template>
-      <template v-else-if="dialogType === 'new' || dialogType === 'edit'">
+      <template v-else-if="dialogType === 'new' || dialogType === 'edit' || dialogType === 'root'">
         <el-form v-loading="diaLoading" ref="productForm" :model="role" label-width="80px" label-position="left" :rules="productRules">
           <el-form-item label="分类名" prop="name">
             <el-input v-model="role.name" maxlength="20" placeholder="请输入分类名" />
@@ -345,7 +345,7 @@ const defaultProp = {
   list: [
     { value: '' }
   ],
-  sort: -1,
+  sort: '',
   isSearch: -1,
   isRequire: -1,
   afterDes: '',
@@ -727,7 +727,7 @@ export default {
     },
     regFun () {
       // 表单校验
-      if(this.dialogType === 'edit' || this.dialogType === 'new') {
+      if(this.dialogType === 'edit' || this.dialogType === 'new' || this.dialogType === 'root') {
         this.$refs.productForm.validate(valid => {
           if(valid) {
             this.confirmRole()

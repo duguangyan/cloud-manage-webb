@@ -79,22 +79,24 @@
         </template>
       </el-table-column>
       <el-table-column
-        align="center"
         prop="name"
         label="标题"
-        width="120">
+        width="300"
+        show-overflow-tooltip>
       </el-table-column>
       <el-table-column
         prop="categoryName"
         label="品种"
-        width="120">
+        width="150"
+        show-overflow-tooltip>
       </el-table-column>
       <el-table-column
         align="center"
         sortable="custom"
         prop="min_price"
         label="单价"
-        width="120">
+        width="120"
+        show-overflow-tooltip>
         <template slot-scope="scope">{{ scope.row.minprice }}</template>
       </el-table-column>
       <el-table-column
@@ -102,7 +104,8 @@
         sortable="custom"
         prop="spu_sales_num"
         label="销量"
-        width="120">
+        width="120"
+        show-overflow-tooltip>
         <template slot-scope="scope">{{ scope.row.spuSalesNum }}</template>
       </el-table-column>
       <el-table-column
@@ -110,7 +113,8 @@
         sortable="custom"
         prop="hits"
         label="浏览量"
-        width="120">
+        width="120"
+        show-overflow-tooltip>
         <template slot-scope="scope">{{ scope.row.hits }}</template>
       </el-table-column>
       <el-table-column
@@ -118,7 +122,8 @@
         sortable="custom"
         prop="total_stock"
         label="库存"
-        width="120">
+        width="120"
+        show-overflow-tooltip>
         <template slot-scope="scope">{{ scope.row.totalStock }}</template>
       </el-table-column>
       <el-table-column

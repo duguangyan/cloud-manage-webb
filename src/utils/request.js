@@ -4,7 +4,11 @@ import store from '@/store'
 import { getToken } from '@/utils/auth'
 import QS from 'qs'
 
-const baseURL = process.env.NODE_ENV === 'development'?'/api':'/'
+// 此处更换要链接的的IP
+// var target = 'http://192.168.0.113:8000'
+var target = '/api'
+
+const baseURL = process.env.NODE_ENV === 'development' ? target : '/'
 // create an axios instance
 const service = axios.create({
   // baseURL: 'http://192.168.0.202:8000',
@@ -21,7 +25,6 @@ service.interceptors.request.use(
       config.headers['Content-Type'] = 'application/x-www-form-urlencoded'
     } else {
       config.headers['Content-Type'] = 'application/json'
-      // config.baseURL = 'http://192.168.0.113:8000'
     }
     if (config.method === 'post') {
       if (config.type === 'upload') {
@@ -54,7 +57,7 @@ service.interceptors.response.use(
   /**
    * If you want to get http information such as headers or status
    * Please return  response => response
-  */
+   */
 
   /**
    * Determine the request status by custom code
@@ -77,11 +80,15 @@ service.interceptors.response.use(
       // 50008: Illegal token; 50012: Other clients logged in; 50014: Token expired;
       if (res.code === 50008 || res.code === 50012 || res.code === 50014) {
         // to re-login
-        MessageBox.confirm('You have been logged out, you can cancel to stay on this page, or log in again', 'Confirm logout', {
-          confirmButtonText: 'Re-Login',
-          cancelButtonText: 'Cancel',
-          type: 'warning'
-        }).then(() => {
+        MessageBox.confirm(
+          'You have been logged out, you can cancel to stay on this page, or log in again',
+          'Confirm logout',
+          {
+            confirmButtonText: 'Re-Login',
+            cancelButtonText: 'Cancel',
+            type: 'warning'
+          }
+        ).then(() => {
           store.dispatch('user/resetToken').then(() => {
             // location.reload()
           })
@@ -93,11 +100,11 @@ service.interceptors.response.use(
     }
   },
   error => {
-    Message({
-      message: error.response.data.message,
-      type: 'error',
-      duration: 5 * 1000
-    })
+    // Message({
+    //   message: error.response.data.message,
+    //   type: 'error',
+    //   duration: 5 * 1000
+    // })
     return Promise.reject(error)
   }
 )

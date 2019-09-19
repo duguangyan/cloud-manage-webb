@@ -36,6 +36,7 @@
           :prop="'generate.' + index + '.list'">
             <template v-if="item.inputType === 0">
               <el-cascader
+                :ref="item.id"
                 v-model="addForm.generate[index].list"
                 :label="item.id"
                 :placeholder="item.hint"
@@ -72,7 +73,11 @@
               <el-input class="long-input" v-model.trim="addForm.generate[index].list" size="medium" maxlength="64" :placeholder="item.hint" :style="{width: item.length + 'px'}" />
               <span v-if="item.exp !== null">{{item.exp}}</span>
             </template>
-          </el-form-item>         
+            <template v-else>
+              <span>{{addForm.generate[index].list}}</span>
+            </template>
+          </el-form-item> 
+        
         </template>
         <el-form-item v-for="(selfItem, selfIndex) in addForm.selfProp" :key="selfIndex + 'x'" :label="addForm.selfProp[selfIndex].name">
           <span class="mr40">{{addForm.selfProp[selfIndex].list}}</span>
@@ -150,7 +155,7 @@
                   border>
                   <el-table-column  label="规格名称" width="220" align="center">
                     <template slot-scope="scope">
-                      <el-input class="table-input mr5" v-model.trim="addForm.sku[showStyle.id].list[scope.$index].name" size="small" maxlength="12" /><span>{{valueSuffixObj[showStyle.id].valueSuffix}}</span>
+                      <el-input class="table-input mr5" v-model.trim="addForm.sku[showStyle.id].list[scope.$index].name" size="small" maxlength="12" /><span>{{valueSuffixObj[showStyle.id]}}</span>
                     </template>
                   </el-table-column>
                   <el-table-column label="起批量" width="220" align="center">
@@ -274,7 +279,7 @@
     </el-card>
     <el-card class="box-card">
       <div slot="header" class="clearfix">
-        <span>图文视图</span>
+        <span>图文描述</span>
       </div>
       <div  class="text item">
         <el-form-item 
@@ -338,7 +343,7 @@
     <div class="bottom-box">
       <div>
         <el-button v-waves class="filter-item" @click="preView">预览</el-button>
-        <el-button v-waves class="filter-item" @click="submitForm('productForm', 0)">保存待上架</el-button>
+        <el-button v-if="eiditId.length === 0" v-waves class="filter-item" @click="submitForm('productForm', 0)">保存待上架</el-button>
         <el-button type="primary" v-waves class="filter-item" @click="submitForm('productForm', 1)">上架出售</el-button>
       </div>
     </div>
@@ -416,7 +421,7 @@
 
 <script>
 import waves from '@/directive/waves'
-import { getByCategoryId, getUnit, saveGoods, getUnitList, getSpeList, getGoodsDetail } from '@/api/goods/list'
+import { getByCategoryId, getUnit, saveGoods, editGoods, getUnitList, getSpeList, getGoodsDetail } from '@/api/goods/list'
 import { getFreight } from '@/api/goods/logistics'
 import { getAd } from '@/api/upms/strict'
 import { fileUpload } from '@/api/goods/upload'
@@ -450,6 +455,8 @@ let vm = {
       categoryId: '',
       eiditId: '',
       baseData: [],
+      skuId: '',
+      specId: '',
       baseCenterData: [],
       sellData: [],
       sellMoreData: [],
@@ -473,7 +480,9 @@ let vm = {
       productTitle: '',
       imgLimit: 10,
       activeName: 'first',
-      addressOptions: [],
+      addressOptions: [
+
+      ],
       checkboxObj: {},
       addressObj: {},
       cascader: {},
@@ -483,16 +492,14 @@ let vm = {
         lazyLoad (node, resolve) {
           getAd({ parentId: node.level === 0 ? 0 : node.data.id }).then( res => {
             if(Array.isArray(res.data)) {
-              let deep = 0
               res.data.map((item) => {
-                item.leaf = item.haveChild === 0 || parseInt(vm.cascader[vm.cascaderId] - 1) <= node.level
-              });
+                item.leaf = item.haveChild === 0 || parseInt(vm.cascader[vm.cascaderId] - 1) === node.level
+              })
               resolve(res.data);
             }
           })
         },
-        value: "shortName",
-        id: "",
+        value: "id",
         label: "shortName",
       },
       tableShow: false,
@@ -558,7 +565,6 @@ let vm = {
 
   },
   created() {
-    console.log(this.$route.query)
     this.categoryId = this.$route.query.id
     if(this.$route.query.eid) {
       this.eiditId = this.$route.query.eid
@@ -581,7 +587,13 @@ let vm = {
         if(Array.isArray(res.data)) {
           res.data.forEach((item, index) => {
             let obj = {}
-            if(item.inputType === 0 || item.inputType === 2) {
+            if(item.inputType === 0) {
+              obj.list= []
+              obj.isRemark = true
+              this.checkboxObj[index] = item.valueSet.map((itemIn) => {
+                return itemIn.value
+              })
+            } else if(item.inputType === 2) {
               obj.list= []
               obj.checkAll = false
               this.checkboxObj[index] = item.valueSet.map((itemIn) => {
@@ -622,23 +634,38 @@ let vm = {
         this.addForm.unitMore = res.data.goods.unit
         if(Array.isArray(res.data.goodsDetailAttrList)) {
           res.data.goodsDetailAttrList.forEach((item, index) => {
-            this.baseCenterData.forEach((bItem, bIndex) => {
-              if(item.categoryAttrId === bItem.id) {
-                let itemObj = bItem
-                let generateObj = this.addForm.generate[bIndex]
-                editBaseData.push(itemObj)
-                if(bItem.inputType === 0 || bItem.inputType === 2) {
-                  generateObj.list = []
-                  item.goodsDetailAttrValueList.forEach((vItem, vIndex) => {
-                    generateObj.list.push(vItem.value)
-                  })
-                } else {
-                  generateObj.list = item.goodsDetailAttrValueList[0].value
+            if(item.categoryAttrId === '') {
+              editBaseData.push({
+                inputType: '',
+                name: item.name,
+                list: item.goodsDetailAttrValueList[0].value
+              })
+              generate.push({
+                id: '',
+                name: item.name,
+                list: item.goodsDetailAttrValueList[0].value
+              })
+            } else {
+              this.baseCenterData.forEach((bItem, bIndex) => {
+                if(item.categoryAttrId === bItem.id) {
+                  let itemObj = bItem
+                  let generateObj = this.addForm.generate[bIndex]
+                  editBaseData.push(itemObj)
+                  if(bItem.inputType === 0 || bItem.inputType === 2) {
+                    generateObj.list = []
+                    item.goodsDetailAttrValueList.forEach((vItem, vIndex) => {
+                      generateObj.list.push(vItem.value)
+                    })
+                    this.cascaderId = bItem.id
+                  } else {
+                    generateObj.list = item.goodsDetailAttrValueList[0].value
+                  }
+                  generate.push(generateObj)
+                  return false
                 }
-                generate.push(generateObj)
-                return false
-              }
-            })
+              })
+            }
+            
           });
         }
         this.addForm.generate = generate
@@ -676,30 +703,32 @@ let vm = {
           })
           this.goodsSkuData = res.data.goodsSkuList
           this.addForm.moreSpec = specData
-          this.specValueBlur('', 'true')
+          this.specValueBlur('', 'true', true)
         } else { 
           let skuArr = []
-          // this.showAble[showStyle.id].valueSuffix = 'xx'
            this.showStyle.id = res.data.goodsDetailSpecList[0].categorySpecId
            this.addForm.unit = res.data.goodsDetailSpecList[0].categorySpecId
           if (res.data.goods.showStyle === '1') {
             res.data.goodsSkuList.forEach(item => {
               skuArr.push({
-                name: item.attrValueList[0].value,
+                name: item.skuDesc,
                 price: item.price,
                 number: item.startNum,
-                store: item.stock
+                store: item.stock,
+                skuId: item.id,
+                specId: item.id
               })
             })
             this.getUnit(res.data.goods.showStyle, skuArr)
           } else if(res.data.goods.showStyle === '2') {
-            let store = ''
-            res.data.goodsSkuList.forEach(item => {
-              store = item.stock
+            let skuData = JSON.parse(res.data.goodsSkuList[0].priceExp)
+            let store = res.data.goodsSkuList[0].stock
+            skuData.forEach(item => {
               skuArr.push({
-                name: item.attrValueList[0].value,
                 price: item.price,
-                number: item.startNum,
+                number: item.startQuantity,
+                skuId: res.data.goodsSkuList[0].id,
+                specId: res.data.goodsDetailSpecList[0].id
               })
             })
             this.getUnit(res.data.goods.showStyle, skuArr, store)
@@ -866,7 +895,8 @@ let vm = {
       }
       this.addForm.sku[id].list.push({
           number: '',
-          price: ''
+          price: '',
+          id: ''
       })
     },
     removeStair(index, id) {
@@ -984,13 +1014,26 @@ let vm = {
           obj.sort = sortList++
           obj.goodsAttrValueList = []
           if(Array.isArray(item.list)) {
-            item.list.forEach(itemList => {
-              sortValue++
-              obj.goodsAttrValueList.push({
-                value: itemList,
-                sort: sortValue
+            if(item.isRemark) {
+              obj.remark = ''
+              let ref = String(item.id)
+              this.$refs[ref][0].getCheckedNodes()[0].pathNodes.forEach(rItem => {
+                obj.remark += obj.remark.length === 0 ? rItem.label : ('-' + rItem.label)
+                sortValue++
+                obj.goodsAttrValueList.push({
+                  value: rItem.data.id,
+                  sort: sortValue
+                })
               })
-            })
+            } else {
+              item.list.forEach(itemList => {
+                sortValue++
+                obj.goodsAttrValueList.push({
+                  value: itemList,
+                  sort: sortValue
+                })
+              })
+            }
           } else {
             obj.goodsAttrValueList.push({
               value: item.list,
@@ -1007,67 +1050,84 @@ let vm = {
         let sku = this.addForm.sku
         let key = this.showStyle.id
         let speSort = 0
-        // for(let key in sku) {
-          
-          let speObj = {}
-          let skuSort = 0
-          speObj.sort = speSort++
-          if (this.addForm.sku[key].showStyle === '1') {
-            speObj.goodsSpecValueList = []
-            let boxSort = 0
-            speObj.categorySpecId = sku[key].id
-            speObj.name = sku[key].name
-            sku[key].list.forEach(item => {
-              let skuObj = {}
-              skuObj.sort = skuSort++
-              skuObj.priceType = sku[key].showStyle
-              skuObj.skuAttrValues = [{
-                name: sku[key].name + this.showAble[this.showStyle],
-                value: item.name
-              }]
-              skuObj.price = item.price
-              skuObj.startNum = item.number
-              skuObj.stock = item.store
-              skuObj.priceExpList = []
-              skuObj.priceExpList.push({
-                price: item.price,
-                startQuantity: item.number
-              })
-              speObj.goodsSpecValueList.push({
-                value: item.name,
-                sort: boxSort++
-              })
-              goodsVO.goodsSkuList.push(skuObj)
-            })
-            
-            goodsVO.goodsSpecList.push(speObj)
-          } else if (this.addForm.sku[key].showStyle === '2') {
+        let speObj = {}
+        let skuSort = 0
+        speObj.sort = speSort++
+        
+        if (this.addForm.sku[key].showStyle === '1') {
+          speObj.goodsSpecValueList = []
+          let boxSort = 0
+          speObj.categorySpecId = sku[key].id
+          speObj.name = sku[key].name
+          sku[key].list.forEach(item => {
             let skuObj = {}
+            if(this.eiditId.length > 0 && !skuObj.id) {
+              speObj.id = item.specId
+              skuObj.id = item.skuId
+            }
+            if(this.eiditId.length > 0) {
+              skuObj.id = item.id
+            }
+            skuObj.sort = skuSort++
             skuObj.priceType = sku[key].showStyle
-            skuObj.sort = speSort++
+            skuObj.skuAttrValues = [{
+              name: sku[key].name,
+              value: item.name
+            }]
+            skuObj.price = item.price
+            skuObj.startNum = item.number
+            skuObj.stock = item.store
             skuObj.priceExpList = []
-            skuObj.stock = sku[key].store
-            speObj.categorySpecId = sku[key].id
-            speObj.name = sku[key].name
-            speObj.goodsSpecValueList = []
+            skuObj.priceExpList.push({
+              price: item.price,
+              startQuantity: item.number
+            })
+            speObj.goodsSpecValueList.push({
+              value: item.name,
+              sort: boxSort++
+            })
+            goodsVO.goodsSkuList.push(skuObj)
+          })
+          
+          goodsVO.goodsSpecList.push(speObj)
+        } else if (this.addForm.sku[key].showStyle === '2') {
+          let skuObj = {}
+          skuObj.priceType = sku[key].showStyle
+          skuObj.sort = speSort++
+          skuObj.priceExpList = []
+          skuObj.stock = sku[key].store
+          speObj.categorySpecId = sku[key].id
+          speObj.name = sku[key].name
+          speObj.goodsSpecValueList = []
+          skuObj.skuAttrValues = [{
+            name: sku[key].name,
+            value: 1
+          }]
+          sku[key].list.forEach(item => {
+            if(this.eiditId.length > 0 && !skuObj.id) {
+              speObj.id = item.specId
+              skuObj.id = item.skuId
+            }
+            skuObj.priceExpList.push({
+              price: item.price,
+              startQuantity: item.number
+            })
+          })
+          if(this.eiditId.length > 0) {
+            speObj.goodsSpecValueList.push({
+              goodsSpecId: speObj.id,
+              value: 1,
+              sort: 1
+            })
+          } else {
             speObj.goodsSpecValueList.push({
               value: 1,
               sort: 1
             })
-            skuObj.skuAttrValues = [{
-              name: sku[key].name,
-              value: 1
-            }]
-            sku[key].list.forEach(item => {
-              skuObj.priceExpList.push({
-                price: item.price,
-                startQuantity: item.number
-              })
-            })
-            goodsVO.goodsSkuList.push(skuObj)
-            goodsVO.goodsSpecList.push(speObj)
           }
-        // }
+          goodsVO.goodsSkuList.push(skuObj)
+          goodsVO.goodsSpecList.push(speObj)
+        }
       } else if(this.activeName === 'second') {
         goodsVO.unit = this.addForm.unitMore
         let skuSort = 0
@@ -1083,6 +1143,9 @@ let vm = {
                 value: itemV.value
               })
             })
+            if(this.eiditId.length > 0) {
+              skuObj.id = item.skuId
+            }
             skuObj.price = item.price
             skuObj.startNum = item.startNum
             skuObj.stock = item.store
@@ -1110,7 +1173,6 @@ let vm = {
             goodsVO.goodsSpecList.push(speObj)
           })
       }
-      
       // 商品图片信息
       goodsVO.goodsImgList = []
       this.addForm.imgsBox.forEach(imgItem => {
@@ -1120,15 +1182,28 @@ let vm = {
       })
       
       this.saveLoading = true
-      saveGoods(goodsVO).then(res => {
-        this.saveLoading = false
-        this.$message({
-              type: 'success',
-              message: type === 0 ? '保存待上架成功!' : '上架成功!'
-            });
-      }).catch(err => {
-        this.saveLoading = false
-      })
+      if(this.eiditId.length === 0) {
+        saveGoods(goodsVO).then(res => {
+          this.saveLoading = false
+          this.$message({
+                type: 'success',
+                message: type === 0 ? '保存待上架成功!' : '上架成功!'
+              });
+        }).catch(err => {
+          this.saveLoading = false
+        })
+      } else {
+        goodsVO.goodsId = this.eiditId
+        editGoods(goodsVO).then(res => {
+          this.saveLoading = false
+          this.$message({
+                type: 'success',
+                message: '编辑成功'
+              });
+        }).catch(err => {
+          this.saveLoading = false
+        })
+      }
     },
     focus(val, id) {
       // this.addressProps.id = id
@@ -1184,7 +1259,6 @@ let vm = {
           this.moreLoading = false
         })
       }
-
       this.addForm.moreSpec.push({
           selectValue: '',
           isSpecSelect: false,
@@ -1234,28 +1308,30 @@ let vm = {
         }
         return tree;
     },
-    createTree(obj, deep, limit, result, arr) {
+    createTree(obj, deep, limit, result, arr, isInit) {
       if(deep < limit) {
         for(let i = 0; i < obj[deep].list.length; i++) {
           result[deep] = {
             name: obj[deep].selectValue,
             value: obj[deep].list[i].value 
           }
-          this.createTree(obj, deep + 1, limit, result, arr)
+          this.createTree(obj, deep + 1, limit, result, arr, isInit)
         }
       } else {
         let item = {}
-        if(this.eiditId.length === 0) {
+        if(this.eiditId.length === 0 || !isInit) {
           item = {
             startNum: '',
             price: '',
-            store: ''
+            store: '',
+            id: ''
           }
         } else {
           item = {
             startNum: this.goodsSkuData[this.skuCounter].startNum,
             price: this.goodsSkuData[this.skuCounter].price,
-            store: this.goodsSkuData[this.skuCounter].stock
+            store: this.goodsSkuData[this.skuCounter].stock,
+            skuId: this.goodsSkuData[this.skuCounter].id
           }
           this.skuCounter++
         }
@@ -1267,15 +1343,18 @@ let vm = {
       }
       
     },
-    specValueBlur(e, val) {
+    specValueBlur(e, val, isInit) {
       // 报价规格值在table中更新
       this.isCombine = false
       if(val.length > 0) {
         let arr = []
         let limit = this.addForm.moreSpec.length
         let result = []
-        this.createTree(this.addForm.moreSpec, 0, limit, result, arr)
-        
+        if(isInit) {
+           this.createTree(this.addForm.moreSpec, 0, limit, result, arr, true)
+        } else {
+           this.createTree(this.addForm.moreSpec, 0, limit, result, arr, false)
+        }
         let combineObj = {}
         let combineLen = 0
         let combineIndex = 0

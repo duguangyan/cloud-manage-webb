@@ -9,8 +9,8 @@
       <li>
         <!-- <el-form-item prop="provinceId"></el-form-item> -->
         <!-- 省 -->
-        <el-form-item label="发货地址:" prop="provinceId">
-          <el-select v-model="postSolution.provinceId" placeholder="请选择省份" @change="changeProvince">
+        <el-form-item label="发货地址:" prop="province">
+          <el-select v-model="postSolution.province" placeholder="请选择省份" @change="changeProvince">
             <el-option
               v-for="item in provinceList"
               :key="item.id"
@@ -21,8 +21,8 @@
         </el-form-item>
 
         <!-- 市 -->
-        <el-form-item prop="cityId">
-          <el-select v-model="postSolution.cityId" placeholder="请选择市区" @change="changeCity">
+        <el-form-item prop="city">
+          <el-select v-model="postSolution.city" placeholder="请选择市区" @change="changeCity">
             <el-option
               v-for="item in cityList"
               :key="item.id"
@@ -33,8 +33,8 @@
         </el-form-item>
 
         <!-- 区 -->
-        <el-form-item prop="regionId">
-          <el-select v-model="postSolution.regionId" placeholder="请选择">
+        <el-form-item prop="region">
+          <el-select v-model="postSolution.region" placeholder="请选择">
             <el-option
               v-for="item in regionList"
               :key="item.id"
@@ -81,7 +81,6 @@
               <el-input
                 placeholder="请输入内容"
                 v-model="postSolution.defaultPost.firstVolume"
-                type="text"
                 clearable
               ></el-input>
               <span>{{+postSolution.type===1?'件':+postSolution.type===2?'立方米':'千克'}}</span>
@@ -403,7 +402,8 @@ var vm = {
           {
             pattern: /^(^[1-9]\d+|^[1-9])(\.(\d{1,2}$))?$/,
             message: "请输入大于0的数字(最多保留两位小数)",
-            trigger: "blur"
+            trigger: "blur",
+
           },
           { min: 1, max: 7, message: "输入范围1-9999.99", trigger: "blur" }
         ],
@@ -506,7 +506,13 @@ var vm = {
 
         // 分离默认邮寄城市方案
         d.defaultPost = Object.assign({}, { ...d.solutionItemList[0] });
+
+        for(let k in d.defaultPost){
+          typeof d.defaultPost[k] === 'number' && (d.defaultPost[k] = d.defaultPost[k].toString());
+          d.defaultPost[k] === null && (d.defaultPost[k] = [])
+        }
         d.solutionItemList.pop();
+
 
         // 添加添加控制项
         d.solutionItemList.push(Object.assign({}, { ...vm.solutionItem }));
@@ -515,6 +521,7 @@ var vm = {
         );
 
         vm.postSolution = Object.assign({}, d);
+
       });
 
     // 获取列表
@@ -562,15 +569,15 @@ var vm = {
             delete res.status;
 
             // 解构省市区ID
-            let pro = res.provinceId.split("|");
+            let pro = res.province.split("|");
             res.provinceId = pro[0];
             res.province = pro[1];
 
-            let city = res.cityId.split("|");
+            let city = res.city.split("|");
             res.cityId = pro[0];
             res.city = pro[1];
 
-            let region = res.regionId.split("|");
+            let region = res.region.split("|");
             res.regionId = region[0];
             res.region = region[1];
 
