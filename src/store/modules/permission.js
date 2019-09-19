@@ -19,7 +19,9 @@ const moduleSource = [
   'system/dict/index',
   'permission/user/index',
   'system/config/index',
-  'system/strict/index'
+  'system/strict/index',
+  'freight/list/index',
+  'freight/edit/index'
 ]
 // 重定向路由
 const redirectSource = {
