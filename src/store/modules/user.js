@@ -18,9 +18,14 @@ const user = {
     refreshToken: '',
     name: '',
     avatar: '',
-    userId: ''
+    userId: '',
+    shop: {}
   },
   mutations: {
+    SET_SHOP: (state, shop) => {
+      state.shop = shop
+      localStorage.setItem('shopId', shop.id)
+    },
     SET_NAME: (state, name) => {
       state.name = name
     },

@@ -10,6 +10,7 @@ import adminDashboard from "./admin";
 import editorDashboard from "./editor";
 import { token } from "@/store/getters";
 import { getStore } from "@/store/store";
+import {getShop} from '@/api/goods/shop'
 
 export default {
   name: "Dashboard",
@@ -28,10 +29,16 @@ export default {
     ...mapGetters(["roles"])
   },
   created() {
+    let self = this;
     this.refreshToken();
     // if (!this.roles.includes('admin')) {
     //   this.currentRole = 'editorDashboard'
     // }
+
+    getShop().then(data=>{
+      self.$store.commit('user/SET_SHOP',data.data);
+    })
+
   },
   methods: {
     // 实时检测刷新token
@@ -52,6 +59,7 @@ export default {
         self.$store.commit("user/SET_EXPIRES_IN", --self.expires_in);
       }, 10000);
     }
+
   }
 };
 </script>

@@ -20,7 +20,9 @@ const moduleSource = [
   'system/dict/index',
   'permission/user/index',
   'system/config/index',
-  'system/strict/index'
+  'system/strict/index',
+  'freight/list/index',
+  'freight/edit/index'
 ]
 const hiddenData = [
   'product/list/release/index',
