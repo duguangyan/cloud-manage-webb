@@ -207,6 +207,10 @@
           </el-form-item>
           <el-form-item 
             v-for="(item, pIndex) in addForm.moreSpec" :key="pIndex"
+            :prop="'moreSpec.'+pIndex+'.selectValue'"
+            :rules="{
+              required: true, message: '规格必选', trigger: 'blur'     
+            }"
             :label="'规格' + (pIndex + 1)" 
             >
             <el-select v-model="addForm.moreSpec[pIndex].selectValue" filterable allow-create size="medium" maxlength="64" placeholder="请选择" @change="((val) => unitChange(val, 'spec', pIndex))">
@@ -217,6 +221,7 @@
               <el-input
                 v-for="(item, index) in addForm.moreSpec[pIndex].list" :key="index"
                 placeholder="请输入规格值"
+                required
                 v-model="addForm.moreSpec[pIndex].list[index].value"
                 size="mini"
                 class="table-input mr5"
@@ -876,6 +881,7 @@ let vm = {
       })
     },
     unitChange(val, type, pindex) {
+      console.log(val)
       // 计量单位选择
       if(type === 'auto') {
         this.showStyle.type = this.showAble[val]
@@ -883,6 +889,8 @@ let vm = {
       } else if(type === 'more') {
         this.moreSpecTableShow = true
         this.addForm.unit = this.unitMore
+        this.showStyle.type = 3
+        this.showStyle.id = val
       } else if(type === 'spec') {
         this.addForm.moreSpec[pindex].isSpecSelect = true
         let hasName = true
@@ -922,8 +930,8 @@ let vm = {
         this.$message({
               type: 'warning',
               message: '请输入起批数和单价!'
-        });
-        return
+        })
+        return false
       }
       this.addForm.sku[id].list.push({
           number: '',
@@ -1036,46 +1044,54 @@ let vm = {
       goodsVO.goodsAttrList = []
       let sortList = 0
       let baseData = this.addForm.generate.concat(this.addForm.selfProp)
-      baseData.forEach(item => {
-        if(item.list.length > 0) {
-          let obj = {}
-          let sortValue = 0
-          obj.name = item.name
-          obj.categoryAttrId = item.id
-          obj.nameGroup = item.nameGroup
-          obj.sort = sortList++
-          obj.goodsAttrValueList = []
-          if(Array.isArray(item.list)) {
-            if(item.isRemark) {
-              obj.remark = ''
-              let ref = String(item.id)
-              this.$refs[ref][0].getCheckedNodes()[0].pathNodes.forEach(rItem => {
-                obj.remark += obj.remark.length === 0 ? rItem.label : ('-' + rItem.label)
-                sortValue++
-                obj.goodsAttrValueList.push({
-                  value: rItem.data.id,
-                  sort: sortValue
+      if(baseData.length === 0) {
+        this.$message({
+          type: 'warning',
+          message: '商品属性不能为空，请添加属性!'
+        })
+        return false
+      } else {
+        baseData.forEach(item => {
+          if(item.list.length > 0) {
+            let obj = {}
+            let sortValue = 0
+            obj.name = item.name
+            obj.categoryAttrId = item.id
+            obj.nameGroup = item.nameGroup
+            obj.sort = sortList++
+            obj.goodsAttrValueList = []
+            if(Array.isArray(item.list)) {
+              if(item.isRemark) {
+                obj.remark = ''
+                let ref = String(item.id)
+                this.$refs[ref][0].getCheckedNodes()[0].pathNodes.forEach(rItem => {
+                  obj.remark += obj.remark.length === 0 ? rItem.label : ('-' + rItem.label)
+                  sortValue++
+                  obj.goodsAttrValueList.push({
+                    value: rItem.data.id,
+                    sort: sortValue
+                  })
                 })
-              })
-              this.placeProduct = obj.remark
+                this.placeProduct = obj.remark
+              } else {
+                item.list.forEach(itemList => {
+                  sortValue++
+                  obj.goodsAttrValueList.push({
+                    value: itemList,
+                    sort: sortValue
+                  })
+                })
+              }
             } else {
-              item.list.forEach(itemList => {
-                sortValue++
-                obj.goodsAttrValueList.push({
-                  value: itemList,
-                  sort: sortValue
-                })
+              obj.goodsAttrValueList.push({
+                value: item.list,
+                sort: sortValue
               })
             }
-          } else {
-            obj.goodsAttrValueList.push({
-              value: item.list,
-              sort: sortValue
-            })
+            goodsVO.goodsAttrList.push(obj)
           }
-          goodsVO.goodsAttrList.push(obj)
-        }
-      })
+        })
+      }
       // 商品sku信息
       goodsVO.goodsSkuList = []
       goodsVO.goodsSpecList = []
@@ -1193,21 +1209,29 @@ let vm = {
             goodsVO.goodsSkuList.push(skuObj)
           })
           let speOutSort = 0
-          this.addForm.moreSpec.forEach(item => {
-            let speObj = {}
-            let speSort = 0
-            speObj.categorySpecId = item.id
-            speObj.name = item.selectValue
-            speObj.sort = speOutSort++
-            speObj.goodsSpecValueList = []
-            item.list.forEach(itemList => {
-              speObj.goodsSpecValueList.push({
-                value: itemList.value,
-                sort: speSort++
-              })
+          if(this.addForm.moreSpec.length === 0) {
+            this.$message({
+              type: 'warning',
+              message: '请添加规格!'
             })
-            goodsVO.goodsSpecList.push(speObj)
-          })
+            return false
+          } else {
+            this.addForm.moreSpec.forEach(item => {
+              let speObj = {}
+              let speSort = 0
+              speObj.categorySpecId = item.id
+              speObj.name = item.selectValue
+              speObj.sort = speOutSort++
+              speObj.goodsSpecValueList = []
+              item.list.forEach(itemList => {
+                speObj.goodsSpecValueList.push({
+                  value: itemList.value,
+                  sort: speSort++
+                })
+              })
+              goodsVO.goodsSpecList.push(speObj)
+            })
+          }
       }
       // 商品图片信息
       goodsVO.goodsImgList = []
@@ -1649,6 +1673,7 @@ export default vm;
             padding-top: 30px;
             background: #fff;
             margin-bottom: 15px;
+            min-height: 80px;
             ul{
               li{
                 min-height: 65px;

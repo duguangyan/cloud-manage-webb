@@ -31,8 +31,6 @@ export default {
   
   },
   created() {
-    console.log(this.$route)
-    console.log(this.$route.path === '/product/list')
     if(this.$route.path === '/product/list') {
       this.showList = true
     } else {
