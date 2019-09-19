@@ -28,12 +28,12 @@ export function getDetail(params) {
   })
 }
 
-export function doDelete(data) {
+export function doDelete(params) {
   return request({
     url: '/goods/postSolution/delete',
-    method: 'post',
+    method: 'get',
     type: 'json',
-    data
+    params
   })
 }
 
@@ -42,6 +42,7 @@ export function doUpdate(data) {
     url: '/goods/postSolution/update',
     method: 'post',
     type: 'json',
+    // debug: 1,
     data
   })
 }
@@ -51,6 +52,7 @@ export function doInsert(data) {
     url: '/goods/postSolution/insert',
     method: 'post',
     type: 'json',
+    // debug: 1,
     data
   })
 }

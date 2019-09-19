@@ -7,7 +7,6 @@
         </el-form-item>
       </li>
       <li>
-        <!-- <el-form-item prop="provinceId"></el-form-item> -->
         <!-- 省 -->
         <el-form-item label="发货地址:" prop="province">
           <el-select v-model="postSolution.province" placeholder="请选择省份" @change="changeProvince">
@@ -50,11 +49,6 @@
         </el-form-item>
       </li>
 
-      <!-- <li>
-      <span>运送方式:</span>
-      <el-checkbox v-model="postSolution.id">备选项</el-checkbox>
-      </li>-->
-
       <li>
         <el-form-item label="是否包邮:" prop="status">
           <el-radio v-model="postSolution.status" :label="0">自定义运费</el-radio>
@@ -62,6 +56,7 @@
         </el-form-item>
       </li>
 
+      <!-- 不包邮时显示 -->
       <template v-if="+postSolution.status===0">
         <li>
           <el-form-item label="计价方式:" prop="type">
@@ -124,14 +119,14 @@
             <el-table class="w80" :data="postSolution.solutionItemList" stripe style="width: auto;">
               <el-table-column prop="date" label="运送到" width="180">
                 <template slot-scope="scope">
-                  <template v-if="scope.row.areaVoList.length<1">
+                  <template v-if="scope.row.areaExp.length<1">
                     <span @click="callAreaSel(1)">选择地区</span>
                   </template>
                   <span
                     v-else
                     @click="postSolution.solutionItemList.length - 1===scope.$index?(isShowArea = true):''"
                   >
-                    <span v-for="item in scope.row.areaVoList" :key="item.id">{{item.name}}&emsp;</span>
+                    <span v-for="item in scope.row.areaExp" :key="item.id">{{item.name}}&emsp;</span>
                   </span>
                 </template>
               </el-table-column>
@@ -211,16 +206,16 @@
               stripe
               style="width: auto;"
             >
-              <el-table-column prop="areaVoList" label="运送到" width="180">
+              <el-table-column prop="areaExp" label="运送到" width="180">
                 <template slot-scope="scope">
-                  <template v-if="scope.row.areaVoList.length<1">
+                  <template v-if="scope.row.areaExp.length<1">
                     <span @click="callAreaSel(2)">选择地区</span>
                   </template>
                   <span
                     v-else
-                    @click="postSolution.solutionFreeItemList.length - 1===scope.$index?(isShowArea = true):''"
+                    @click="postSolution.solutionFreeItemList.length - 1===scope.$index?(isShowArea2 = true):''"
                   >
-                    <span v-for="item in scope.row.areaVoList" :key="item.id">{{item.name}}&emsp;</span>
+                    <span v-for="item in scope.row.areaExp" :key="item.id">{{item.name}}&emsp;</span>
                   </span>
                 </template>
               </el-table-column>
@@ -245,10 +240,10 @@
                       />件包邮
                     </el-form-item>
 
-                    <el-form-item v-else-if="+solutionFreeItem.type === 2" prop="quantity">
+                    <el-form-item v-else-if="+solutionFreeItem.type === 2" prop="price">
                       满
                       <el-input
-                        v-model="solutionFreeItem.quantity"
+                        v-model="solutionFreeItem.price"
                         type="number"
                         placeholder="请输入金额"
                       />元包邮
@@ -301,13 +296,24 @@
       </div>
     </el-form>
 
-    <!-- 选择地区对话框 -->
+    <!-- 城市包邮选择地区对话框 -->
     <el-dialog title="选择地区" :visible.sync="isShowArea" width="600">
       <div class="area" v-for="item in provinceList" :key="item.id">
-        <el-checkbox v-model="item.checked">{{item.name}}</el-checkbox>
+        <el-checkbox v-model="item.isChecked" :disabled="item.isChecked?true:false">{{item.name}}</el-checkbox>
       </div>
       <span slot="footer" class="dialog-footer">
         <el-button @click="isShowArea = false">取 消</el-button>
+        <el-button type="primary" @click="selAreas">确 定</el-button>
+      </span>
+    </el-dialog>
+
+    <!-- 条件包邮选择地区对话框 -->
+    <el-dialog title="选择地区" :visible.sync="isShowArea2" width="600">
+      <div class="area" v-for="item in provinceList2" :key="item.id">
+        <el-checkbox v-model="item.isChecked" :disabled="item.isChecked?true:false">{{item.name}}</el-checkbox>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="isShowArea2 = false">取 消</el-button>
         <el-button type="primary" @click="selAreas">确 定</el-button>
       </span>
     </el-dialog>
@@ -315,8 +321,9 @@
 </template>
 
 <script>
-import { getDetail, doInsert, doUpdate, doDelete } from "@/api/goods/freight";
+import { getDetail, doInsert, doUpdate, doDeletfe } from "@/api/goods/freight";
 import { getAd } from "@/api/upms/strict";
+import { preCopy } from "@/api/deep-copy";
 var vm = {
   name: "freight-edit",
   data() {
@@ -327,8 +334,8 @@ var vm = {
         firstVolume: [
           { required: true, message: "请输入内容", trigger: "blur" },
           {
-            pattern: /^(^[1-9]\d+|^[1-9])(\.(\d{1,2}$))?$/,
-            message: "请输入大于0的数字(最多保留两位小数)",
+            pattern: /^(^[1-9]\d+|^[1-9])$/,
+            message: "请输入大于0的整数",
             trigger: "blur"
           },
           { min: 1, max: 4, message: "范围在 1 到 9999", trigger: "blur" }
@@ -340,13 +347,13 @@ var vm = {
             message: "请输入大于0的数字(最多保留两位小数)",
             trigger: "blur"
           },
-          { min: 1, max: 4, message: "范围在 1 到 9999", trigger: "blur" }
+          { min: 1, max: 7, message: "输入范围1-9999.99", trigger: "blur" }
         ],
         continueVolume: [
           { required: true, message: "请输入内容", trigger: "blur" },
           {
-            pattern: /^(^[1-9]\d+|^[1-9])(\.(\d{1,2}$))?$/,
-            message: "请输入大于0的数字(最多保留两位小数)",
+            pattern: /^(^[1-9]\d+|^[1-9])$/,
+            message: "请输入大于0的整数",
             trigger: "blur"
           },
           { min: 1, max: 4, message: "范围在 1 到 9999", trigger: "blur" }
@@ -358,7 +365,7 @@ var vm = {
             message: "请输入大于0的数字(最多保留两位小数)",
             trigger: "blur"
           },
-          { min: 1, max: 4, message: "范围在 1 到 9999", trigger: "blur" }
+          { min: 1, max: 7, message: "输入范围1-9999.99", trigger: "blur" }
         ]
       },
       // 条件邮费表单规则
@@ -367,8 +374,8 @@ var vm = {
         quantity: [
           { required: true, message: "请输入内容", trigger: "blur" },
           {
-            pattern: /^(^[1-9]\d+|^[1-9])(\.(\d{1,2}$))?$/,
-            message: "请输入大于0的数字(最多保留两位小数)",
+            pattern: /^(^[1-9]\d+|^[1-9])$/,
+            message: "请输入大于0的整数",
             trigger: "blur"
           },
           { min: 1, max: 4, message: "范围在 1 到 9999", trigger: "blur" }
@@ -380,7 +387,7 @@ var vm = {
             message: "请输入大于0的数字(最多保留两位小数)",
             trigger: "blur"
           },
-          { min: 1, max: 4, message: "范围在 1 到 9999", trigger: "blur" }
+          { min: 1, max: 7, message: "输入范围1-9999.99", trigger: "blur" }
         ]
       },
       // 邮费模板表单规则
@@ -400,12 +407,11 @@ var vm = {
         "defaultPost.firstVolume": [
           { required: true, message: "请输入默认首重", trigger: "blur" },
           {
-            pattern: /^(^[1-9]\d+|^[1-9])(\.(\d{1,2}$))?$/,
-            message: "请输入大于0的数字(最多保留两位小数)",
-            trigger: "blur",
-
+            pattern: /^(^[1-9]\d+|^[1-9])$/,
+            message: "请输入大于0的整数",
+            trigger: "blur"
           },
-          { min: 1, max: 7, message: "输入范围1-9999.99", trigger: "blur" }
+          { min: 1, max: 4, message: "输入范围1-9999", trigger: "blur" }
         ],
         "defaultPost.firstPrice": [
           { required: true, message: "请输入默认首价", trigger: "blur" },
@@ -414,13 +420,13 @@ var vm = {
             message: "请输入大于0的数字(最多保留两位小数)",
             trigger: "blur"
           },
-          { min: 1, max: 4, message: "输入范围1-9999", trigger: "blur" }
+          { min: 1, max: 7, message: "输入范围1-9999.99", trigger: "blur" }
         ],
         "defaultPost.continueVolume": [
           { required: true, message: "请输入默认续重", trigger: "blur" },
           {
-            pattern: /^(^[1-9]\d+|^[1-9])(\.(\d{1,2}$))?$/,
-            message: "请输入大于0的数字(最多保留两位小数)",
+            pattern: /^(^[1-9]\d+|^[1-9])$/,
+            message: "请输入大于0的整数",
             trigger: "blur"
           },
           { min: 1, max: 4, message: "输入范围1-9999", trigger: "blur" }
@@ -432,11 +438,13 @@ var vm = {
             message: "请输入大于0的数字(最多保留两位小数)",
             trigger: "blur"
           },
-          { min: 1, max: 4, message: "输入范围1-9999", trigger: "blur" }
+          { min: 1, max: 7, message: "输入范围1-9999.99", trigger: "blur" }
         ]
       },
       isShowArea: false,
-      provinceList: [],
+      isShowArea2: false,
+      provinceList: /* 城市包邮地区列表 */ [],
+      provinceList2: /* 条件包邮地区列表 */ [],
       cityList: [],
       regionList: [],
       postSolution: {
@@ -454,49 +462,42 @@ var vm = {
         type: 1,
         solutionFreeItemList: /* 包邮条件 */ [],
         solutionItemList: /* 邮费方案 */ [],
-        defaultPost: {
+        defaultPost: /* 默认城市邮费方案 */ {
           firstPrice: "",
           firstVolume: "",
           continueVolume: "",
           continuePrice: ""
         }
       },
+      // 条件邮费方案
       solutionFreeItem: {
-        areaExp: "",
-        areaVoList: [],
+        areaExp: [],
         id: "",
         postSolutionId: "",
         price: "",
         quantity: "",
-        sort: 0,
+        sort: 5,
         type: /* 1 包邮条件(数量) 2 包邮条件(金额) 3 包邮条件(数量+金额) */ ""
       },
+      // 城市邮费方案
       solutionItem: {
-        areaExp: "",
-        areaVoList: [],
+        areaExp: [],
         continuePrice: /* 续重价钱 */ "",
         continueVolume: /* 续重 */ "",
         firstPrice: /*首量价钱*/ "",
         firstVolume: /* 首量 */ "",
         id: "",
         postSolutionId: "",
-        sort: 0
+        sort: 5
       },
-      level: /* 地区选择等级 1:城市包邮；2:条件包邮 */ ""
+      level: /* 地区选择等级 1:城市包邮；2:条件包邮 */ "",
+      extCityItems: /* 城市包邮已选地区 */ [],
+      extCondItmes: /* 条件包邮已选地区 */ []
     };
   },
   created() {
-    // 插入新建项到城市邮费方案
-    vm.postSolution.solutionItemList.push(
-      Object.assign({}, { ...vm.solutionItem })
-    );
-
-    // 插入新建项到条件邮费方案
-    vm.postSolution.solutionFreeItemList.push(
-      Object.assign({}, { ...vm.solutionFreeItem })
-    );
     // youID表示编辑
-    vm.$route.query.id &&
+    if (vm.$route.query.id) {
       getDetail({
         id: vm.$route.query.id
       }).then(data => {
@@ -505,31 +506,68 @@ var vm = {
         d.type === 0 ? (d.status = 1) : (d.status = 0);
 
         // 分离默认邮寄城市方案
-        d.defaultPost = Object.assign({}, { ...d.solutionItemList[0] });
+        d.defaultPost = Object.assign({ ...d.solutionItemList[0] });
+        d.solutionItemList.shift();
 
-        for(let k in d.defaultPost){
-          typeof d.defaultPost[k] === 'number' && (d.defaultPost[k] = d.defaultPost[k].toString());
-          d.defaultPost[k] === null && (d.defaultPost[k] = [])
+        // 默认的值转换为字符串(为了正则,我还能怎样)
+        for (let k in d.defaultPost) {
+          typeof d.defaultPost[k] === "number" &&
+            (d.defaultPost[k] = d.defaultPost[k].toString());
+          d.defaultPost[k] === null && (d.defaultPost[k] = []);
         }
-        d.solutionItemList.pop();
 
+        // parse areaExp项
+        // 保存已选地区项
+        d.solutionItemList = d.solutionItemList.map(item => {
+          try {
+            item.areaExp = JSON.parse(item.areaExp);
+          } catch (e) {
+            item.areaExp = [];
+          }
+          vm.extCityItems = vm.extCityItems.concat(item.areaExp);
+          return item;
+        });
+        d.solutionFreeItemList = d.solutionFreeItemList.map(item => {
+          try {
+            item.areaExp = JSON.parse(item.areaExp);
+          } catch (e) {
+            item.areaExp = [];
+          }
+          vm.extCondItmes = vm.extCondItmes.concat(item.areaExp);
+          return item;
+        });
 
         // 添加添加控制项
         d.solutionItemList.push(Object.assign({}, { ...vm.solutionItem }));
         d.solutionFreeItemList.push(
-          Object.assign({}, { ...vm.solutionFreeItem })
+          { ...vm.solutionFreeItem }
         );
 
         vm.postSolution = Object.assign({}, d);
 
+        getAd({
+          parentId: "0"
+        }).then(data => {
+          vm.dealProvinceList(data.data);
+        });
       });
+    } else {
+      getAd({
+        parentId: "0"
+      }).then(data => {
+        vm.provinceList = preCopy(data.data);
+        vm.provinceList2 = preCopy(data.data);
+      });
+      // 插入新建项到城市邮费方案
+      vm.postSolution.solutionItemList.push(
+        Object.assign({}, { ...vm.solutionItem })
+      );
 
-    // 获取列表
-    getAd({
-      parentId: "0"
-    }).then(data => {
-      vm.dealProvinceList(data.data);
-    });
+      // 插入新建项到条件邮费方案;
+      vm.postSolution.solutionFreeItemList.push(
+        Object.assign({}, { ...vm.solutionFreeItem })
+      );
+    }
 
     //
   },
@@ -539,12 +577,12 @@ var vm = {
         if (valid) {
           // 验证地区是否选择
           if (formName === "solutionItem") {
-            if (vm.solutionItem.areaVoList.length < 1) {
+            if (vm.solutionItem.areaExp.length < 1) {
               return vm.$message.error("要选地区哟嘿！");
             }
             vm.insertToItem();
           } else if (formName === "solutionFreeItem") {
-            if (vm.solutionFreeItem.areaVoList.length < 1) {
+            if (vm.solutionFreeItem.areaExp.length < 1) {
               return vm.$message.error("要选地区哟嘿！");
             }
             vm.insertToFreeItem();
@@ -556,9 +594,27 @@ var vm = {
             res.solutionItemList.pop();
             res.solutionFreeItemList.pop();
 
+
+            // 将邮费方案地区列表string化
+            res.solutionItemList = res.solutionItemList.map(item => {
+              item.areaExp =
+                item.areaExp.length > 0 ? JSON.stringify(item.areaExp) : '[]';
+              return item;
+            });
+            res.solutionFreeItemList = res.solutionFreeItemList.map(item => {
+              item.areaExp =
+                item.areaExp.length > 0 ? JSON.stringify(item.areaExp) : '[]';
+              return item;
+            });
+
             // defaultPost项插入到城市包邮列表
+            res.defaultPost.areaExp = '[]';
             res.solutionItemList.push(
-              Object.assign(vm.solutionItem, { ...res.defaultPost })
+              Object.assign(
+                vm.solutionItem,
+                { ...res.defaultPost },
+                { sort: 0 }
+              )
             );
 
             // 删除defaultPost
@@ -604,15 +660,15 @@ var vm = {
       );
       vm.postSolution.solutionItemList.pop();
       vm.solutionItem = {
-        areaExp: "",
-        areaVoList: [],
+        areaExp: [],
+        // areaVoList: [],
         continuePrice: /* 续重价钱 */ "",
         continueVolume: /* 续重 */ "",
         firstPrice: /*首量价钱*/ "",
         firstVolume: /* 首量 */ "",
         id: "",
         postSolutionId: "",
-        sort: 0
+        sort: 5
       };
       vm.postSolution.solutionItemList.push(
         Object.assign({}, { ...vm.solutionItem })
@@ -625,8 +681,8 @@ var vm = {
       );
       vm.postSolution.solutionFreeItemList.pop();
       vm.solutionFreeItem = {
-        areaExp: "",
-        areaVoList: [],
+        areaExp: [],
+        // areaVoList: [],
         id: "",
         postSolutionId: "",
         price: "",
@@ -638,30 +694,58 @@ var vm = {
         Object.assign({}, { ...vm.solutionFreeItem })
       );
     },
+
     // 删除城市包邮项
     delItem(index, item) {
-      vm.postSolution.solutionItemList.splice(index, 1);
-    },
-    // 删除条件包邮项
-    delFreeItem(index, item) {
-      vm.postSolution.solutionFreeItemList.splice(index, 1);
-    },
-    // 处理省份列表
-    dealProvinceList(data) {
-      vm.provinceList = data.map(item => {
-        item.checked = false;
-        return item;
+      let data = [...vm.postSolution.solutionItemList.splice(index, 1).areaExp];
+      vm.provinceList = vm.provinceList.map(area => {
+        data.indexOf(area) > -1
+          ? (area.isChecked = false)
+          : (area.isChecked = true);
+        return area;
       });
     },
-    //
-    addFreightItems() {
-      vm.provinceList.length < 1 &&
-        getAd({
-          parentId: "0"
-        }).then(data => {
-          vm.dealProvinceList(data.data);
-        });
+
+    // 删除条件包邮项
+    delFreeItem(index, item) {
+      let data = [
+        vm.postSolution.solutionFreeItemList.splice(index, 1).areaExp
+      ];
+      vm.provinceList2 = vm.provinceList2.map(area => {
+        data.indexOf(area) > -1
+          ? (area.isChecked = false)
+          : (area.isChecked = true);
+        return area;
+      });
     },
+
+    // 处理省份列表
+    // 分离已存在地区
+    dealProvinceList(data) {
+      let d1 = preCopy(data);
+      let d2 = preCopy(data);
+      d1 = d1.map(item => {
+        // 城市包邮地区筛选
+        vm.extCityItems.forEach(val=>{
+          val.id === item.id && (item.isChecked = true)
+        })
+        // 条件包邮地区筛选
+        return item;
+      });
+
+      d2 = d2.map(item => {
+        // 城市包邮地区筛选
+        vm.extCondItmes.forEach(val=>{
+          val.id === item.id && (item.isChecked = true)
+        })
+        // 条件包邮地区筛选
+        return item;
+      });
+
+      vm.provinceList = d1;
+      vm.provinceList2 = d2;
+    },
+    //
     changeProvince(val) {
       vm.regionList = [];
       vm.postSolution.cityId = "";
@@ -682,7 +766,7 @@ var vm = {
     },
     // 调用地区选择器
     callAreaSel(level) {
-      vm.isShowArea = true;
+      +level === 1 ? (vm.isShowArea = true) : (vm.isShowArea2 = true);
       vm.level = level;
     },
 
@@ -690,13 +774,14 @@ var vm = {
     selAreas() {
       if (+vm.level === 1) {
         vm.provinceList.forEach(item => {
-          if (item.checked) {
-            vm.solutionItem.areaVoList.push({
-              id: item.id,
-              name: item.name
-            });
+          if (item.isChecked) {
+            vm.extCityItems.forEach(val=>{
+              val.id !== item.id && vm.extCityItems.push(item) && vm.solutionItemList.areaExp.push({
+                id: item.id,
+                name: item.name
+              });
+            })
           }
-          item.checked = false;
         });
 
         vm.postSolution.solutionItemList.splice(
@@ -705,14 +790,15 @@ var vm = {
           Object.assign({}, { ...vm.solutionItem })
         );
       } else {
-        vm.provinceList.forEach(item => {
-          if (item.checked) {
-            vm.solutionFreeItem.areaVoList.push({
-              id: item.id,
-              name: item.name
-            });
+        vm.provinceList2.forEach(item => {
+          if (item.isChecked) {
+            vm.extCondItmes.forEach(val=>{
+              val.id !== item.id && vm.extCondItmes.push(item) && vm.solutionFreeItem.areaExp.push({
+                id: item.id,
+                name: item.name
+              });
+            })
           }
-          item.checked = false;
         });
 
         vm.postSolution.solutionFreeItemList.splice(
@@ -723,6 +809,7 @@ var vm = {
       }
 
       vm.isShowArea = false;
+      vm.isShowArea2 = false;
     }
   }
 };

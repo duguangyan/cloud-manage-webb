@@ -6,7 +6,11 @@ import QS from 'qs'
 
 // 此处更换要链接的的IP
 // var target = 'http://192.168.0.113:8000'
+// var target = 'http://192.168.0.117:9002'
 var target = '/api'
+
+// 调试借口
+var debugUrl = 'http://192.168.0.117:9002'
 
 const baseURL = process.env.NODE_ENV === 'development' ? target : '/'
 // create an axios instance
@@ -37,12 +41,16 @@ service.interceptors.request.use(
         }
       }
     }
+    if (+config.debug === 1) {
+      config.baseURL = debugUrl
+    }
     // do something before request is sent
     if (store.getters.token) {
       config.headers['Authorization'] = 'Bearer ' + store.getters.token
     } else {
       config.headers['Authorization'] = 'Basic Y21hbmFnZXI6eHg='
     }
+
     return config
   },
   error => {
