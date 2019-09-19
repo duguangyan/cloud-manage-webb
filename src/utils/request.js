@@ -23,9 +23,9 @@ service.interceptors.request.use(
       config.headers['Content-Type'] = 'application/json'
       config.baseURL = 'http://192.168.0.113:8000'
     }
-    if (config.type === 'local') {
-      config.baseURL = 'http://192.168.0.113:8000'
-    }
+    // if (config.type === 'local') {
+    //   config.baseURL = 'http://192.168.0.113:8000'
+    // }
     if (config.method === 'post') {
       if (config.type === 'upload') {
         config.headers['Content-Type'] = 'application/multipart/form-data'

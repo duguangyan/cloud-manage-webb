@@ -194,10 +194,11 @@
 
 <script>
 import waves from '@/directive/waves'
-import { getOrderDetail, getExpress, sendExpress, editExpress } from '@/api/order/sell'
+import { getOrderDetail } from '@/api/order/order'
+import { getExpress, sendExpress, editExpress } from '@/api/order/express'
 
 export default {
-  name: 'orderDetail',
+  name: 'OrderDetail',
   directives: { waves },
   data() {
     return {
@@ -220,7 +221,7 @@ export default {
       },
       expressData: [],
       expressSelect: [],
-      isSearch: false,
+      hasCompany: false,
       value: '',
       rule: {
         id: [{
@@ -328,25 +329,33 @@ export default {
         this.diaLoading = false
         this.diaDisable = false
         if(Array.isArray(res.data.records)) {
-          console.log(this.isSearch)
-          this.expressData = this.status === 3 && !this.isSearch ? res.data.records.concat(this.expressSelect) : res.data.records
+          if(!this.hasCompany) {
+            res.data.records.forEach(item => {
+              if(item.id === this.expressSelect[0].id) {
+                this.hasCompany = true
+                return false
+              }
+            })
+          }
+          this.expressData = this.status === 3 && !this.hasCompany ? res.data.records.concat(this.expressSelect) : res.data.records
         }
       })
     },
     remoteExpress(val) {
       // 手动查询快递公司
-      this.isSearch = true
+      this.hasCompany = true
       this.getExpress({ status: 1, pageIndex: 1, pageSize: 20, name: val })
     },
     shipping() {
       // 发货按钮事件
-      this.isSearch = false
+      this.hasCompany = false
       this.dialogType = 'new'
       this.dialogVisible = true
       this.getExpress({ status: 1, pageIndex: 1, pageSize: 20 })
     },
     editShipping() {
-      this.isSearch = false
+      // 修改物流信息
+      this.hasCompany = false
       this.dialogType = 'edit'
       this.dialogVisible = true
       this.getExpress({ status: 1, pageIndex: 1, pageSize: 20 })
@@ -369,7 +378,6 @@ export default {
           return false
         }
       })
-      console.log(this.express)
       this.$refs.expressForm.validate(valid => {
         if(valid) {
           this.confirm()
