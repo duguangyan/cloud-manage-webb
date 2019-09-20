@@ -54,6 +54,7 @@
     <el-table
       ref="multipleTable"
       v-loading="listLoading"
+      border
       @sort-change="sortChange"
       :data="tableData"
       :header-cell-style="{background: '#f3f3f3'}" 
@@ -62,6 +63,7 @@
       @selection-change="handleSelectionChange">
       <el-table-column
         type="selection"
+        align="center"
         width="55">
       </el-table-column>
       <el-table-column

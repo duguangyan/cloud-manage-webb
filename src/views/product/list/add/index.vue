@@ -332,15 +332,38 @@
         <span>物流信息</span>
       </div>
       <div  class="text item">
-        <el-form-item label="物流信息">
-          <el-select v-model="addForm.freight" size="medium" maxlength="64" placeholder="请选择">
+        <el-form-item 
+        label="运费设置"
+        prop="freight"
+        :rules="{
+            required: true, message: '请选择运费方式', trigger: 'blur'
+          }">
+          <el-select v-model="addForm.freight" size="medium" maxlength="64" placeholder="请选择" @change="freightChange">
             <el-option
               v-for="item in freightData"
-              :key="item.value"
+              :key="item.id"
               :label="item.name"
               :value="item.id">
             </el-option>
           </el-select>
+        </el-form-item>
+        <el-form-item 
+        v-if="addForm.freightType === 2" 
+        label="物流体积"
+         prop="freightSize"
+        :rules="{
+            required: true, message: '体积必填', trigger: 'blur'
+          }">
+          <el-input v-model="addForm.freightSize" style="width:200px;" maxlength="12" /> <span class="freight-type">立方</span> <span class="freight-des">当前运费模板，按物流体积（含包装）计</span>
+        </el-form-item>
+        <el-form-item 
+        v-if="addForm.freightType === 3"
+        label="物流重量"
+        prop="freightWeight"
+        :rules="{
+            required: true, message: '重量必填', trigger: 'blur'
+        }">
+          <el-input v-model="addForm.freightWeight" style="width:200px;" maxlength="12" /> <span class="freight-type">千克</span> <span class="freight-des">当前运费模板，按物流重量（含包装）计</span>
         </el-form-item>
       </div>
     </el-card>
@@ -384,7 +407,7 @@
             <div class="message-box">
               <span>0人看过</span>
               <span>订单数0</span>
-              <span>全国包邮</span>
+              <span :title="addForm.freightName">{{addForm.freightName}}</span>
             </div>
           </div>
           <div v-if="showStyle.type === '1'" class="product-prop">
@@ -544,6 +567,10 @@ let vm = {
         title: '',
         remark: '',
         freight: '',
+        freightType: '',
+        freightSize: '',
+        freightWeight: '',
+        freightName: '',
         sku: {},
         generate: [],
         imgsBox: [],
@@ -881,7 +908,6 @@ let vm = {
       })
     },
     unitChange(val, type, pindex) {
-      console.log(val)
       // 计量单位选择
       if(type === 'auto') {
         this.showStyle.type = this.showAble[val]
@@ -1039,7 +1065,7 @@ let vm = {
       goodsVO.showStyle = this.showStyle.type === '' ? 3 : this.showStyle.type
       goodsVO.postPayType = 0
       goodsVO.postPrice = 0
-      goodsVO.postSettingId = 'postSettingId'
+      goodsVO.postSettingId = this.addForm.freight
       // 商品动态生成的基础信息
       goodsVO.goodsAttrList = []
       let sortList = 0
@@ -1110,6 +1136,11 @@ let vm = {
           speObj.name = sku[key].name
           sku[key].list.forEach(item => {
             let skuObj = {}
+            if(this.addForm.freightType === 2) {
+              skuObj.volume = this.addForm.freightSize
+            } else if(this.addForm.freightType === 3) {
+              skuObj.weight = this.addForm.freightWeight
+            }
             if(this.eiditId.length > 0 && !skuObj.id) {
               speObj.id = item.specId
               skuObj.id = item.skuId
@@ -1141,6 +1172,11 @@ let vm = {
           goodsVO.goodsSpecList.push(speObj)
         } else if (this.addForm.sku[key].showStyle === '2') {
           let skuObj = {}
+          if(this.addForm.freightType === 2) {
+            skuObj.volume = this.addForm.freightSize
+          } else if(this.addForm.freightType === 3) {
+            skuObj.weight = this.addForm.freightWeight
+          }
           skuObj.priceType = sku[key].showStyle
           skuObj.sort = speSort++
           skuObj.priceExpList = []
@@ -1178,11 +1214,15 @@ let vm = {
           goodsVO.goodsSpecList.push(speObj)
         }
       } else if(this.activeName === 'second') {
-        console.log(this.addForm)
         goodsVO.unit = this.addForm.unitMore
         let skuSort = 0
           this.addForm.moreSpecData.forEach(item => {
             let skuObj = {}
+            if(this.addForm.freightType === 2) {
+              skuObj.volume = this.addForm.freightSize
+            } else if(this.addForm.freightType === 3) {
+              skuObj.weight = this.addForm.freightWeight
+            }
             skuObj.sort = skuSort++
             skuObj.priceType = 3
             skuObj.skuAttrValues = []
@@ -1241,7 +1281,6 @@ let vm = {
         })
       })
       if(type === 2) {
-        console.log(goodsVO)
         this.goodsVo = goodsVO
         this.preView()
       } else {
@@ -1481,8 +1520,16 @@ let vm = {
         })       
       })
         
+    },
+    freightChange(val) {
+      this.freightData.forEach(item => {
+        if(item.id === val) {
+          this.addForm.freightType = item.type
+          this.addForm.freightName = item.name
+          return false
+        }
+      })
     }
-
   }
 }
 export default vm;
@@ -1550,6 +1597,15 @@ export default vm;
         width: 200px;
         height: 60px;
       }
+    }
+    .freight-type{
+      color: #606266;
+      font-weight: 700;
+      margin-right: 5px;
+    }
+    .freight-des{
+      color: #666;
+      font-size: 12px;
     }
     .self-diolog{
       width: 100%;
@@ -1667,6 +1723,14 @@ export default vm;
               display: flex;
               justify-content: space-around;
               align-items: center;
+              span{
+                display: inline-block;
+                height: 14px;
+                max-width: 100px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+              }
             }
           }
           .product-prop{

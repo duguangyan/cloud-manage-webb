@@ -217,7 +217,7 @@
           <el-input v-model="role.sort" maxlength="11" placeholder="请输入排序" />
         </el-form-item>
         <el-form-item label="类型">
-          <el-select v-model="role.type" placeholder="请选择" @change="typeChange">
+          <el-select v-model="role.type" placeholder="请选择">
             <el-option
               v-for="item in typeData"
               :key="item.value"
@@ -232,7 +232,7 @@
          <el-form-item v-if="role.type === 0 || role.type === 2" label="链接地址">
           <el-input v-model="role.url" maxlength="255" placeholder="请输入链接地址" />
         </el-form-item>
-        <el-form-item v-if="role.type === 0 || role.type === 1" label="图标">
+        <el-form-item v-if="role.type === 0" label="图标">
           <svg-icon v-if="role && role.icon" :icon-class="role.icon" class="mr10" />
           <el-button v-waves class="filter-item" size="small" @click="selectIcon">选择图标</el-button>
         </el-form-item>
@@ -659,9 +659,11 @@ export default {
     msgEdit(row) {
       this.dialogVisible = true
       this.checkStrictly = true
+      this.dialogType = 'edit'
       this.role = deepClone(row)
     },
     msgAdd(row) {
+      this.dialogType = 'new'
       const pName = row.name
       const pId = row.id
       this.role = Object.assign({}, defaultRole)
@@ -734,7 +736,9 @@ export default {
     },
     async confirmRole() {
       const isEdit = this.dialogType === 'edit'
+      let succMsg = ''
       if (isEdit) {
+        succMsg = '编辑成功'
         this.diaDisable = true
         this.diaLoading = true
          await updateResource({
@@ -765,6 +769,7 @@ export default {
         // }
         this.getMeanFirstRec()
       } else {
+        succMsg = '新增成功'
         this.diaDisable = true
         this.diaLoading = true
         const { data } = await addResource({
@@ -791,13 +796,8 @@ export default {
       const { name, url, remark } = this.role
       this.dialogVisible = false
       this.$notify({
-        title: 'Success',
+        title: succMsg,
         dangerouslyUseHTMLString: true,
-        message: `
-            <div>名称: ${name}</div>
-            <div>链接: ${url}</div>
-            <div>描述: ${remark}</div>
-          `,
         type: 'success'
       })
     },
