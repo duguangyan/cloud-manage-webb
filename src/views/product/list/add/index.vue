@@ -1062,7 +1062,7 @@ let vm = {
       goodsVO.categoryId = this.categoryId
       goodsVO.name = this.addForm.title
       goodsVO.detail = this.addForm.remark
-      goodsVO.showStyle = this.showStyle.type === '' ? 3 : this.showStyle.type
+      goodsVO.showStyle = this.showStyle.type
       goodsVO.postPayType = 0
       goodsVO.postPrice = 0
       goodsVO.postSettingId = this.addForm.freight
