@@ -17,16 +17,14 @@ export const constantRoutes = [
     path: '/',
     component: Layout,
     redirect: '/dashboard',
-    children: [{
-      path: 'dashboard',
-      name: 'Dashboard',
-      component: () => import('@/views/dashboard/index'),
-      meta: { title: '主页', icon: 'dashboard' }
-    },
-    {
-      path: '/freight/edit',
-      component: () => import('@/views/freight/edit')
-    }]
+    children: [
+      {
+        path: 'dashboard',
+        component: () => import('@/views/dashboard/index'),
+        name: 'Dashboard',
+        meta: { title: '主页', icon: 'dashboard', affix: true }
+      }
+    ]
   }
 ]
 
