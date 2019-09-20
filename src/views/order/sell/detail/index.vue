@@ -183,8 +183,8 @@
     </el-card>
     <el-card class="box-card mb10">
       <div class="send-box">
-        <el-button v-if="status === 2" type="primary" @click="shipping">发货</el-button>
-        <el-button v-if="status === 3" type="primary" @click="editShipping">修改运单号</el-button>
+        <el-button v-if="btnsPermission.send.auth && status === 2" type="primary" @click="shipping">{{btnsPermission.send.name}}</el-button>
+        <el-button v-if="btnsPermission.edit.auth && status === 3" type="primary" @click="editShipping">{{btnsPermission.edit.name}}</el-button>
         <el-button @click="back">返回</el-button>
       </div>
     </el-card>
@@ -220,6 +220,7 @@ import waves from '@/directive/waves'
 import { getOrderDetail } from '@/api/order/order'
 import { getExpress, sendExpress, editExpress } from '@/api/order/express'
 import { validTelphone } from '@/utils/validate'
+import { getUserBtnByPId } from '@/api/upms/menu'
 
 export default {
   name: 'OrderDetail',
@@ -261,6 +262,16 @@ export default {
         name: '',
         phone: '',
         time: ''
+      },
+      btnsPermission: {
+        send: {
+          name: '发货',
+          auth: false
+        },
+        edit: {
+          name: '修改运单号',
+          auth: false
+        }
       },
       order: {
         orderStatus: 'all',
@@ -322,6 +333,16 @@ export default {
     let dom = document.querySelector('.el-steps')
     let selfClass = dom.getAttribute('class') + ' self-step'
     dom.setAttribute('class', selfClass)
+    getUserBtnByPId({ parentId: this.$route.meta.id }).then(res => {
+      if(Array.isArray(res.data)) {
+        res.data.map((val) => {
+          if(this.btnsPermission.hasOwnProperty(val.code)) {
+            this.btnsPermission[val.code].auth = val.checked === 1
+            this.btnsPermission[val.code].name = val.name
+          }
+        })
+      }
+    })
   },
   methods: {
     getOrderDetail() {

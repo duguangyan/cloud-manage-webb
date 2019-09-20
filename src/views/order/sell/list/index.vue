@@ -126,21 +126,21 @@ export default {
   directives: { waves },
   data() {
     return {
-        disable: false,
-        listLoading: false,
-        orderStatus: 'all',
-        order: {
-          createTimeBegin: '',
-          createTimeEnd: '',
-          orderId: '',
-          pageIndex: 1,
-          pageSize: 20,
-          shopId: '',
-          status: '',
-          userId: '',
-          userName: ''
-        },
-        btnsPermission: {
+      disable: false,
+      listLoading: false,
+      orderStatus: 'all',
+      order: {
+        createTimeBegin: '',
+        createTimeEnd: '',
+        orderId: '',
+        pageIndex: 1,
+        pageSize: 20,
+        shopId: '',
+        status: '',
+        userId: '',
+        userName: ''
+      },
+      btnsPermission: {
         search: {
           name: '搜索',
           auth: false
