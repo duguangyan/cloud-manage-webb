@@ -9,8 +9,8 @@
         <template slot-scope="scope">
           <div v-if="+scope.row.type===0">包邮</div>
           <div v-else-if="+scope.row.type===1">件数</div>
-          <div v-if="+scope.row.type===2">体积</div>
-          <div v-if="+scope.row.type===3">重量</div>
+          <div v-else-if="+scope.row.type===2">体积</div>
+          <div v-else-if="+scope.row.type===3">重量</div>
         </template>
       </el-table-column>
       <el-table-column prop="modifyTime" label="最后编辑时间"></el-table-column>
