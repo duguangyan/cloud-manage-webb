@@ -539,9 +539,7 @@ let vm = {
       productTitle: '',
       imgLimit: 10,
       activeName: 'first',
-      addressOptions: [
-
-      ],
+      addressOptions: [],
       checkboxObj: {},
       addressObj: {},
       cascader: {},
@@ -632,12 +630,12 @@ let vm = {
     if(this.$route.query.eid) {
       this.eiditId = this.$route.query.eid
     }
-    this.getByCategoryId()
     this.getFreight()
-    this.$route.query.des.forEach((item) => {
-      this.productTitle += this.productTitle.length === 0 ? item : '-' + item
-    })
-    // this.getAddress()
+    if(this.$route.query.des !== undefined) {
+        this.$route.query.des.forEach((item) => {
+        this.productTitle += this.productTitle.length === 0 ? item : '-' + item
+      })
+    }
   },
   methods: {
     getByCategoryId() {
@@ -696,6 +694,18 @@ let vm = {
         this.addForm.remark = res.data.goods.detail
         this.addForm.unitMore = res.data.goods.unit
         this.productTitle = res.data.categoryPath
+        this.addForm.freight = res.data.goods.postSettingId
+        this.freightData.forEach(item => {
+          if(item.id === this.addForm.freight) {
+            this.addForm.freightType = item.type
+            this.addForm.freightName = item.name
+            return false
+          }
+        })
+        if(res.data.goodsSkuList.length > 0) {
+          this.addForm.freightSize = res.data.goodsSkuList[0].volume
+          this.addForm.freightWeight = res.data.goodsSkuList[0].weight
+        }
         if(Array.isArray(res.data.goodsDetailAttrList)) {
           res.data.goodsDetailAttrList.forEach((item, index) => {
             if(item.categoryAttrId === '') {
@@ -810,6 +820,7 @@ let vm = {
         if(Array.isArray(res.data)) {
           this.freightData = res.data
         }
+        this.getByCategoryId()
       })
     },
     getUnit(style, arr, stock) {
@@ -900,12 +911,6 @@ let vm = {
         this.getUnitList()
       }
       
-    },
-    getAddress() {
-      // 获取产地信息
-      getAd({ parentId: 0 }).then(res => {
-        this.addressOptions = res.data
-      })
     },
     unitChange(val, type, pindex) {
       // 计量单位选择
@@ -1062,7 +1067,7 @@ let vm = {
       goodsVO.categoryId = this.categoryId
       goodsVO.name = this.addForm.title
       goodsVO.detail = this.addForm.remark
-      goodsVO.showStyle = this.showStyle.type === '' ? 3 : this.showStyle.type
+      goodsVO.showStyle = this.showStyle.type
       goodsVO.postPayType = 0
       goodsVO.postPrice = 0
       goodsVO.postSettingId = this.addForm.freight
@@ -1300,9 +1305,10 @@ let vm = {
           editGoods(goodsVO).then(res => {
             this.saveLoading = false
             this.$message({
-                  type: 'success',
-                  message: '编辑成功'
-                });
+              type: 'success',
+              message: '编辑成功'
+            });
+            this.$router.push({path: '/product/list'})
           }).catch(err => {
             this.saveLoading = false
           })
