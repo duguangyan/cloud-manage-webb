@@ -12,7 +12,7 @@
           <el-select v-model="postSolution.province" placeholder="请选择省份" @change="changeProvince">
             <el-option
               v-for="item in provinceList"
-              :key="item.id"
+              :key="item.id+item.name"
               :label="item.name"
               :value="item.name"
             ></el-option>
@@ -24,7 +24,7 @@
           <el-select v-model="postSolution.city" placeholder="请选择市区" @change="changeCity">
             <el-option
               v-for="item in cityList"
-              :key="item.id"
+              :key="item.id+item.name"
               :label="item.name"
               :value="item.name"
             ></el-option>
@@ -36,7 +36,7 @@
           <el-select v-model="postSolution.region" placeholder="请选择">
             <el-option
               v-for="item in regionList"
-              :key="item.id"
+              :key="item.id+item.name"
               :label="item.name"
               :value="item.name"
             ></el-option>
@@ -189,7 +189,7 @@
                     v-else
                     size="mini"
                     type="danger"
-                    @click="delFreeItem(scope.$index, scope.row)"
+                    @click="delItem(scope.$index, scope.row,1)"
                   >删除</el-button>
                 </template>
               </el-table-column>
@@ -276,7 +276,7 @@
                     v-else
                     size="mini"
                     type="danger"
-                    @click="delFreeItem(scope.$index, scope.row)"
+                    @click="delItem(scope.$index, scope.row,2)"
                   >删除</el-button>
                 </template>
               </el-table-column>
@@ -494,7 +494,7 @@ var vm = {
       },
       level: /* 地区选择等级 1:城市包邮；2:条件包邮 */ "",
       extCityItems: /* 城市包邮已选地区 */ [],
-      extCondItmes: /* 条件包邮已选地区 */ []
+      extCondItems: /* 条件包邮已选地区 */ []
     };
   },
   watch: {
@@ -542,7 +542,7 @@ var vm = {
           } catch (e) {
             item.areaExp = [];
           }
-          vm.extCondItmes = vm.extCondItmes.concat(item.areaExp);
+          vm.extCondItems = vm.extCondItems.concat(item.areaExp);
           return item;
         });
 
@@ -668,13 +668,13 @@ var vm = {
     },
     // 插入城市包邮列表
     insertToItem() {
-      vm.postSolution.solutionItemList.unshift(
-        Object.assign({}, { ...vm.solutionItem })
-      );
+      // 新数据插入到顶部
+      vm.postSolution.solutionItemList.unshift(preCopy(vm.solutionItem));
+
+      // 重置添加项的数据
       vm.postSolution.solutionItemList.pop();
       vm.solutionItem = {
         areaExp: [],
-        // areaVoList: [],
         continuePrice: /* 续重价钱 */ "",
         continueVolume: /* 续重 */ "",
         firstPrice: /*首量价钱*/ "",
@@ -683,19 +683,19 @@ var vm = {
         postSolutionId: "",
         sort: 5
       };
-      vm.postSolution.solutionItemList.push(
-        Object.assign({}, { ...vm.solutionItem })
-      );
+      vm.postSolution.solutionItemList.push(preCopy(vm.solutionItem));
     },
     // 插入条件包邮列表
     insertToFreeItem() {
+      //
       vm.postSolution.solutionFreeItemList.unshift(
-        Object.assign({}, { ...vm.solutionFreeItem })
+        preCopy(vm.solutionFreeItem)
       );
+
+      //
       vm.postSolution.solutionFreeItemList.pop();
       vm.solutionFreeItem = {
         areaExp: [],
-        // areaVoList: [],
         id: "",
         postSolutionId: "",
         price: "",
@@ -703,31 +703,29 @@ var vm = {
         sort: 0,
         type: ""
       };
-      vm.postSolution.solutionFreeItemList.push(
-        Object.assign({}, { ...vm.solutionFreeItem })
-      );
+      vm.postSolution.solutionFreeItemList.push(preCopy(vm.solutionFreeItem));
     },
 
-    // 删除城市包邮项
-    delItem(index, item) {
-      let data = [...vm.postSolution.solutionItemList.splice(index, 1).areaExp];
-      vm.provinceList = vm.provinceList.map(area => {
-        data.indexOf(area) > -1
-          ? (area.isChecked = false)
-          : (area.isChecked = true);
-        return area;
-      });
-    },
+    // 删除包邮项
+    delItem(index, item,level) {
+      let areaKey,aimKey,isExist = false;
+      if(+level===1){
+        areaKey = 'provinceList';
+        aimKey = 'solutionItemList';
+      }else{
+        areaKey = 'provinceList2';
+        aimKey = 'solutionFreeItemList';
+      }
 
-    // 删除条件包邮项
-    delFreeItem(index, item) {
-      let data = [
-        vm.postSolution.solutionFreeItemList.splice(index, 1).areaExp
-      ];
-      vm.provinceList2 = vm.provinceList2.map(area => {
-        data.indexOf(area) > -1
-          ? (area.isChecked = false)
-          : (area.isChecked = true);
+      let data = vm.postSolution[aimKey].splice(index, 1)[0];
+      vm[areaKey] = vm[areaKey].map(area => {
+        isExist = false;
+        data.areaExp.forEach(item=>{
+          item.id === area.id && (isExist = true)
+        })
+        if(isExist){
+          area.isChecked = false;
+        }
         return area;
       });
     },
@@ -748,7 +746,7 @@ var vm = {
 
       d2 = d2.map(item => {
         // 城市包邮地区筛选
-        vm.extCondItmes.forEach(val => {
+        vm.extCondItems.forEach(val => {
           val.id === item.id && (item.isChecked = true);
         });
         // 条件包邮地区筛选
@@ -800,63 +798,52 @@ var vm = {
 
     // 添加邮费方案
     selAreas() {
+      let souKey,
+        filKey,
+        aimKey,
+        areaKey,
+        len,
+        isExist = false;
       if (+vm.level === 1) {
-        let len = vm.extCityItems.length;
-        vm.provinceList.forEach(item => {
-          if (item.isChecked) {
-            if (len > 0) {
-              vm.extCityItems.forEach(val => {
-                val.id !== item.id &&
-                  vm.extCityItems.push(item) &&
-                  vm.solutionItem.push({
-                    id: item.id,
-                    name: item.name
-                  });
-              });
-            } else {
-              vm.extCityItems.push(item);
-              vm.solutionItem.areaExp.push({
-                id: item.id,
-                name: item.name
-              });
-            }
-          }
-        });
-
-        vm.postSolution.solutionItemList.splice(
-          -1,
-          1,
-          Object.assign({}, { ...vm.solutionItem })
-        );
+        souKey = "solutionItem";
+        filKey = "extCityItems";
+        aimKey = "solutionItemList";
+        areaKey = "provinceList";
       } else {
-        let len = vm.extCondItmes.length;
-        vm.provinceList2.forEach(item => {
-          if (item.isChecked) {
-            if (len > 0) {
-              vm.extCondItmes.forEach(val => {
-                val.id !== item.id &&
-                  vm.extCondItmes.push(item) &&
-                  vm.solutionFreeItem.push({
-                    id: item.id,
-                    name: item.name
-                  });
-              });
-            } else {
-              vm.extCondItmes.push(item);
-              vm.solutionFreeItem.push({
+        souKey = "solutionFreeItem";
+        filKey = "extCondItems";
+        aimKey = "solutionFreeItemList";
+        areaKey = "provinceList2";
+      }
+      len = vm[filKey].length;
+      vm[areaKey].forEach(item => {
+        if (item.isChecked) {
+          isExist = false;
+          if (len > 0) {
+            // 如果选中的地区已存在已用过的地区，跳过
+            vm[filKey].forEach(val => {
+              if (val.id === item.id) {
+                isExist = true;
+              }
+            });
+            // 否则出入当前选中项
+            if (!isExist) {
+              vm[filKey].push(item);
+              vm[souKey].areaExp.push({
                 id: item.id,
                 name: item.name
               });
             }
+          } else {
+            vm[filKey].push(item);
+            vm[souKey].areaExp.push({
+              id: item.id,
+              name: item.name
+            });
           }
-        });
-
-        vm.postSolution.solutionFreeItemList.splice(
-          -1,
-          1,
-          Object.assign({}, { ...vm.solutionFreeItem })
-        );
-      }
+        }
+      });
+      vm.postSolution[aimKey].splice(-1, 1, preCopy(vm[souKey]));
 
       vm.isShowArea = false;
       vm.isShowArea2 = false;
