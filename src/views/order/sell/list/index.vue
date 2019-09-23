@@ -30,7 +30,7 @@
           </template>
       </div>
       <div class="mb20">
-        <el-button v-if="btnsPermission.export.auth" v-waves class="filter-item add-btn">{{btnsPermission.export.name}}</el-button>
+        <el-button v-if="btnsPermission.export.auth" v-waves class="filter-item add-btn" @click="exportMsg">{{btnsPermission.export.name}}</el-button>
         <el-button v-if="btnsPermission.search.auth" v-waves class="filter-item" type="primary" :disabled="disable" icon="el-icon-search" @click="handleFilter">{{btnsPermission.search.name}}</el-button>
         <el-button v-if="btnsPermission.search.auth" v-waves class="filter-item" @click="resetOrder">重置</el-button>
       </div>
@@ -300,6 +300,9 @@ export default {
           id: 1234
         }
       })
+    },
+    exportMsg() {
+      this.$message('暂未完成')
     }
   }
 }

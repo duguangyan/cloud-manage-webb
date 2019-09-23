@@ -379,8 +379,8 @@ export default {
             this.time[3] = res.data.shopOrder.finishTime
             if(this.status > 3) {
               this.activeStep = 4 
-              if(Array.isArray(res.data.logisticsQueryResults)) {
-                this.expressHistory = res.data.logisticsQueryResults.reverse()
+              if(res.data.expressDetails !==null && Array.isArray(res.data.expressDetails.traceList)) {
+                this.expressHistory = res.data.expressDetails.traceList.reverse()
               }
               if(res.data.orderShipping !== null) {
                 this.express.num = res.data.orderShipping.courierNum

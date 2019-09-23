@@ -346,6 +346,7 @@
               :value="item.id">
             </el-option>
           </el-select>
+          <el-link type="primary" :underline="false" @click="createExpress">新建运费模板</el-link>
         </el-form-item>
         <el-form-item 
         v-if="addForm.freightType === 2" 
@@ -1335,16 +1336,17 @@ let vm = {
       })
     },
     beforeImgUpload(file) {
-      const isJPG = file.type === 'image/jpeg' || file.type === 'image/jpg' || file.type === 'image/png' || file.type === 'image/gif'
-      const isLt3M = file.size / 1024 / 1024 < 3;
+      console.log(file)
+      // const isJPG = file.type === 'image/jpeg' || file.type === 'image/jpg' || file.type === 'image/png' || file.type === 'image/gif'
+      // const isLt3M = file.size / 1024 / 1024 < 3;
 
-      if (!isJPG) {
-        this.$message.error('上传头像图片只能是 jpg、jpeg、gif、png 格式!');
-      }
-      if (!isLt3M) {
-        this.$message.error('上传头像图片大小不能超过 2MB!');
-      }
-      return isJPG && isLt3M;
+      // if (!isJPG) {
+      //   this.$message.error('上传头像图片只能是 jpg、jpeg、gif、png 格式!');
+      // }
+      // if (!isLt3M) {
+      //   this.$message.error('上传头像图片大小不能超过 2MB!');
+      // }
+      // return isJPG && isLt3M;
     },
     handlePictureCardPreview(file) {
       // 图片预览
@@ -1525,7 +1527,6 @@ let vm = {
           message: '已取消删除'
         })       
       })
-        
     },
     freightChange(val) {
       this.freightData.forEach(item => {
@@ -1534,6 +1535,22 @@ let vm = {
           this.addForm.freightName = item.name
           return false
         }
+      })
+    },
+    createExpress() {
+      this.$confirm('新建模板后当前页面数据会清空, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$router.push({
+          path: '/freight/edit'
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        })       
       })
     }
   }
