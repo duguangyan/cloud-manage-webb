@@ -1544,7 +1544,7 @@ let vm = {
         type: 'warning'
       }).then(() => {
         this.$router.push({
-          path: '/freight/edit'
+          path: '/freight_edit'
         })
       }).catch(() => {
         this.$message({

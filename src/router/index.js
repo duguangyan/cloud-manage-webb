@@ -12,7 +12,6 @@ export const constantRoutes = [
     component: () => import('@/views/login/index'),
     hidden: true
   },
-
   {
     path: '/',
     component: Layout,
@@ -23,10 +22,6 @@ export const constantRoutes = [
         component: () => import('@/views/dashboard/index'),
         name: 'Dashboard',
         meta: { title: '主页', icon: 'dashboard', affix: true }
-      },
-      {
-        path: 'freight_edit',
-        component: () => import('@/views/freight/edit/index')
       }
     ]
   }
