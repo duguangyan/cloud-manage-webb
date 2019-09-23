@@ -436,7 +436,7 @@ export default {
         })
       }
     },
-    handleDelete({ $index, row }) {
+    handleDelete({ row }) {
       this.$confirm('确定要删除该角色?', '警告', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -447,12 +447,11 @@ export default {
             this.listLoading = false
           })
           this.listLoading = false
-          this.userData.splice($index, 1)
           this.$message({
             type: '成功',
             message: '角色删除成功!'
           })
-          if(this.userData.length === 0 && this.allPages - 1 > 0) {
+          if(this.userData.length - 1 === 0 && this.allPages - 1 > 0) {
             --this.listQuery.pageIndex
           }
           this.getUserList()
