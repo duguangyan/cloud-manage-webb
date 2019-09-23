@@ -55,6 +55,7 @@
       </el-table-column>
       <el-table-column
         align="center"
+        min-width="180px"
         label="操作">
         <template slot-scope="scope">
           <el-button v-if="btnsPermission.edit.auth" type="primary" size="small" @click="edit(scope.row)">{{btnsPermission.edit.name}}</el-button>
@@ -116,6 +117,7 @@ import waves from '@/directive/waves'
 import { addBanner, deleteBanner, updateBanner, getBannerList } from '@/api/act/banner'
 import Pagination from '@/components/Pagination'
 import { deepClone } from '@/utils'
+
 const defaultBanner = {
   name: '',
   id: '',
@@ -157,19 +159,19 @@ export default {
       btnsPermission: {
         search: {
           name: '搜索',
-          auth: true
+          auth: false
         },
         add: {
           name: '新增广告位',
-          auth: true
+          auth: false
         },
         edit: {
           name: '编辑',
-          auth: true
+          auth: false
         },
         delete: {
           name: '删除',
-          auth: true
+          auth: false
         }
       },
       typeData: [
@@ -242,6 +244,18 @@ export default {
   },
   created() {
     this.getBannerList()
+  },
+  mounted() {
+    getUserBtnByPId({ parentId: this.$route.meta.id }).then(res => {
+      if(Array.isArray(res.data)) {
+        res.data.map((val) => {
+          if(this.btnsPermission.hasOwnProperty(val.code)) {
+            this.btnsPermission[val.code].auth = val.checked === 1
+            this.btnsPermission[val.code].name = val.name
+          }
+        })
+      }
+    })
   },
   methods: {
     getBannerList() {

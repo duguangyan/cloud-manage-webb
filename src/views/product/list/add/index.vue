@@ -817,20 +817,33 @@ let vm = {
     },
     getFreight() {
       // 获取运费模板
+      this.listLoading = true
       getFreight({ shopId: 1 }).then(res => {
+        this.listLoading = false
         if(Array.isArray(res.data)) {
           this.freightData = res.data
+        }
+        if(this.freightData.length === 0) {
+          this.$alert('运费模板为空，请先去创建运费模板', '提示', {
+            confirmButtonText: '确定',
+            callback: action => {
+              this.$message({
+                type: 'info',
+                message: `action: ${ action }`
+              });
+            }
+          })
         }
         this.getByCategoryId()
       })
     },
     getUnit(style, arr, stock) {
       // 通过ID获取规格模板
-      this.listLoading = true
+      this.moreLoading = true
        getUnit({
         categoryId: this.categoryId
       }).then(res => {
-        this.listLoading = false
+        this.moreLoading = false
         if(Array.isArray(res.data)) {
           let skuInitObj = {}
           res.data.forEach(item => {
@@ -910,8 +923,9 @@ let vm = {
       // 报价方式切换
       if(this.activeName === 'second') {
         this.getUnitList()
+      } else {
+        this.getUnit()
       }
-      
     },
     unitChange(val, type, pindex) {
       // 计量单位选择
@@ -939,7 +953,7 @@ let vm = {
         } else {
           this.addForm.moreSpec[pindex].id = val
         }
-        
+        this.specValueBlur('', 'true')
       }
     },
     addStair(index, id) {
@@ -1336,17 +1350,17 @@ let vm = {
       })
     },
     beforeImgUpload(file) {
-      console.log(file)
-      // const isJPG = file.type === 'image/jpeg' || file.type === 'image/jpg' || file.type === 'image/png' || file.type === 'image/gif'
-      // const isLt3M = file.size / 1024 / 1024 < 3;
+      // console.log(file)
+      const isJPG = file.type === 'image/jpeg' || file.type === 'image/jpg' || file.type === 'image/png' || file.type === 'image/gif'
+      const isLt3M = file.size / 1024 / 1024 < 3;
 
-      // if (!isJPG) {
-      //   this.$message.error('上传头像图片只能是 jpg、jpeg、gif、png 格式!');
-      // }
-      // if (!isLt3M) {
-      //   this.$message.error('上传头像图片大小不能超过 2MB!');
-      // }
-      // return isJPG && isLt3M;
+      if (!isJPG) {
+        this.$message.error('上传头像图片只能是 jpg、jpeg、gif、png 格式!');
+      }
+      if (!isLt3M) {
+        this.$message.error('上传头像图片大小不能超过 2MB!');
+      }
+      return isJPG && isLt3M;
     },
     handlePictureCardPreview(file) {
       // 图片预览

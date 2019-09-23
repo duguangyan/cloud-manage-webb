@@ -21,14 +21,17 @@ const moduleSource = [
   'permission/user/index',
   'system/config/index',
   'system/strict/index',
-  'freight/list/index',
-  'freight/edit/index'
+  'freight/template/index',
+  'freight/template/edit/index',
+  'freight/template/list/index'
 ]
 const hiddenData = [
   'product/list/release/index',
   'product/list/detail/index',
   'product/list/add/index',
   'order/sell/detail/index',
+  'freight/template/edit/index',
+  'freight/template/list/index'
 ]
 // 重定向路由
 const redirectSource = {
@@ -36,7 +39,8 @@ const redirectSource = {
   stat: 'stat/analyze',
   order: 'order/sell',
   acitvity: 'activity/banner',
-  system: 'system/menu'
+  system: 'system/menu',
+  freight: 'freight/template'
 }
 const _import = require('@/router/_import_' + process.env.NODE_ENV) // 获取组件的方法
 // const _import = require('@/router/_import_development') // 获取组件的方法

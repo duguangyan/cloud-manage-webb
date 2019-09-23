@@ -2,7 +2,18 @@
   <div class="app-container">
     <div class="filter-container mb20">
       <div v-if="btnsPermission.search.auth" class="mb40">
-        广告位名称：
+        广告名称：
+        <el-input v-model="listQuery.name"  placeholder="请输入广告名称" style="width: 200px;" class="filter-item mr20" @keyup.enter.native="handleFilter" />
+        状态：
+        <el-select v-model="listQuery.status" class="mr10" placeholder="请选择">
+          <el-option
+            v-for="item in statusData"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value">
+          </el-option>
+        </el-select>
+         广告位名称：
         <el-input v-model="listQuery.name"  placeholder="请输入广告位名称" style="width: 200px;" class="filter-item mr20" @keyup.enter.native="handleFilter" />
         <el-button v-waves class="filter-item" type="primary" :disabled="disable" icon="el-icon-search" @click="handleFilter">{{btnsPermission.search.name}}</el-button>
         <el-button v-waves class="filter-item" @click="resetList">重置</el-button>
@@ -24,40 +35,45 @@
         </template>
       </el-table-column>
       <el-table-column
-        prop="name"
-        label="名称"
         align="center"
-        width="180">
-      </el-table-column>
-      <el-table-column
-        prop="id"
-        label="编码"
-        align="center"
-        width="180">
-      </el-table-column>
-      <el-table-column
-        align="center"
-        label="投放方式">
+        label="图片"
+        width="120">
         <template slot-scope="scope">
-          <span v-if="scope.row.pushType === 1">随机</span>
-          <span v-else-if="scope.row.pushType === 2">顺序</span>
+          <el-avatar shape="square" size="large" :src="scope.row.path"></el-avatar>
         </template>
       </el-table-column>
       <el-table-column
-        prop="modifyTime"
-        align="center"
-        label="更新时间">
-      </el-table-column>
-      <el-table-column
-        prop="createTime"
-        align="center"
-        label="创建时间">
+        prop="name"
+        label="名称"
+        width="180">
       </el-table-column>
       <el-table-column
         align="center"
+        label="状态">
+        <template slot-scope="scope">
+          <span v-if="scope.row.status === 0">下线</span>
+          <span v-else-if="scope.row.status === 1">上线</span>
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="showTime"
+        label="展示次数"
+        align="center"
+        width="180">
+      </el-table-column>
+      <el-table-column
+        prop="hits"
+        label="点击次数"
+        align="center"
+        width="180">
+      </el-table-column>
+      <el-table-column
+       min-width="330"
         label="操作">
         <template slot-scope="scope">
           <el-button v-if="btnsPermission.edit.auth" type="primary" size="small" @click="edit(scope.row)">{{btnsPermission.edit.name}}</el-button>
+          <el-button v-if="btnsPermission.on.auth" type="primary" size="small" @click="edit(scope.row)">{{btnsPermission.on.name}}</el-button>
+          <el-button v-if="btnsPermission.off.auth" type="primary" size="small" @click="edit(scope.row)">{{btnsPermission.off.name}}</el-button>
           <el-button v-if="btnsPermission.delete.auth" type="danger" size="small" @click="handleDelete(scope.row)">{{btnsPermission.delete.name}}</el-button>
         </template>
       </el-table-column>
@@ -167,6 +183,14 @@ export default {
           name: '编辑',
           auth: true
         },
+        on: {
+          name: '上线',
+          auth: true
+        },
+        off: {
+          name: '下线',
+          auth: true
+        },
         delete: {
           name: '删除',
           auth: true
@@ -182,6 +206,7 @@ export default {
           label: '随机'
         },
       ],
+      statusData: [],
       total: 0,
       allPages: 0,
       listQuery: {

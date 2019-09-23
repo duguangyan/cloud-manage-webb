@@ -1,7 +1,7 @@
 <template>
   <div class="list">
     <div class="build">
-      <el-button type="primary" size="middle" @click="$router.push('/freight_edit')">新建模板</el-button>
+      <el-button type="primary" size="middle" @click="$router.push('/freight/template/edit')">新建模板</el-button>
     </div>
     <el-table :data="list" stripe style="width: 800px;">
       <el-table-column prop="name" label="模板名称" width="180"></el-table-column>
@@ -48,7 +48,7 @@ var vm = {
       });
     },
     toEdit(item) {
-      vm.$router.push(`/freight_edit?id=${item.id}`);
+      vm.$router.push(`/freight/template/edit?id=${item.id}`);
     },
     doDel(item) {
       vm.$confirm("确认删除该模板？")
