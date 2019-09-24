@@ -27,16 +27,18 @@
         prop="name"
         label="名称"
         align="center"
-        width="180">
+        show-overflow-tooltip>
       </el-table-column>
       <el-table-column
         prop="id"
         label="编码"
         align="center"
-        width="180">
+        width="180"
+        show-overflow-tooltip>
       </el-table-column>
       <el-table-column
         align="center"
+        width="180"
         label="投放方式">
         <template slot-scope="scope">
           <span v-if="scope.row.pushType === 1">随机</span>
@@ -46,16 +48,18 @@
       <el-table-column
         prop="modifyTime"
         align="center"
+        width="220"
         label="更新时间">
       </el-table-column>
       <el-table-column
         prop="createTime"
         align="center"
+        width="220"
         label="创建时间">
       </el-table-column>
       <el-table-column
         align="center"
-        min-width="180px"
+        width="300px"
         label="操作">
         <template slot-scope="scope">
           <el-button v-if="btnsPermission.edit.auth" type="primary" size="small" @click="edit(scope.row)">{{btnsPermission.edit.name}}</el-button>
@@ -67,7 +71,7 @@
     <el-dialog :visible.sync="dialogVisible" :closeOnClickModal="false" :title="dialogType==='edit'?'编辑广告位':'新增广告位'">
       <el-form ref="bannerForm" v-loading="diaLoading" :model="banner" label-width="80px" label-position="left" :rules="bannerRules">
         <el-form-item label="名称" prop="name">
-          <el-input v-model.trim="banner.name" maxlength="64" placeholder="请输入名称" />
+          <el-input v-model.trim="banner.name" maxlength="30" placeholder="请输入名称" />
         </el-form-item>
         <el-form-item label="编码" prop="id">
           <el-input v-model.trim="banner.id" maxlength="32" placeholder="请输入编码" />
@@ -99,7 +103,7 @@
             v-model.trim="banner.remark"
             :autosize="{ minRows: 2, maxRows: 4}"
             type="textarea"
-            maxlength="255"
+            maxlength="200"
             placeholder="请输入备注内容"
           />
         </el-form-item>
@@ -114,9 +118,10 @@
 
 <script>
 import waves from '@/directive/waves'
-import { addBanner, deleteBanner, updateBanner, getBannerList } from '@/api/act/banner'
+import { addBanner, deleteBanner, updateBanner, getBannerList, getBannerById } from '@/api/act/banner'
 import Pagination from '@/components/Pagination'
 import { deepClone } from '@/utils'
+import { getUserBtnByPId } from '@/api/upms/menu'
 
 const defaultBanner = {
   name: '',
@@ -322,7 +327,12 @@ export default {
       this.dialogVisible = true
       this.checkStrictly = true
       this.dialogType = 'edit'
-      this.banner = deepClone(row)
+      this.diaLoading = true
+      getBannerById({ id: row.id }).then(res => {
+        this.diaLoading = false
+        this.banner = res.data
+      })
+      // this.banner = deepClone(row)
     },
     regFun () {
       // 表单校验
@@ -338,7 +348,7 @@ export default {
       let succMsg = ''
       let isError = false
       if (isEdit) {
-        succMsg = '编辑成功'
+        succMsg = '编辑广告位成功'
         this.diaDisable = true
         this.diaLoading = true
         await updateBanner({
@@ -360,7 +370,7 @@ export default {
         }
         this.getBannerList()
       } else {
-        succMsg = '新增成功'
+        succMsg = '新增广告位成功'
         this.diaDisable = true
         this.diaLoading = true
         await addBanner({

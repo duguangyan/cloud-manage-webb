@@ -54,6 +54,15 @@ export function getUnitList(query) {
   })
 }
 
+// 根据Id获取计量单位
+export function getUnitById(query) {
+  return request({
+    url: '/goods/categoryUnit/getById',
+    method: 'get',
+    params: query
+  })
+}
+
 // 新增计量单位
 export function insetUnitList(data) {
   return request({
@@ -90,6 +99,15 @@ export function getSpeList(query) {
   })
 }
 
+// 根据Id获取分类规格
+export function getSpeById(query) {
+  return request({
+    url: '/goods/categorySpec/getById',
+    method: 'get',
+    params: query
+  })
+}
+
 // 新增规格
 export function insetSpeList(data) {
   return request({
@@ -121,6 +139,15 @@ export function deleteSpeList(query) {
 export function getPropList(query) {
   return request({
     url: '/goods/categoryAttr/getByCategoryId',
+    method: 'get',
+    params: query
+  })
+}
+
+// 根据Id获取分类规格
+export function getPropById(query) {
+  return request({
+    url: '/goods/categoryAttr/getById',
     method: 'get',
     params: query
   })

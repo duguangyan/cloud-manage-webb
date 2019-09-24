@@ -43,7 +43,7 @@
                 @focus="((val) => focus(val, item.id))"
                 :options="addressOptions"
                 :style="{width: item.length + 'px'}"
-                :props="addressProps"
+                :props="addressData[item.id]"
                 style="width: 200px;"
                 class="filter-item mr20"
                 @keyup.enter.native="handleFilter">
@@ -543,23 +543,10 @@ let vm = {
       addressOptions: [],
       checkboxObj: {},
       addressObj: {},
-      cascader: {},
+      cascader: '',
       cascaderId: '',
-      addressProps: {
-        lazy: true,
-        lazyLoad (node, resolve) {
-          getAd({ parentId: node.level === 0 ? 0 : node.data.id }).then( res => {
-            if(Array.isArray(res.data)) {
-              res.data.map((item) => {
-                item.leaf = item.haveChild === 0 || parseInt(vm.cascader[vm.cascaderId] - 1) === node.level
-              })
-              resolve(res.data);
-            }
-          })
-        },
-        value: "id",
-        label: "shortName",
-      },
+      addressIndex: -1,
+      addressData: {},
       tableShow: false,
         moreTableShow: false,
       addForm: {
@@ -647,9 +634,29 @@ let vm = {
       }).then(res => {
         this.listLoading = false
         if(Array.isArray(res.data)) {
+          let adData = {}
+          let generate = []
           res.data.forEach((item, index) => {
             let obj = {}
             if(item.inputType === 0) {
+              this.addressIndex++
+              let aObj = {
+                lazy: true,
+                lazyLoad (node, resolve) {
+                  getAd({ parentId: node.level === 0 ? 0 : node.data.id }).then( res => {
+                    if(Array.isArray(res.data)) {
+                      res.data.map((lazyItem) => {
+                        lazyItem.leaf = lazyItem.haveChild === 0 || item.valueSet[0].value == node.level
+                      })
+                      resolve(res.data);
+                    }
+                  })
+                },
+                value: "id",
+                label: "shortName",
+              }
+              // JSON.stringify(aObj)
+              adData[item.id] = aObj
               obj.list= []
               obj.isRemark = true
               this.checkboxObj[index] = item.valueSet.map((itemIn) => {
@@ -668,12 +675,10 @@ let vm = {
             obj.sort = item.sort
             obj.name = item.name 
             obj.nameGroup = item.nameGroup
-            this.addForm.generate.push(obj)
-            if(item.inputType === 0) {
-              this.cascader[item.id] = item.valueSet[0].value
-              // this.$set(this.cascader, item.id, item.valueSet[0].value)
-            }
+            generate.push(obj)
           });
+          this.addressData = adData
+          this.addForm.generate = generate
         }
         if(this.eiditId.length === 0) {
            this.baseData = res.data
@@ -731,7 +736,6 @@ let vm = {
                     item.goodsDetailAttrValueList.forEach((vItem, vIndex) => {
                       generateObj.list.push(vItem.value)
                     })
-                    this.cascaderId = bItem.id
                   } else {
                     generateObj.list = item.goodsDetailAttrValueList[0].value
                   }
@@ -786,7 +790,7 @@ let vm = {
           if (res.data.goods.showStyle === '1') {
             res.data.goodsSkuList.forEach(item => {
               skuArr.push({
-                name: item.skuDesc,
+                name: item.attrValueList[0].value,
                 price: item.price,
                 number: item.startNum,
                 store: item.stock,
@@ -1333,7 +1337,7 @@ let vm = {
     },
     focus(val, id) {
       // this.addressProps.id = id
-      this.cascaderId = id
+      // this.cascaderId = id
     },
     handleCheckAllChange(val, index, id) {
       // 全选
