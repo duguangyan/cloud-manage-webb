@@ -48,6 +48,7 @@
           border
           tooltip-effect="dark"
           style="width: 100%"
+          :header-cell-style="{background: '#f3f3f3'}" 
           @selection-change="handleSelectionChange">
           <el-table-column
             type="selection"
@@ -257,7 +258,7 @@ export default {
         createTimeEnd: '',
         orderId: '',
         pageIndex: 1,
-        pageSize: 20,
+        pageSize: 10,
         shopId: '',
         status: '',
         userId: '',
@@ -296,18 +297,11 @@ export default {
           userId: this.order.userId,
           status: this.order.status,
           orderStatus: this.orderStatus
-        },
-        params: {
-          id: 1234
         }
       })
     },
     exportMsg() {
-      // let target = '/api'
-      // const baseURL = process.env.NODE_ENV === 'development' ? target : '/'
-      // console.log(baseURL)
-      // console.log(exportOrder)
-      // return
+      this.downloadLoading = true
       exportOrder({
         shopId: this.order.shopId,
         createTimeBegin: this.order.createTimeBegin,
@@ -317,8 +311,12 @@ export default {
         userId: this.order.userId,
         userName: this.order.userName
       }).then(res => {
-        // window.open(res.request.responseURL)
+        this.downloadLoading = false
+        window.open(res.request.responseURL)
         window.href = res.request.responseURL
+      }).catch(err => {
+        this.downloadLoading = false
+        this.$message.error('导出失败！');
       })
     }
   }

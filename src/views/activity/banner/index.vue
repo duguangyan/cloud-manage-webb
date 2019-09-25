@@ -14,6 +14,7 @@
     <el-table
       :data="bannerData"
       border
+      :header-cell-style="{background: '#f3f3f3'}" 
       style="width: 100%">
       <el-table-column
         label="序号"

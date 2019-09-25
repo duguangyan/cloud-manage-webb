@@ -23,7 +23,9 @@ const moduleSource = [
   'system/strict/index',
   'freight/template/index',
   'freight/template/edit/index',
-  'freight/template/list/index'
+  'freight/template/list/index',
+  'activity/manage/index',
+  'activity/manage/detail/index'
 ]
 const hiddenData = [
   'product/list/release/index',
@@ -31,7 +33,8 @@ const hiddenData = [
   'product/list/add/index',
   'order/sell/detail/index',
   'freight/template/edit/index',
-  'freight/template/list/index'
+  'freight/template/list/index',
+  'activity/manage/detail/index'
 ]
 // 重定向路由
 const redirectSource = {

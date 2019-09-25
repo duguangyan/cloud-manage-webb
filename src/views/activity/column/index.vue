@@ -26,7 +26,7 @@
       v-loading="listLoading"
       :data="adData"
       border
-      
+      :header-cell-style="{background: '#f3f3f3'}" 
       style="width: 100%">
       <el-table-column
         label="序号"
@@ -82,8 +82,8 @@
         label="操作">
         <div class="more-btn" slot-scope="scope">
           <el-button v-if="btnsPermission.edit.auth" type="primary" size="small" @click="edit(scope.row)">{{btnsPermission.edit.name}}</el-button>
-          <el-button v-if="btnsPermission.on.auth && scope.row.status === 0" type="primary" size="small" @click="edit(scope.row)">{{btnsPermission.on.name}}</el-button>
-          <el-button v-if="btnsPermission.off.auth && scope.row.status === 1" type="primary" size="small" @click="edit(scope.row)">{{btnsPermission.off.name}}</el-button>
+          <el-button v-if="btnsPermission.on.auth && scope.row.status === 0" type="primary" size="small" @click="line(scope.row, 1)">{{btnsPermission.on.name}}</el-button>
+          <el-button v-if="btnsPermission.off.auth && scope.row.status === 1" type="primary" size="small" @click="line(scope.row, 0)">{{btnsPermission.off.name}}</el-button>
           <el-button v-if="btnsPermission.delete.auth && scope.row.status === 0" type="danger" size="small" @click="handleDelete(scope.row)">{{btnsPermission.delete.name}}</el-button>
         </div>
       </el-table-column>
@@ -181,10 +181,11 @@
 
 <script>
 import waves from '@/directive/waves'
-import { addAd, deleteAd, updateAd, getAdList, getBannerList, getAdById } from '@/api/act/banner'
+import { addAd, deleteAd, updateAd, getAdList, getBannerList, getAdById, updateAdStatus } from '@/api/act/banner'
 import Pagination from '@/components/Pagination'
 import { deepClone } from '@/utils'
 import { fileUpload } from '@/api/goods/upload'
+import { getUserBtnByPId } from '@/api/upms/menu'
 const defaultBanner = {
   id: '',
   name: '',
@@ -235,27 +236,27 @@ export default {
       btnsPermission: {
         search: {
           name: '搜索',
-          auth: true
+          auth: false
         },
         add: {
           name: '新增Banner',
-          auth: true
+          auth: false
         },
         edit: {
           name: '编辑',
-          auth: true
+          auth: false
         },
         on: {
           name: '上线',
-          auth: true
+          auth: false
         },
         off: {
           name: '下线',
-          auth: true
+          auth: false
         },
         delete: {
           name: '删除',
-          auth: true
+          auth: false
         }
       },
       typeData: [
@@ -376,6 +377,18 @@ export default {
   created() {
     this.getAdList()
   },
+  mounted() {
+    getUserBtnByPId({ parentId: this.$route.meta.id }).then(res => {
+      if(Array.isArray(res.data)) {
+        res.data.map((val) => {
+          if(this.btnsPermission.hasOwnProperty(val.code)) {
+            this.btnsPermission[val.code].auth = val.checked === 1
+            this.btnsPermission[val.code].name = val.name
+          }
+        })
+      }
+    })
+  },
   methods: {
     getAdList() {
       // 获取广告列表
@@ -481,6 +494,32 @@ export default {
         })
       })
       
+    },
+    line(row, status) {
+      // 上线、下线
+      const noticeMsg = status === 1 ? '确定要上线广告？' : '确定要下线广告？'
+      const succMsg = status === 1 ? '上线成功' : '下线成功'
+      this.$confirm(noticeMsg, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.listLoading = true
+        updateAdStatus({
+          id: row.id,
+          status: status
+        }).then(res => {
+          this.listLoading = false
+          this.$notify({
+            title: succMsg,
+            dangerouslyUseHTMLString: true,
+            type: 'success'
+          })
+          this.getAdList()
+        }).catch(err => {
+          this.listLoading = false
+        })
+      })
     },
     regFun () {
       // 表单校验

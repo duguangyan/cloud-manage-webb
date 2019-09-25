@@ -123,7 +123,7 @@
         <el-form-item label="密码" prop="password">
           <el-input v-model="role.password" minlength="6" maxlength="64" placeholder="请输入密码" />
         </el-form-item>
-        <el-form-item label="系统">
+        <el-form-item label="系统" prop="systemId">
           <el-select v-model="role.systemId" placeholder="请选择">
             <el-option
               v-for="item in systemData"
@@ -209,24 +209,29 @@ export default {
       },
       editRules: {
         phone: [{
-            required: false,
+            required: true,
             trigger: 'blur',
             validator: validateTelphone
         }],
         nickName: [{
-            required: false,
+            required: true,
             trigger: 'blur',
             message: '请填写昵称'
         }],
         username: [{
-            required: false,
+            required: true,
             trigger: 'blur',
             message: '请填写账号'
         }],
         password: [{
-            required: false,
+            required: true,
             trigger: 'blur',
             message: '请填写密码'
+        }],
+        systemId: [{
+            required: true,
+            trigger: 'blur',
+            message: '请选择系统'
         }]
       },
       routes: [],
@@ -319,10 +324,12 @@ export default {
     getUserList() {
       this.listLoading = true
       getUserList(this.listQuery).then(res => {
-        this.listLoading = false
-        this.userData = res.data.records
-        this.total = res.data.total
-        this.allPages = res.data.pages
+        if(Array.isArray(res.data.records)) {
+          this.listLoading = false
+          this.userData = res.data.records
+          this.total = res.data.total
+          this.allPages = res.data.pages
+        }
       }).catch(err => {
         this.listLoading = false
       })
@@ -502,13 +509,7 @@ export default {
         })
         this.diaDisable = false
         this.roleListLoading = false
-        for (const v of this.userData) {
-            if (v.id === this.role.id) {
-              const index = this.userData.indexOf(v)
-              this.userData.splice(index, 1, this.role)
-              break
-            }
-        }
+        this.getUserList()
       } else if (this.dialogType === 'new'){
         this.diaDisable = true
         this.roleListLoading = true
