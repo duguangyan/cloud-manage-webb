@@ -126,7 +126,7 @@ const user = {
           systemId: 1
         })
           .then(response => {
-            const data = response
+            const data = response.data
             commit('SET_ACCESS_TOKEN', data.access_token)
             commit('SET_REFRESH_TOKEN', data.refresh_token)
             // setToken(data.access_token);
@@ -247,5 +247,4 @@ const user = {
 //   mutations,
 //   actions
 // };
-// console.log(user)
 export default user
