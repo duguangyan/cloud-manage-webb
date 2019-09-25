@@ -36,6 +36,15 @@ export function getBannerList(data) {
   })
 }
 
+// 通过Id查询广告位
+export function getBannerById(query) {
+  return request({
+    url: '/act/adPosition/getById',
+    method: 'get',
+    params: query
+  })
+}
+
 // 新增广告
 export function addAd(data) {
   return request({
@@ -69,5 +78,14 @@ export function getAdList(data) {
     url: '/act/ad/listPage',
     method: 'post',
     data
+  })
+}
+
+// 通过Id查询广告
+export function getAdById(query) {
+  return request({
+    url: '/act/ad/getById',
+    method: 'get',
+    params: query
   })
 }

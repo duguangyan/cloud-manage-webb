@@ -70,7 +70,8 @@
         align="center"
         prop="id"
         label="商品ID"
-        width="280">
+        width="280"
+        show-overflow-tooltip>
       </el-table-column>
       <el-table-column
         align="center"
@@ -83,13 +84,11 @@
       <el-table-column
         prop="name"
         label="标题"
-        width="300"
         show-overflow-tooltip>
       </el-table-column>
       <el-table-column
         prop="categoryName"
         label="品种"
-        width="150"
         show-overflow-tooltip>
       </el-table-column>
       <el-table-column
@@ -149,7 +148,7 @@
         label="下架时间"
         width="160">
       </el-table-column>
-      <el-table-column align="center" label="操作" min-width="300">
+      <el-table-column align="center" label="操作" width="300">
         <template slot-scope="scope">
           <el-button v-if="btnsPermission.edit.auth && (saleType === '1' || saleType === '4')" type="primary" size="small" @click="msgEdit(scope)">{{btnsPermission.edit.name}}</el-button>
           <el-button v-if="btnsPermission.onSale.auth && (saleType === '1' || saleType === '4')" type="primary" size="small" @click="saleChange('one', 0, scope)">{{btnsPermission.onSale.name}}</el-button>
@@ -413,6 +412,7 @@ export default {
     },
     handleClick(tab, event) {
       // 已上架、待上架、已下架切换
+      this.listQuery.pageIndex = 1
       this.listQuery.status = tab.name
       this.listQuery.sellTimeStart = ''
       this.listQuery.sellTimeEnd = ''

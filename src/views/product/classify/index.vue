@@ -249,9 +249,9 @@
               v-waves v-show="index === prop.list.length - 1" size="mini" type="primary" plain @click="addProp">新增</el-button>
             </el-form-item>
           </template>
-          <el-form-item v-if="prop.type === 4" label="属性值描述">
+          <!-- <el-form-item v-if="prop.type === 4" label="属性值描述">
             <el-input v-model="prop.textDes" maxlength="20" placeholder="请输入文本框描述" />
-          </el-form-item>
+          </el-form-item> -->
           <el-form-item v-if="prop.type === 0" label="精确城市等级" prop="level">
             <el-select v-model="prop.level" placeholder="请选择城市等级">
               <el-option
@@ -265,7 +265,7 @@
           <el-form-item label="排序" prop="sort">
             <el-input v-model="prop.sort" maxlength="20" placeholder="请输入排序" />
           </el-form-item>
-          <el-form-item label="提示语" prop="notice">
+          <el-form-item v-if="prop.type === 3 || prop.type === 4 || prop.type === 0" label="提示语" prop="notice">
             <el-input v-model="prop.notice" maxlength="20" placeholder="请输入提示语" />
           </el-form-item>
           <el-form-item v-if="prop.type === 4" label="尾部语" prop="afterDes">
@@ -334,7 +334,7 @@ const defaultRole = {
 const defaultUnit = {
   id: '',
   name: '',
-  status: -1
+  status: ''
 }
 const defaultProp = {
   id: '',
@@ -346,17 +346,17 @@ const defaultProp = {
     { value: '' }
   ],
   sort: '',
-  isSearch: -1,
-  isRequire: -1,
+  isSearch: '',
+  isRequire: '',
   afterDes: '',
   notice: ''
 }
 const defaultSpec = {
   id: '',
   name: '',
-  showType: -1,
+  showType: '',
   afterDes: '',
-  status: -1
+  status: ''
 }
 
 export default {
@@ -704,6 +704,9 @@ export default {
         this.dialogType = 'prop'
         this.dialogMsg = '新增属性模板'
         this.prop = Object.assign({}, defaultProp)
+        this.prop.list = [
+          { value: '' }
+        ]
       }
       this.dialogVisible = true
       this.checkStrictly = true
@@ -926,7 +929,7 @@ export default {
           status: this.prop.status,
           valueStr: valueStr
         }
-        if(this.prop.type.id === '4') {
+        if(this.prop.type === 4) {
           insetParams.exp = this.prop.afterDes
         }
         if(this.isEdit) {
@@ -998,6 +1001,7 @@ export default {
         this.dialogType = 'spec'
         this.dialogMsg = '编辑规格管理'
       } else {
+        console.log(row)
         this.dialogType = 'prop'
         this.dialogMsg = '编辑属性模板'
         this.prop.id = row.id
@@ -1006,7 +1010,9 @@ export default {
         this.prop.afterDes = row.exp
         this.prop.notice = row.hint
         this.prop.type = row.inputType
-        this.prop.list = row.valueSet
+        if(row.inputType === 0) {
+           this.prop.level = Number(row.valueSet[0].value)
+        }
         this.prop.isRequire = row.isRequire
         this.prop.isSearch = row.isSearch
         this.prop.sort = row.sort
