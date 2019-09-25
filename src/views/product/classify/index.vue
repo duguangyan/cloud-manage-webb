@@ -233,26 +233,26 @@
           <el-form-item label="名称" prop="name">
             <el-input v-model="prop.name" maxlength="20" placeholder="请输入名称" />
           </el-form-item>
-          <el-form-item label="属性类型" prop="inputType">
-              <el-radio v-model="prop.inputType" size="medium" :label="1" border>单选框</el-radio>
-              <el-radio v-model="prop.inputType" size="medium" :label="2" border>复选框</el-radio>
-              <el-radio v-model="prop.inputType" size="medium" :label="3" border>下拉框</el-radio>
-              <el-radio v-model="prop.inputType" size="medium" :label="4" border>文本输入框</el-radio>
-              <el-radio v-model="prop.inputType" size="medium" :label="0" border>地址选择框</el-radio>
+          <el-form-item label="属性类型" prop="type">
+              <el-radio v-model="prop.type" size="medium" :label="1" border>单选框</el-radio>
+              <el-radio v-model="prop.type" size="medium" :label="2" border>复选框</el-radio>
+              <el-radio v-model="prop.type" size="medium" :label="3" border>下拉框</el-radio>
+              <el-radio v-model="prop.type" size="medium" :label="4" border>文本输入框</el-radio>
+              <el-radio v-model="prop.type" size="medium" :label="0" border>地址选择框</el-radio>
           </el-form-item>
-          <template v-if="prop.inputType === 1 || prop.inputType === 2 || prop.inputType === 3">
-            <el-form-item v-for="(item, index) in prop.valueSet" :key="index" :label="index === 0 ? '属性值' : ''" :prop="'valueSet.' + index +'.value'" :rules="{
+          <template v-if="prop.type === 1 || prop.type === 2 || prop.type === 3">
+            <el-form-item v-for="(item, index) in prop.list" :key="index" :label="index === 0 ? '属性值' : ''" :prop="'list.' + index +'.value'" :rules="{
             required: true, message: '属性值不能为空', trigger: 'blur'
             }">
-              <el-input v-model="prop.valueSet[index].value" maxlength="20" placeholder="请输入规格值" style="width: 60%" /><el-button
-              v-waves v-show="index !== 0 || (index === 0 && prop.valueSet.length > 1)" size="mini" type="danger" plain class="ml10" @click=deleteProp(index)>删除</el-button><el-button
-              v-waves v-show="index === prop.valueSet.length - 1" size="mini" type="primary" plain @click="addProp">新增</el-button>
+              <el-input v-model="prop.list[index].value" maxlength="20" placeholder="请输入规格值" style="width: 60%" /><el-button
+              v-waves v-show="index !== 0 || (index === 0 && prop.list.length > 1)" size="mini" type="danger" plain class="ml10" @click=deleteProp(index)>删除</el-button><el-button
+              v-waves v-show="index === prop.list.length - 1" size="mini" type="primary" plain @click="addProp">新增</el-button>
             </el-form-item>
           </template>
-          <el-form-item v-if="prop.inputType === 4" label="属性值描述">
+          <!-- <el-form-item v-if="prop.type === 4" label="属性值描述">
             <el-input v-model="prop.textDes" maxlength="20" placeholder="请输入文本框描述" />
-          </el-form-item>
-          <el-form-item v-if="prop.inputType === 0" label="精确城市等级" prop="level">
+          </el-form-item> -->
+          <el-form-item v-if="prop.type === 0" label="精确城市等级" prop="level">
             <el-select v-model="prop.level" placeholder="请选择城市等级">
               <el-option
                 v-for="item in cityOptions"
@@ -265,11 +265,11 @@
           <el-form-item label="排序" prop="sort">
             <el-input v-model="prop.sort" maxlength="20" placeholder="请输入排序" />
           </el-form-item>
-          <el-form-item label="提示语" prop="hint">
-            <el-input v-model="prop.hint" maxlength="20" placeholder="请输入提示语" />
+          <el-form-item v-if="prop.type === 3 || prop.type === 4 || prop.type === 0" label="提示语" prop="notice">
+            <el-input v-model="prop.notice" maxlength="20" placeholder="请输入提示语" />
           </el-form-item>
-          <el-form-item v-if="prop.inputType === 4" label="尾部语" prop="valueSuffix">
-            <el-input v-model="prop.exp" maxlength="20" placeholder="请输入名称尾部语" />
+          <el-form-item v-if="prop.type === 4" label="尾部语" prop="afterDes">
+            <el-input v-model="prop.afterDes" maxlength="20" placeholder="请输入名称尾部语" />
           </el-form-item>
           <el-form-item label="是否必填" prop="isRequire">
             <el-radio v-model="prop.isRequire" :label="1">是</el-radio>
@@ -290,14 +290,14 @@
           <el-form-item label="属性名称" prop="name">
             <el-input v-model="spec.name" maxlength="20" placeholder="请输入属性名称" />
           </el-form-item>
-          <el-form-item label="展示方式" prop="showStyle">
-            <el-radio v-model="spec.showStyle" size="medium" :label="1" border>阶梯方式</el-radio>
-            <el-radio v-model="spec.showStyle" size="medium" :label="2" border>普通方式</el-radio>
+          <el-form-item label="展示方式" prop="showType">
+            <el-radio v-model="spec.showType" size="medium" :label="1" border>阶梯方式</el-radio>
+            <el-radio v-model="spec.showType" size="medium" :label="2" border>普通方式</el-radio>
           </el-form-item>
-          <el-form-item v-show="spec.showStyle === 1" label="规格值后缀" prop="valueSuffix" :rules="{
-            required: spec.showStyle === 1, message: '属性值不能为空', trigger: 'blur'
+          <el-form-item v-show="spec.showType === 1" label="规格值后缀" prop="afterDes" :rules="{
+            required: spec.showType === 1, message: '属性值不能为空', trigger: 'blur'
             }">
-            <el-input v-model="spec.valueSuffix" maxlength="20" placeholder="请输入规格值后缀" style="width: 60%" />
+            <el-input v-model="spec.afterDes" maxlength="20" placeholder="请输入规格值后缀" style="width: 60%" />
           </el-form-item>
           <el-form-item label="启用状态" prop="status">
             <el-radio v-model="spec.status" :label="1">是</el-radio>
@@ -324,7 +324,7 @@
 import waves from '@/directive/waves'
 import { deepClone } from '@/utils'
 import { getProductTree, insertRootProduct, insertProduct, deleteProduct, updateProduct, searchProduct, getProductNum, moveProduct } from '@/api/goods/product'
-import { getUnitList, insetUnitList, updateUnitList, deleteUnitList, getSpeList, insetSpeList, updateSpeList, deleteSpeList, getPropList, insetPropList, updatePropList, deletePropList, getUnitById, getSpeById, getPropById } from '@/api/goods/list'
+import { getUnitList, insetUnitList, updateUnitList, deleteUnitList, getSpeList, insetSpeList, updateSpeList, deleteSpeList, getPropList, insetPropList, updatePropList, deletePropList } from '@/api/goods/list'
 import { validWord } from '@/utils/validate'
 let id = 1000;
 const defaultRole = {
@@ -334,29 +334,29 @@ const defaultRole = {
 const defaultUnit = {
   id: '',
   name: '',
-  status: -1
+  status: ''
 }
 const defaultProp = {
   id: '',
   name: '',
   status: '', 
-  inputType: '',
+  type: -1,
   level: '',
-  valueSet: [
+  list: [
     { value: '' }
   ],
   sort: '',
-  isSearch: -1,
-  isRequire: -1,
-  valueSuffix: '',
-  hint: ''
+  isSearch: '',
+  isRequire: '',
+  afterDes: '',
+  notice: ''
 }
 const defaultSpec = {
   id: '',
   name: '',
-  showStyle: '',
-  valueSuffix: '',
-  status: -1
+  showType: '',
+  afterDes: '',
+  status: ''
 }
 
 export default {
@@ -421,7 +421,7 @@ export default {
             trigger: 'blur',
             message: '请选择启用状态'
         }],
-        showStyle: [{
+        showType: [{
             required: true,
             trigger: 'blur',
             message: '请选择展示方式'
@@ -438,7 +438,7 @@ export default {
             trigger: 'blur',
             message: '请选择启用状态'
         }],
-        inputType: [{
+        type: [{
             required: true,
             trigger: 'blur',
             message: '请选择属性类型'
@@ -704,6 +704,9 @@ export default {
         this.dialogType = 'prop'
         this.dialogMsg = '新增属性模板'
         this.prop = Object.assign({}, defaultProp)
+        this.prop.list = [
+          { value: '' }
+        ]
       }
       this.dialogVisible = true
       this.checkStrictly = true
@@ -876,11 +879,11 @@ export default {
         let specObj = {
           categoryId: this.specId,
           name: this.spec.name,
-          showStyle: this.spec.showStyle,
+          showStyle: this.spec.showType,
           status: this.spec.status,
         }
-        if(this.spec.showStyle === 1) {
-          specObj.valueSuffix = this.spec.valueSuffix
+        if(this.spec.showType === 1) {
+          specObj.valueSuffix = this.spec.afterDes
         }
         if(this.isEdit) {
           specObj.id = this.spec.id
@@ -908,26 +911,26 @@ export default {
         this.diaDisable = true
         this.diaLoading = true
         let valueStr = ''
-        if(this.prop.inputType === 1 || this.prop.inputType === 2 || this.prop.inputType === 3) {
-          this.prop.valueSet.forEach(item => {
+        if(this.prop.type === 1 || this.prop.type === 2 || this.prop.type === 3) {
+          this.prop.list.forEach(item => {
             valueStr += valueStr.length === 0 ? item.value : ',' + item.value
           })
-        } else if(this.prop.inputType === 0) {
+        } else if(this.prop.type === 0) {
           valueStr = this.prop.level
         }
         let insetParams = {
           categoryId: this.propId,
           name: this.prop.name,
-          hint: this.prop.hint,
-          inputType: this.prop.inputType,
+          hint: this.prop.notice,
+          inputType: this.prop.type,
           isRequire: this.prop.isRequire,
           isSearch: this.prop.isSearch,
           sort: this.prop.sort,
           status: this.prop.status,
           valueStr: valueStr
         }
-        if(this.prop.inputType.id === '4') {
-          insetParams.exp = this.prop.valueSuffix
+        if(this.prop.type === 4) {
+          insetParams.exp = this.prop.afterDes
         }
         if(this.isEdit) {
           insetParams.id = this.prop.id
@@ -972,52 +975,47 @@ export default {
     },
     addProp() {
       // 添加属性值
-      this.prop.valueSet.push({
+      this.prop.list.push({
         value: ''
       })
     },
     deleteProp(index) {
       // 删除添加的属性值
-      this.prop.valueSet.splice(index, 1)
+      this.prop.list.splice(index, 1)
     },
     updateAdd(type, row) {
      // 编辑计量单位、规格、属性
      this.isEdit = true
      if (type === 1) {
+        this.unit.id = row.id
+        this.unit.name = row.name
+        this.unit.status = row.status
         this.dialogType = 'unit'
         this.dialogMsg = '编辑计量单位'
-        this.diaLoading = true
-        getUnitById({ id: row.id}).then(res => {
-          this.diaLoading = false
-          this.unit = res.data
-        })
       } else if (type === 2) {
+        this.spec.id = row.id
+        this.spec.name = row.name
+        this.spec.status = row.status
+        this.spec.showType = Number(row.showStyle)
+        this.spec.afterDes = row.valueSuffix
         this.dialogType = 'spec'
         this.dialogMsg = '编辑规格管理'
-        this.diaLoading = true
-        getSpeById({ id: row.id}).then(res => {
-          this.diaLoading = false
-          this.spec = res.data
-          this.spec.showStyle = parseInt(this.spec.showStyle)
-        })
       } else {
+        console.log(row)
         this.dialogType = 'prop'
         this.dialogMsg = '编辑属性模板'
-        this.diaLoading = true
-        getPropById({ id: row.id}).then(res => {
-          this.diaLoading = false
-          this.prop = res.data
-        })
-        // this.prop.id = row.id
-        // this.prop.name = row.name
-        // this.prop.status = row.status
-        // this.prop.valueSuffix = row.exp
-        // this.prop.notice = row.hint
-        // this.prop.type = row.inputType
-        // this.prop.list = row.valueSet
-        // this.prop.isRequire = row.isRequire
-        // this.prop.isSearch = row.isSearch
-        // this.prop.sort = row.sort
+        this.prop.id = row.id
+        this.prop.name = row.name
+        this.prop.status = row.status
+        this.prop.afterDes = row.exp
+        this.prop.notice = row.hint
+        this.prop.type = row.inputType
+        if(row.inputType === 0) {
+           this.prop.level = Number(row.valueSet[0].value)
+        }
+        this.prop.isRequire = row.isRequire
+        this.prop.isSearch = row.isSearch
+        this.prop.sort = row.sort
       }
       this.dialogVisible = true
       this.checkStrictly = true

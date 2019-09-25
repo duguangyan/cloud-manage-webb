@@ -30,7 +30,7 @@
           </template>
       </div>
       <div class="mb20">
-        <el-button v-if="btnsPermission.export.auth" v-waves class="filter-item add-btn" @click="exportMsg">{{btnsPermission.export.name}}</el-button>
+        <el-button :loading="downloadLoading" v-if="btnsPermission.export.auth" v-waves class="filter-item add-btn" @click="exportMsg">{{btnsPermission.export.name}}</el-button>
         <el-button v-if="btnsPermission.search.auth" v-waves class="filter-item" type="primary" :disabled="disable" icon="el-icon-search" @click="handleFilter">{{btnsPermission.search.name}}</el-button>
         <el-button v-if="btnsPermission.search.auth" v-waves class="filter-item" @click="resetOrder">重置</el-button>
       </div>
@@ -117,7 +117,7 @@
 
 <script>
 import waves from '@/directive/waves'
-import { getOrderList } from '@/api/order/order'
+import { getOrderList, exportOrder } from '@/api/order/order'
 import Pagination from '@/components/Pagination'
 import { getUserBtnByPId } from '@/api/upms/menu'
 
@@ -140,6 +140,7 @@ export default {
         userId: '',
         userName: ''
       },
+      downloadLoading: false,
       btnsPermission: {
         search: {
           name: '搜索',
@@ -302,7 +303,23 @@ export default {
       })
     },
     exportMsg() {
-      this.$message('暂未完成')
+      // let target = '/api'
+      // const baseURL = process.env.NODE_ENV === 'development' ? target : '/'
+      // console.log(baseURL)
+      // console.log(exportOrder)
+      // return
+      exportOrder({
+        shopId: this.order.shopId,
+        createTimeBegin: this.order.createTimeBegin,
+        createTimeEnd: this.order.createTimeEnd,
+        orderId: this.order.orderId,
+        status: this.order.status,
+        userId: this.order.userId,
+        userName: this.order.userName
+      }).then(res => {
+        // window.open(res.request.responseURL)
+        window.href = res.request.responseURL
+      })
     }
   }
 }

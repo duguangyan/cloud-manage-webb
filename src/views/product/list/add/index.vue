@@ -64,14 +64,14 @@
               <span v-if="item.exp !== null">{{item.exp}}</span>
             </template>
             <template v-else-if="item.inputType === 3">
-              <el-select v-model="addForm.generate[index].list" size="medium" maxlength="64" placeholder="请选择">
+              <el-select v-model="addForm.generate[index].list" size="medium" maxlength="64" :placeholder="item.hint">
                 <el-option v-for="(selectItem, selectIndex) in item.valueSet" :key="selectIndex" :label="selectItem.id" :value="selectItem.value"></el-option>
               </el-select>
               <span v-if="item.exp !== null">{{item.exp}}</span>
             </template>
             <template v-else-if="item.inputType === 4">
-              <el-input class="long-input" v-model.trim="addForm.generate[index].list" size="medium" maxlength="64" :placeholder="item.hint" :style="{width: item.length + 'px'}" />
-              <span v-if="item.exp !== null">{{item.exp}}</span>
+              <el-input class="long-input" v-model.trim="addForm.generate[index].list" size="medium" maxlength="64" :placeholder="item.hint" style="width: 200px" />
+              <span v-if="item.exp !== null" style="color: #606266">{{item.exp}}</span>
             </template>
             <template v-else>
               <span>{{addForm.generate[index].list}}</span>

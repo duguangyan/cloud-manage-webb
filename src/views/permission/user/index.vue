@@ -108,20 +108,20 @@
       </template>
       <template v-else>
         <el-form ref="editForm" :model="role" label-width="80px" label-position="left" :rules="editRules">
-        <el-form-item label="昵称">
-          <el-input v-model="role.nickName" maxlength="255" placeholder="请输入昵称" />
+        <el-form-item label="昵称" prop="nickName">
+          <el-input v-model="role.nickName" maxlength="20" placeholder="请输入昵称" />
         </el-form-item>
          <el-form-item label="真实姓名">
-          <el-input v-model="role.realName" maxlength="255" placeholder="请输入真实姓名" />
+          <el-input v-model="role.realName" maxlength="20" placeholder="请输入真实姓名" />
         </el-form-item>
          <el-form-item label="手机号码" prop="phone">
           <el-input v-model="role.phone" placeholder="请输入手机号码" />
         </el-form-item>
-        <el-form-item label="账号">
+        <el-form-item label="账号" prop="username">
           <el-input v-model="role.username" maxlength="32" placeholder="请输入账号" />
         </el-form-item>
-        <el-form-item label="密码">
-          <el-input v-model="role.password" minlength="6" maxlength="255" placeholder="请输入密码" />
+        <el-form-item label="密码" prop="password">
+          <el-input v-model="role.password" minlength="6" maxlength="64" placeholder="请输入密码" />
         </el-form-item>
         <el-form-item label="系统">
           <el-select v-model="role.systemId" placeholder="请选择">
@@ -212,6 +212,21 @@ export default {
             required: false,
             trigger: 'blur',
             validator: validateTelphone
+        }],
+        nickName: [{
+            required: false,
+            trigger: 'blur',
+            message: '请填写昵称'
+        }],
+        username: [{
+            required: false,
+            trigger: 'blur',
+            message: '请填写账号'
+        }],
+        password: [{
+            required: false,
+            trigger: 'blur',
+            message: '请填写密码'
         }]
       },
       routes: [],
