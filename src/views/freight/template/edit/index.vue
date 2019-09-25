@@ -113,176 +113,122 @@
         </li>
 
         <!-- 邮费方案表格 -->
-        <div class="specific">为指定地区城市设置运费</div>
-        <el-form-item prop="solutionItemList">
-          <el-form :model="solutionItem" :rules="itemRules" ref="solutionItem">
-            <el-table class="w80" :data="postSolution.solutionItemList" stripe style="width: auto;">
-              <el-table-column prop="date" label="运送到" width="180">
-                <template slot-scope="scope">
-                  <template v-if="scope.row.areaExp.length<1">
-                    <span @click="callAreaSel(1)">选择地区</span>
-                  </template>
-                  <span
-                    v-else
-                    @click="postSolution.solutionItemList.length - 1===scope.$index?(isShowArea = true):''"
-                  >
-                    <span v-for="item in scope.row.areaExp" :key="item.id">{{item.name}}&emsp;</span>
-                  </span>
-                </template>
-              </el-table-column>
+        <div class="specific" @click="callAreaSel(1,-1)">+为指定地区城市设置运费</div>
+        <div class="table">
+          <!-- row 1 -->
+          <div class="rows table-head">
+            <div class="cell">运送到</div>
+            <div class="cell">首重(千克)</div>
+            <div class="cell">首费(元)</div>
+            <div class="cell">续重(千克)</div>
+            <div class="cell">续费(元)</div>
+            <div class="cell">操作</div>
+          </div>
 
-              <el-table-column prop="firstVolume" label="首重(千克)" width="150">
-                <template slot-scope="scope">
-                  <el-form-item
-                    v-if="postSolution.solutionItemList.length - 1===scope.$index"
-                    prop="firstVolume"
-                  >
-                    <el-input type="number" v-model="solutionItem.firstVolume" clearable></el-input>
-                  </el-form-item>
+          <!-- rows -->
+          <el-form
+            :model="item"
+            :rules="itemRules"
+            class="rows"
+            v-for="(item,index) in postSolution.solutionItemList"
+            :key="item.id"
+            :ref="'solutionItem'+index"
+          >
+            <div class="cell w1">
+              <span v-if="item.areaExp.length < 1" @click="callAreaSel(1,index)">选择地区</span>
+              <span v-else>
+                <span v-for="item in item.areaExp" :key="item.id">{{item.name}}&emsp;</span>
+              </span>
+            </div>
 
-                  <span v-else>{{scope.row.firstVolume}}</span>
-                </template>
-              </el-table-column>
+            <div class="cell">
+              <el-form-item prop="firstVolume">
+                <el-input type="number" v-model="item.firstVolume" clearable></el-input>
+              </el-form-item>
+            </div>
 
-              <el-table-column prop="firstPrice" label="首费(元)" width="150">
-                <template slot-scope="scope">
-                  <el-form-item
-                    v-if="postSolution.solutionItemList.length - 1===scope.$index"
-                    prop="firstPrice"
-                  >
-                    <el-input type="number" v-model="solutionItem.firstPrice" clearable></el-input>
-                  </el-form-item>
-                  <span v-else>{{scope.row.firstPrice}}</span>
-                </template>
-              </el-table-column>
+            <div class="cell">
+              <el-form-item prop="firstPrice">
+                <el-input type="number" v-model="item.firstPrice" clearable></el-input>
+              </el-form-item>
+            </div>
 
-              <el-table-column prop="continueVolume" label="续重(千克)" width="150">
-                <template slot-scope="scope">
-                  <el-form-item
-                    v-if="postSolution.solutionItemList.length - 1===scope.$index"
-                    prop="continueVolume"
-                  >
-                    <el-input type="number" v-model="solutionItem.continueVolume" clearable></el-input>
-                  </el-form-item>
-                  <span v-else>{{scope.row.continueVolume}}</span>
-                </template>
-              </el-table-column>
+            <div class="cell">
+              <el-form-item prop="continueVolume">
+                <el-input type="number" v-model="item.continueVolume" clearable></el-input>
+              </el-form-item>
+            </div>
 
-              <el-table-column prop="continuePrice" label="续费(元)" width="150">
-                <template slot-scope="scope">
-                  <el-form-item
-                    v-if="postSolution.solutionItemList.length - 1===scope.$index"
-                    prop="continuePrice"
-                  >
-                    <el-input type="number" v-model="solutionItem.continuePrice" clearable></el-input>
-                  </el-form-item>
-                  <span v-else>{{scope.row.continuePrice}}</span>
-                </template>
-              </el-table-column>
+            <div class="cell">
+              <el-form-item prop="continuePrice">
+                <el-input type="number" v-model="item.continuePrice" clearable></el-input>
+              </el-form-item>
+            </div>
 
-              <el-table-column prop="address" label="操作">
-                <template slot-scope="scope">
-                  <el-form-item v-if="postSolution.solutionItemList.length - 1===scope.$index">
-                    <el-button size="mini" type="primary" @click="submitForm('solutionItem')">添加</el-button>
-                  </el-form-item>
-                  <el-button
-                    v-else
-                    size="mini"
-                    type="danger"
-                    @click="delItem(scope.$index, scope.row,1)"
-                  >删除</el-button>
-                </template>
-              </el-table-column>
-            </el-table>
+            <div class="cell w2">
+              <el-button size="mini" type="warning" @click="callAreaSel(1,index)">修改地址</el-button>
+              <el-button size="mini" type="danger" @click="delItem(index,1)">删除</el-button>
+            </div>
           </el-form>
-        </el-form-item>
+        </div>
 
-        <div class="specific">指定条件包邮</div>
-        <el-form-item prop="solutionFreeItemList">
-          <el-form :model="solutionFreeItem" :rules="freeRules" ref="solutionFreeItem">
-            <el-table
-              class="w80"
-              :data="postSolution.solutionFreeItemList"
-              stripe
-              style="width: auto;"
-            >
-              <el-table-column prop="areaExp" label="运送到" width="180">
-                <template slot-scope="scope">
-                  <template v-if="scope.row.areaExp.length<1">
-                    <span @click="callAreaSel(2)">选择地区</span>
-                  </template>
-                  <span
-                    v-else
-                    @click="postSolution.solutionFreeItemList.length - 1===scope.$index?(isShowArea2 = true):''"
-                  >
-                    <span v-for="item in scope.row.areaExp" :key="item.id">{{item.name}}&emsp;</span>
-                  </span>
-                </template>
-              </el-table-column>
+        <div class="specific">+指定条件包邮</div>
+        <div class="table">
+          <!-- row 1 -->
+          <div class="rows table-head">
+            <div class="cell">运送到</div>
+            <div class="cell w3">设置包邮条件</div>
+            <div class="cell">操作</div>
+          </div>
 
-              <el-table-column prop="type" label="设置包邮条件" width="600">
-                <template slot-scope="scope">
-                  <template v-if="postSolution.solutionFreeItemList.length - 1===scope.$index">
-                    <el-form-item prop="type">
-                      <el-select v-model="solutionFreeItem.type">
-                        <el-option label="数量" :value="1"></el-option>
-                        <el-option label="金额" :value="2"></el-option>
-                        <el-option label="数量+金额" :value="3"></el-option>
-                      </el-select>&emsp;
-                    </el-form-item>
+          <!-- rows -->
+          <el-form
+            :model="item"
+            :rules="freeRules"
+            class="rows"
+            v-for="(item,index) in postSolution.solutionFreeItemList"
+            :key="item.id"
+            :ref="'solutionFreeItem'+index"
+          >
+            <div class="cell w1">
+              <span v-if="item.areaExp.length < 1" @click="callAreaSel(2,index)">选择地区</span>
+              <span v-else>
+                <span v-for="item in item.areaExp" :key="item.id">{{item.name}}&emsp;</span>
+              </span>
+            </div>
 
-                    <el-form-item v-if="+solutionFreeItem.type === 1" prop="quantity">
-                      满
-                      <el-input
-                        v-model="solutionFreeItem.quantity"
-                        type="number"
-                        placeholder="请输入件数"
-                      />件包邮
-                    </el-form-item>
+            <div class="cell w80">
+              <el-form-item prop="type">
+                <el-select v-model="item.type">
+                  <el-option label="数量" :value="1"></el-option>
+                  <el-option label="金额" :value="2"></el-option>
+                  <el-option label="数量+金额" :value="3"></el-option>
+                </el-select>&emsp;
+              </el-form-item>
 
-                    <el-form-item v-else-if="+solutionFreeItem.type === 2" prop="price">
-                      满
-                      <el-input v-model="solutionFreeItem.price" type="number" placeholder="请输入金额" />元包邮
-                    </el-form-item>
+              <el-form-item v-if="+item.type === 1" prop="quantity">
+                满
+                <el-input v-model="item.quantity" type="number" placeholder="请输入件数" />件包邮
+              </el-form-item>
 
-                    <el-form-item v-else-if="+solutionFreeItem.type === 3" prop="price">
-                      满
-                      <el-input
-                        v-model="solutionFreeItem.quantity"
-                        type="number"
-                        placeholder="请输入件数"
-                      />件且满
-                      <el-input v-model="solutionFreeItem.price" type="number" placeholder="请输入金额" />元包邮
-                    </el-form-item>
-                  </template>
+              <el-form-item v-else-if="+item.type === 2" prop="price">
+                满
+                <el-input v-model="item.price" type="number" placeholder="请输入金额" />元包邮
+              </el-form-item>
 
-                  <template v-else>
-                    <span>{{+scope.row.type===1?'数量':+scope.row.type===2?'金额':'数量+金额'}}:</span>
-                    <span v-if="+scope.row.type===1">满{{scope.row.quantity}}件包邮</span>
-                    <span v-else-if="+scope.row.type===2">满{{scope.row.price}}元包邮</span>
-                    <span
-                      v-else-if="+scope.row.type===3"
-                    >满{{scope.row.quantity}}件且满{{scope.row.price}}元包邮</span>
-                  </template>
-                </template>
-              </el-table-column>
+              <el-form-item v-else-if="+item.type === 3" prop="price">
+                满
+                <el-input v-model="item.quantity" type="number" placeholder="请输入件数" />件且满
+                <el-input v-model="item.price" type="number" placeholder="请输入金额" />元包邮
+              </el-form-item>
+            </div>
 
-              <el-table-column label="操作">
-                <template slot-scope="scope">
-                  <el-form-item v-if="postSolution.solutionFreeItemList.length - 1===scope.$index">
-                    <el-button size="mini" type="primary" @click="submitForm('solutionFreeItem')">添加</el-button>
-                  </el-form-item>
-                  <el-button
-                    v-else
-                    size="mini"
-                    type="danger"
-                    @click="delItem(scope.$index, scope.row,2)"
-                  >删除</el-button>
-                </template>
-              </el-table-column>
-            </el-table>
+            <div class="cell w2">
+              <el-button size="mini" type="warning" @click="callAreaSel(2,index)">修改地址</el-button>
+              <el-button size="mini" type="danger" @click="delItem(index,1)">删除</el-button>
+            </div>
           </el-form>
-        </el-form-item>
+        </div>
       </template>
       <div class="tc">
         <el-form-item>
@@ -300,7 +246,9 @@
     <!-- 城市包邮选择地区对话框 -->
     <el-dialog title="选择地区" :visible.sync="isShowArea" width="600">
       <div class="area" v-for="item in provinceList" :key="item.id">
-        <el-checkbox v-model="item.isChecked" :disabled="item.isChecked?true:false">{{item.name}}</el-checkbox>
+        <el-checkbox v-model="item.isChecked">
+          <span :class="{hasChecked: item.hasChecked}">{{item.name}}</span>
+        </el-checkbox>
       </div>
       <span slot="footer" class="dialog-footer">
         <el-button @click="isShowArea = false">取 消</el-button>
@@ -311,7 +259,9 @@
     <!-- 条件包邮选择地区对话框 -->
     <el-dialog title="选择地区" :visible.sync="isShowArea2" width="600">
       <div class="area" v-for="item in provinceList2" :key="item.id">
-        <el-checkbox v-model="item.isChecked" :disabled="item.isChecked?true:false">{{item.name}}</el-checkbox>
+        <el-checkbox v-model="item.isChecked">
+          <span :class="{hasChecked: item.hasChecked}">{{item.name}}</span>
+        </el-checkbox>
       </div>
       <span slot="footer" class="dialog-footer">
         <el-button @click="isShowArea2 = false">取 消</el-button>
@@ -330,9 +280,9 @@ var vm = {
   data() {
     vm = this;
     return {
+      curIndex: /* 当前项邮费方案的序 */ -1,
       fullscreenLoading: false,
-      // 城市邮费表单规则
-      itemRules: {
+      itemRules: /*城市方案邮费表单规则*/ {
         firstVolume: [
           { required: true, message: "请输入内容", trigger: "blur" },
           {
@@ -370,8 +320,7 @@ var vm = {
           { min: 1, max: 7, message: "输入范围1-9999.99", trigger: "blur" }
         ]
       },
-      // 条件邮费表单规则
-      freeRules: {
+      freeRules: /* 条件邮费表单规则 */ {
         type: { required: true, message: "请选择条件", trigger: "blur" },
         quantity: [
           { required: true, message: "请输入内容", trigger: "blur" },
@@ -392,8 +341,7 @@ var vm = {
           { min: 1, max: 7, message: "输入范围1-9999.99", trigger: "blur" }
         ]
       },
-      // 邮费模板表单规则
-      postRules: {
+      postRules: /* 邮费模板表单规则 */ {
         name: [
           { required: true, message: "请输入内容", trigger: "blur" },
           { min: 1, max: 50, message: "1-50个字符", trigger: "blur" }
@@ -443,12 +391,12 @@ var vm = {
           { min: 1, max: 7, message: "输入范围1-9999.99", trigger: "blur" }
         ]
       },
-      isShowArea: false,
-      isShowArea2: false,
-      provinceList: /* 城市包邮地区列表 */ [],
-      provinceList2: /* 条件包邮地区列表 */ [],
-      cityList: [],
-      regionList: [],
+      isShowArea: /* 显示城市方案的地区选择器 */ false,
+      isShowArea2: /* 显示条件方案的地区选择器 */ false,
+      provinceList: /* 城市方案地区列表 */ [],
+      provinceList2: /* 条件方案地区列表 */ [],
+      cityList: /* 城市列表 */ [],
+      regionList: /* 县城列表 */ [],
       postSolution: {
         isPost: 1,
         address: "",
@@ -471,8 +419,7 @@ var vm = {
           continuePrice: ""
         }
       },
-      // 条件邮费方案
-      solutionFreeItem: {
+      solutionFreeItem: /* 条件邮费方案项 */ {
         areaExp: [],
         id: "",
         postSolutionId: "",
@@ -481,8 +428,7 @@ var vm = {
         sort: 5,
         type: /* 1 包邮条件(数量) 2 包邮条件(金额) 3 包邮条件(数量+金额) */ ""
       },
-      // 城市邮费方案
-      solutionItem: {
+      solutionItem: /* 城市邮费方案项 */ {
         areaExp: [],
         continuePrice: /* 续重价钱 */ "",
         continueVolume: /* 续重 */ "",
@@ -518,13 +464,6 @@ var vm = {
         d.defaultPost = Object.assign({ ...d.solutionItemList[0] });
         d.solutionItemList.shift();
 
-        // 默认的值转换为字符串(为了正则,我还能怎样)
-        for (let k in d.defaultPost) {
-          typeof d.defaultPost[k] === "number" &&
-            (d.defaultPost[k] = d.defaultPost[k].toString());
-          d.defaultPost[k] === null && (d.defaultPost[k] = []);
-        }
-
         // parse areaExp项
         // 保存已选地区项
         d.solutionItemList = d.solutionItemList.map(item => {
@@ -534,7 +473,7 @@ var vm = {
             item.areaExp = [];
           }
           vm.extCityItems = vm.extCityItems.concat(item.areaExp);
-          return item;
+          return vm.transfer(item);
         });
         d.solutionFreeItemList = d.solutionFreeItemList.map(item => {
           try {
@@ -543,12 +482,15 @@ var vm = {
             item.areaExp = [];
           }
           vm.extCondItems = vm.extCondItems.concat(item.areaExp);
-          return item;
+          return vm.transfer(item);
         });
 
-        // 添加添加控制项
-        d.solutionItemList.push(Object.assign({}, { ...vm.solutionItem }));
-        d.solutionFreeItemList.push({ ...vm.solutionFreeItem });
+        // 默认的值转换为字符串(为了正则,我还能怎样)
+        for (let k in d.defaultPost) {
+          typeof d.defaultPost[k] === "number" &&
+            (d.defaultPost[k] = d.defaultPost[k].toString());
+          d.defaultPost[k] === null && (d.defaultPost[k] = []);
+        }
 
         // 发货地址处理地址
         vm.postSolution = Object.assign({}, d);
@@ -566,134 +508,114 @@ var vm = {
         vm.provinceList = preCopy(data.data);
         vm.provinceList2 = preCopy(data.data);
       });
-      // 插入新建项到城市邮费方案
-      vm.postSolution.solutionItemList.push(
-        Object.assign({}, { ...vm.solutionItem })
-      );
-
-      // 插入新建项到条件邮费方案;
-      vm.postSolution.solutionFreeItemList.push(
-        Object.assign({}, { ...vm.solutionFreeItem })
-      );
     }
 
     //
   },
   methods: {
-    submitForm(formName) {
-      vm.$refs[formName].validate(valid => {
-        if (valid) {
-          // 验证地区是否选择
-          if (formName === "solutionItem") {
-            if (vm.solutionItem.areaExp.length < 1) {
-              return vm.$message.error("要选地区哟嘿！");
-            }
-            vm.insertToItem();
-          } else if (formName === "solutionFreeItem") {
-            if (vm.solutionFreeItem.areaExp.length < 1) {
-              return vm.$message.error("要选地区哟嘿！");
-            }
-            vm.insertToFreeItem();
-          } else {
-            vm.fullscreenLoading = true;
-            // 处理提交数据
-            let res = { ...vm.postSolution };
-
-            // 删除城市 & 条件包邮末项(数据填充项)
-            res.solutionItemList.pop();
-            res.solutionFreeItemList.pop();
-
-            // 将邮费方案地区列表string化
-            res.solutionItemList = res.solutionItemList.map(item => {
-              item.areaExp =
-                item.areaExp.length > 0 ? JSON.stringify(item.areaExp) : "[]";
-              return item;
-            });
-            res.solutionFreeItemList = res.solutionFreeItemList.map(item => {
-              item.areaExp =
-                item.areaExp.length > 0 ? JSON.stringify(item.areaExp) : "[]";
-              return item;
-            });
-
-            // defaultPost项插入到城市包邮列表
-            if (+res.isPost === 0) {
-              res.defaultPost.areaExp = "[]";
-              res.solutionItemList.push(
-                Object.assign(
-                  vm.solutionItem,
-                  { ...res.defaultPost },
-                  { sort: 0 }
-                )
-              );
-            }
-
-            // 删除defaultPost
-            delete res.defaultPost;
-
-            // 删除isPost
-            +res.isPost === 1 ? (res.type = 0) : (res.type = 1);
-            delete res.isPost;
-
-            // 查找省市区的ID
-            let province = res.province;
-            vm.provinceList.forEach(item => {
-              item.name === province && (res.provinceId = item.id);
-            });
-            let city = res.city;
-            vm.cityList.forEach(item => {
-              item.name === city && (res.cityId = item.id);
-            });
-            let region = res.region;
-            vm.regionList.forEach(item => {
-              item.name === region && (res.regionId = item.id);
-            });
-
-            vm.$route.query.id
-              ? doUpdate(res).then(data => {
-                  vm.fullscreenLoading = false;
-                  vm.$message.success(data.message);
-                  vm.$router.go(-1);
-                })
-              : doInsert(res).then(data => {
-                  vm.fullscreenLoading = false;
-                  vm.$message.success(data.message);
-                  vm.$router.go(-1);
-                });
+    transfer(item) {
+      // 如果是对象
+      if (item instanceof Object) {
+        // object
+        if (item.__defineGetter__) {
+          for (let key in item) {
+            typeof item[key] === "number" && (item[key] = item[key].toString());
           }
-        } else {
-          console.log("error submit!!");
-          return false;
         }
-      });
+        return item;
+      }
     },
-    // 插入城市包邮列表
-    insertToItem() {
-      // 新数据插入到顶部
-      vm.postSolution.solutionItemList.unshift(preCopy(vm.solutionItem));
+    submitForm(formName) {
+      // vm.$refs[formName].validate(valid => {
+      //   if (valid) {
+      //     // 验证地区是否选择
+      //     if (formName === "solutionItem") {
+      //       if (vm.solutionItem.areaExp.length < 1) {
+      //         return vm.$message.error("要选地区哟嘿！");
+      //       }
+      //       vm.insertToItem();
+      //     } else if (formName === "solutionFreeItem") {
+      //       if (vm.solutionFreeItem.areaExp.length < 1) {
+      //         return vm.$message.error("要选地区哟嘿！");
+      //       }
+      //       vm.insertToFreeItem();
+      //     } else {
+      //       vm.fullscreenLoading = true;
+      //       // 处理提交数据
+      //       let res = { ...vm.postSolution };
+      //       // 删除城市 & 条件包邮末项(数据填充项)
+      //       res.solutionItemList.pop();
+      //       res.solutionFreeItemList.pop();
+      //       // 将邮费方案地区列表string化
+      //       res.solutionItemList = res.solutionItemList.map(item => {
+      //         item.areaExp =
+      //           item.areaExp.length > 0 ? JSON.stringify(item.areaExp) : "[]";
+      //         return item;
+      //       });
+      //       res.solutionFreeItemList = res.solutionFreeItemList.map(item => {
+      //         item.areaExp =
+      //           item.areaExp.length > 0 ? JSON.stringify(item.areaExp) : "[]";
+      //         return item;
+      //       });
+      //       // defaultPost项插入到城市包邮列表
+      //       if (+res.isPost === 0) {
+      //         res.defaultPost.areaExp = "[]";
+      //         res.solutionItemList.push(
+      //           Object.assign(
+      //             vm.solutionItem,
+      //             { ...res.defaultPost },
+      //             { sort: 0 }
+      //           )
+      //         );
+      //       }
+      //       // 删除defaultPost
+      //       delete res.defaultPost;
+      //       // 删除isPost
+      //       +res.isPost === 1 ? (res.type = 0) : (res.type = 1);
+      //       delete res.isPost;
+      //       // 查找省市区的ID
+      //       let province = res.province;
+      //       vm.provinceList.forEach(item => {
+      //         item.name === province && (res.provinceId = item.id);
+      //       });
+      //       let city = res.city;
+      //       vm.cityList.forEach(item => {
+      //         item.name === city && (res.cityId = item.id);
+      //       });
+      //       let region = res.region;
+      //       vm.regionList.forEach(item => {
+      //         item.name === region && (res.regionId = item.id);
+      //       });
+      //       vm.$route.query.id
+      //         ? doUpdate(res).then(data => {
+      //             vm.fullscreenLoading = false;
+      //             vm.$message.success(data.message);
+      //             vm.$router.go(-1);
+      //           })
+      //         : doInsert(res).then(data => {
+      //             vm.fullscreenLoading = false;
+      //             vm.$message.success(data.message);
+      //             vm.$router.go(-1);
+      //           });
+      //     }
+      //   } else {
+      //     console.log("error submit!!");
+      //     return false;
+      //   }
+      // });
+    },
 
-      // 重置添加项的数据
-      vm.postSolution.solutionItemList.pop();
+    clearItem() {
       vm.solutionItem = {
         areaExp: [],
-        continuePrice: /* 续重价钱 */ "",
-        continueVolume: /* 续重 */ "",
-        firstPrice: /*首量价钱*/ "",
-        firstVolume: /* 首量 */ "",
+        continuePrice: "",
+        continueVolume: "",
+        firstPrice: "",
+        firstVolume: "",
         id: "",
         postSolutionId: "",
         sort: 5
       };
-      vm.postSolution.solutionItemList.push(preCopy(vm.solutionItem));
-    },
-    // 插入条件包邮列表
-    insertToFreeItem() {
-      //
-      vm.postSolution.solutionFreeItemList.unshift(
-        preCopy(vm.solutionFreeItem)
-      );
-
-      //
-      vm.postSolution.solutionFreeItemList.pop();
       vm.solutionFreeItem = {
         areaExp: [],
         id: "",
@@ -703,29 +625,29 @@ var vm = {
         sort: 0,
         type: ""
       };
-      vm.postSolution.solutionFreeItemList.push(preCopy(vm.solutionFreeItem));
     },
-
     // 删除包邮项
-    delItem(index, item,level) {
-      let areaKey,aimKey,isExist = false;
-      if(+level===1){
-        areaKey = 'provinceList';
-        aimKey = 'solutionItemList';
-      }else{
-        areaKey = 'provinceList2';
-        aimKey = 'solutionFreeItemList';
+    delItem(index, level) {
+      let areaKey,
+        aimKey,
+        isExist = false;
+
+      if (+level === 1) {
+        areaKey = "provinceList";
+        aimKey = "extCityItems";
+      } else {
+        areaKey = "provinceList2";
+        aimKey = "extCondItems";
       }
 
+      // 清除已选择列表中的对应项
       let data = vm.postSolution[aimKey].splice(index, 1)[0];
       vm[areaKey] = vm[areaKey].map(area => {
         isExist = false;
-        data.areaExp.forEach(item=>{
-          item.id === area.id && (isExist = true)
-        })
-        if(isExist){
-          area.isChecked = false;
-        }
+        data.areaExp.forEach(item => {
+          item.id === area.id && (isExist = true);
+        });
+        isExist && (area.hasChecked = false);
         return area;
       });
     },
@@ -737,22 +659,28 @@ var vm = {
       let d2 = preCopy(data);
       d1 = d1.map(item => {
         // 城市包邮地区筛选
+        item.hasChecked = false;
+        item.isChecked = false;
         vm.extCityItems.forEach(val => {
-          val.id === item.id && (item.isChecked = true);
+          // val.id === item.id && (item.isChecked = true);
+
+          val.id === item.id && (item.hasChecked = true);
         });
+
         // 条件包邮地区筛选
         return item;
       });
 
       d2 = d2.map(item => {
+        item.hasChecked = false;
+        item.isChecked = false;
         // 城市包邮地区筛选
         vm.extCondItems.forEach(val => {
-          val.id === item.id && (item.isChecked = true);
+          val.id === item.id && (item.hasChecked = true);
         });
         // 条件包邮地区筛选
         return item;
       });
-
       vm.provinceList = d1;
       vm.provinceList2 = d2;
     },
@@ -791,8 +719,17 @@ var vm = {
       });
     },
     // 调用地区选择器
-    callAreaSel(level) {
-      +level === 1 ? (vm.isShowArea = true) : (vm.isShowArea2 = true);
+    callAreaSel(level, index) {
+      let key = "";
+      if (+level === 1) {
+        vm.isShowArea = true;
+        key = "solutionItemList";
+      } else {
+        vm.isShowArea2 = true;
+        key = "solutionFreeItem";
+      }
+      index = +index === -1 ? vm.postSolution[key].length : index;
+      vm.curIndex = index;
       vm.level = level;
     },
 
@@ -802,8 +739,8 @@ var vm = {
         filKey,
         aimKey,
         areaKey,
-        len,
-        isExist = false;
+        curList = [];
+
       if (+vm.level === 1) {
         souKey = "solutionItem";
         filKey = "extCityItems";
@@ -815,35 +752,49 @@ var vm = {
         aimKey = "solutionFreeItemList";
         areaKey = "provinceList2";
       }
-      len = vm[filKey].length;
       vm[areaKey].forEach(item => {
+        // 插入当前选中的地区
+        // 插入到已选中的列表
         if (item.isChecked) {
-          isExist = false;
-          if (len > 0) {
-            // 如果选中的地区已存在已用过的地区，跳过
-            vm[filKey].forEach(val => {
-              if (val.id === item.id) {
-                isExist = true;
-              }
-            });
-            // 否则出入当前选中项
-            if (!isExist) {
-              vm[filKey].push(item);
-              vm[souKey].areaExp.push({
-                id: item.id,
-                name: item.name
-              });
-            }
-          } else {
-            vm[filKey].push(item);
-            vm[souKey].areaExp.push({
-              id: item.id,
-              name: item.name
-            });
-          }
+          item.hasChecked = true;
+          curList.push(item);
+          vm[filKey].push(item);
         }
+
+        // 重置勾选
+        item.isChecked = false;
       });
-      vm.postSolution[aimKey].splice(-1, 1, preCopy(vm[souKey]));
+
+      // 已选择地区去重
+      vm.extCityItems = [...new Set(vm.extCityItems)];
+
+      // 合并当前编辑项以及源数据项
+      vm[souKey] = Object.assign(
+        vm[souKey],
+        vm.postSolution[aimKey][vm.curIndex] || {}
+      );
+      vm[souKey].areaExp = curList;
+
+      // 更新数据
+      // 清除重复的曾经选项
+      let sourList = vm.postSolution[aimKey];
+
+      sourList.forEach(item=>{
+        item.areaExp.forEach(area=>{
+          vm.extCityItems.forEach(ext=>{
+
+          })
+        })
+      })
+      sourList[vm.curIndex] = preCopy(vm[souKey]);
+
+      vm.postSolution[aimKey] = sourList;
+
+
+
+
+      // 重置方案项
+      vm.clearItem();
 
       vm.isShowArea = false;
       vm.isShowArea2 = false;
@@ -874,13 +825,43 @@ input[type="number"]::-webkit-outer-spin-button {
 .tc {
   text-align: center;
 }
+.table {
+  display: table;
+  font-size: 14px;
+}
+.rows {
+  display: table-row;
+  line-height: 50px;
+}
+.cell {
+  &.w2 {
+    width: 300px;
+  }
+  &.w3{
+    width: 500px;
+    input{
+      width: 100px;
+    }
+  }
+  display: table-cell;
+  width: 200px;
+}
+.table-head {
+  background-color: #f0f0f0;
+  color: #999;
+}
 .edit {
   padding-bottom: 50px;
+  .hasChecked {
+    color: #f5222d;
+  }
   .specific {
     margin-top: 30px;
     margin-bottom: 15px;
     color: #409eff;
     font-size: 14px;
+    cursor: pointer;
+    display: inline-block;
   }
   .el-form-item {
     margin-bottom: 15px;
