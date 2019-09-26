@@ -48,13 +48,7 @@
           border
           tooltip-effect="dark"
           style="width: 100%"
-          :header-cell-style="{background: '#f3f3f3'}" 
-          @selection-change="handleSelectionChange">
-          <el-table-column
-            type="selection"
-            align="center"
-            width="55">
-          </el-table-column>
+          :header-cell-style="{background: '#f3f3f3'}">
           <el-table-column
             prop="orderId"
             label="订单编号"
@@ -277,9 +271,6 @@ export default {
       this.order.status = tab.name
       this.order.status = tab.name === 'all' ? '' : parseInt(tab.name)
       this.getOrderList()
-    },
-    handleSelectionChange(val) {
-      this.multipleSelection = val;
     },
     orderDetail(row) {
       // 查看订单

@@ -25,7 +25,8 @@ const moduleSource = [
   'freight/template/edit/index',
   'freight/template/list/index',
   'activity/manage/index',
-  'activity/manage/detail/index'
+  'activity/manage/detail/list/index',
+  'activity/manage/detail/add/index'
 ]
 const hiddenData = [
   'product/list/release/index',
@@ -34,7 +35,8 @@ const hiddenData = [
   'order/sell/detail/index',
   'freight/template/edit/index',
   'freight/template/list/index',
-  'activity/manage/detail/index'
+  'activity/manage/detail/list/index',
+  'activity/manage/detail/add/index'
 ]
 // 重定向路由
 const redirectSource = {
@@ -63,6 +65,8 @@ function filterAsyncRouter(asyncRouterMap, index) { // 遍历后台传来的路�
         if (hiddenData.includes(route.url)) {
           route.hidden = true
         }
+        // console.log(route.path)
+        // console.log(route.component)
       } else if (httpReg.test(route.url)) {
         route.component = Layout
         route.path = route.url
