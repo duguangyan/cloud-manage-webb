@@ -32,9 +32,11 @@ export default {
   },
   created() {
     if(this.$route.path === '/activity/manage') {
+      console.log('栏目')
       this.showList = true
     } else {
       this.showChildren = true
+      console.log('子集')
     }
   },
   methods: {

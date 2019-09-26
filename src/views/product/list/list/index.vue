@@ -94,20 +94,18 @@
       <el-table-column
         align="center"
         sortable="custom"
-        prop="min_price"
+        prop="minprice"
         label="单价"
         width="120"
         show-overflow-tooltip>
-        <template slot-scope="scope">{{ scope.row.minprice }}</template>
       </el-table-column>
       <el-table-column
         align="center"
         sortable="custom"
-        prop="spu_sales_num"
+        prop="spuSalesNum"
         label="销量"
         width="120"
         show-overflow-tooltip>
-        <template slot-scope="scope">{{ scope.row.spuSalesNum }}</template>
       </el-table-column>
       <el-table-column
         align="center"
@@ -116,16 +114,14 @@
         label="浏览量"
         width="120"
         show-overflow-tooltip>
-        <template slot-scope="scope">{{ scope.row.hits }}</template>
       </el-table-column>
       <el-table-column
         align="center"
         sortable="custom"
-        prop="total_stock"
+        prop="totalStock"
         label="库存"
         width="120"
         show-overflow-tooltip>
-        <template slot-scope="scope">{{ scope.row.totalStock }}</template>
       </el-table-column>
       <el-table-column
         v-if="saleType === '3'"
@@ -434,7 +430,16 @@ export default {
     },
     sortChange(data) {
       // 排序
-      this.listQuery.sortColumn = data.prop
+      if(data.prop === 'minPrice') {
+        this.listQuery.sortColumn = 'min_price'
+      } else if(data.prop === 'spuSalesNum') {
+        this.listQuery.sortColumn = 'spu_sales_num'
+      } else if(data.prop === 'hits') {
+        this.listQuery.sortColumn = 'hits'
+      } else if(data.prop === 'totalStock') {
+        this.listQuery.sortColumn = 'total_stock'
+      }
+      this.listQuery.pageIndex = 1
       this.listQuery.sortType = data.order === 'descending' ? 0 : 1
       this.getList()
     }
