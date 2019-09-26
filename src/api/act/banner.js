@@ -89,3 +89,13 @@ export function getAdById(query) {
     params: query
   })
 }
+
+// 广告上线、下线
+export function updateAdStatus(data) {
+  return request({
+    url: '/act/ad/updateStatus',
+    method: 'post',
+    data
+  })
+}
+

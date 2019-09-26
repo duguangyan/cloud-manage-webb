@@ -127,6 +127,7 @@ const user = {
         })
           .then(response => {
             const data = response.data
+            console.log(response)
             commit('SET_ACCESS_TOKEN', data.access_token)
             commit('SET_REFRESH_TOKEN', data.refresh_token)
             // setToken(data.access_token);
