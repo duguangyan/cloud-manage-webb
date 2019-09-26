@@ -25,7 +25,7 @@ const moduleSource = [
   'freight/template/edit/index',
   'freight/template/list/index',
   'activity/manage/index',
-  'activity/manage/detail/list/index',
+  'activity/manage/detail/index',
   'activity/manage/detail/add/index'
 ]
 const hiddenData = [
@@ -35,8 +35,7 @@ const hiddenData = [
   'order/sell/detail/index',
   'freight/template/edit/index',
   'freight/template/list/index',
-  'activity/manage/detail/list/index',
-  'activity/manage/detail/add/index'
+  'activity/manage/detail/index',
 ]
 // 重定向路由
 const redirectSource = {
@@ -65,8 +64,6 @@ function filterAsyncRouter(asyncRouterMap, index) { // 遍历后台传来的路�
         if (hiddenData.includes(route.url)) {
           route.hidden = true
         }
-        // console.log(route.path)
-        // console.log(route.component)
       } else if (httpReg.test(route.url)) {
         route.component = Layout
         route.path = route.url
@@ -125,6 +122,7 @@ const actions = {
       let accessedRouters = []
       getRoles({ userId: this.getters.userId }).then(res => {
         accessedRouters = filterAsyncRouter(res.data, 0)
+        console.log(accessedRouters)
         commit('SET_ROUTES', accessedRouters)
         resolve()
       })

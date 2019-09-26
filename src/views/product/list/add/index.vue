@@ -65,7 +65,7 @@
             </template>
             <template v-else-if="item.inputType === 3">
               <el-select v-model="addForm.generate[index].list" size="medium" maxlength="64" :placeholder="item.hint">
-                <el-option v-for="(selectItem, selectIndex) in item.valueSet" :key="selectIndex" :label="selectItem.id" :value="selectItem.value"></el-option>
+                <el-option v-for="(selectItem, selectIndex) in item.valueSet" :key="selectIndex" :label="selectItem.value" :value="selectItem.value"></el-option>
               </el-select>
               <span v-if="item.exp !== null">{{item.exp}}</span>
             </template>
@@ -76,7 +76,7 @@
             <template v-else>
               <span>{{addForm.generate[index].list}}</span>
             </template>
-          </el-form-item> 
+          </el-form-item>
         
         </template>
         <el-form-item v-for="(selfItem, selfIndex) in addForm.selfProp" :key="selfIndex + 'x'" :label="addForm.selfProp[selfIndex].name">
@@ -299,6 +299,7 @@
             :on-preview="handlePictureCardPreview"
             :file-list="addForm.imgsBox"
             :before-upload="beforeImgUpload"
+            :on-exceed="handleExceed"
             :on-remove="handleRemove">
             <i class="el-icon-plus"></i>
           </el-upload>
@@ -759,7 +760,7 @@ let vm = {
           })
         })
         this.addForm.imgsBox = imgBox
-        if(res.data.goods.showStyle === '3') {
+        if(String(res.data.goods.showStyle) === '3') {
           this.showStyle.type = res.data.goods.showStyle
           this.getUnitList()
           this.getSpecList()
@@ -784,12 +785,15 @@ let vm = {
           this.addForm.moreSpec = specData
           this.specValueBlur('', 'true', true)
         } else { 
-          let skuArr = []
-           this.showStyle.id = res.data.goodsDetailSpecList[0].categorySpecId
-           this.addForm.unit = res.data.goodsDetailSpecList[0].categorySpecId
+          let msgObj = {}
+          msgObj.skuArr = []
+          msgObj.showStyle = res.data.goods.showStyle
+          msgObj.name = res.data.goodsDetailSpecList[0].name
+          this.showStyle.id = res.data.goodsDetailSpecList[0].categorySpecId
+          this.addForm.unit = res.data.goodsDetailSpecList[0].categorySpecId
           if (res.data.goods.showStyle === '1') {
             res.data.goodsSkuList.forEach(item => {
-              skuArr.push({
+              msgObj.skuArr.push({
                 name: item.attrValueList[0].value,
                 price: item.price,
                 number: item.startNum,
@@ -798,23 +802,20 @@ let vm = {
                 specId: item.id
               })
             })
-            this.getUnit(res.data.goods.showStyle, skuArr)
-          } else if(res.data.goods.showStyle === '2') {
+            this.getUnit(msgObj)
+          } else if(String(res.data.goods.showStyle) === '2') {
             let skuData = JSON.parse(res.data.goodsSkuList[0].priceExp)
-            let store = res.data.goodsSkuList[0].stock
+            msgObj.store = res.data.goodsSkuList[0].stock
             skuData.forEach(item => {
-              skuArr.push({
+              msgObj.skuArr.push({
                 price: item.price,
                 number: item.startQuantity,
                 skuId: res.data.goodsSkuList[0].id,
                 specId: res.data.goodsDetailSpecList[0].id
               })
             })
-            this.getUnit(res.data.goods.showStyle, skuArr, store)
+            this.getUnit(msgObj)
           }
-        
-    
-          
         }
         
       })
@@ -841,7 +842,7 @@ let vm = {
         this.getByCategoryId()
       })
     },
-    getUnit(style, arr, stock) {
+    getUnit(msgObj) {
       // 通过ID获取规格模板
       this.moreLoading = true
        getUnit({
@@ -853,14 +854,14 @@ let vm = {
           res.data.forEach(item => {
             let itemId = item.id 
             let obj = {}
-            if(item.showStyle == 2) {
+            if(String(item.showStyle) == '2') {
               obj.list = []
               obj.list.push({
                 price: '',
                 number: ''
               })
               obj.store = ''
-            } else if(item.showStyle == 1) {
+            } else if(String(item.showStyle) == '1') {
               obj.list = []
               obj.list.push({
                 name: '',
@@ -879,12 +880,15 @@ let vm = {
           this.$set(this.addForm, 'sku', skuInitObj)
           this.sellData = res.data
         }
-        if(style !== undefined) {
-          this.addForm.sku[this.showStyle.id].list = arr
-          if(stock !== undefined) {
-            this.addForm.sku[this.showStyle.id].store = stock
+        if(msgObj !== undefined) {
+          this.addForm.sku[this.showStyle.id] = {}
+          this.addForm.sku[this.showStyle.id].showStyle = msgObj.showStyle
+          this.addForm.sku[this.showStyle.id].list = msgObj.skuArr
+          this.addForm.sku[this.showStyle.id].name = msgObj.name
+          if(msgObj.stock !== undefined) {
+            this.addForm.sku[this.showStyle.id].store = msgObj.stock
           }
-          this.showStyle.type = style
+          this.showStyle.type = msgObj.showStyle
         }
       })
     },
@@ -919,7 +923,6 @@ let vm = {
           type: 1,
           uid: file.file.uid
         })
-        this.imgLimit = 10 - this.addForm.imgsBox.length
         file.file.status = 'success'
       })
     },
@@ -1114,14 +1117,26 @@ let vm = {
               if(item.isRemark) {
                 obj.remark = ''
                 let ref = String(item.id)
-                this.$refs[ref][0].getCheckedNodes()[0].pathNodes.forEach(rItem => {
-                  obj.remark += obj.remark.length === 0 ? rItem.label : ('-' + rItem.label)
-                  sortValue++
-                  obj.goodsAttrValueList.push({
-                    value: rItem.data.id,
-                    sort: sortValue
+                let err = false
+                try {
+                  this.$refs[ref][0].getCheckedNodes()[0].pathNodes.forEach(rItem => {
+                    obj.remark += obj.remark.length === 0 ? rItem.label : ('-' + rItem.label)
+                    sortValue++
+                    obj.goodsAttrValueList.push({
+                      value: rItem.data.id,
+                      sort: sortValue
+                    })
                   })
-                })
+                } catch (error) {
+                  err = true
+                  this.$message({
+                    message: '请选择地址',
+                    type: 'warning'
+                  });
+                }
+                if(err) {
+                  return false
+                }
                 this.placeProduct = obj.remark
               } else {
                 item.list.forEach(itemList => {
@@ -1313,9 +1328,15 @@ let vm = {
           saveGoods(goodsVO).then(res => {
             this.saveLoading = false
             this.$message({
-                  type: 'success',
-                  message: type === 0 ? '保存待上架成功!' : '上架成功!'
-                });
+              type: 'success',
+              message: type === 0 ? '保存待上架成功!' : '上架成功!'
+            });
+            this.$router.push({
+              path: '/product/list',
+              query: {
+                status: type === 0 ? '1' : '3'
+              }
+            })
           }).catch(err => {
             this.saveLoading = false
           })
@@ -1327,7 +1348,12 @@ let vm = {
               type: 'success',
               message: '编辑成功'
             });
-            this.$router.push({path: '/product/list'})
+            this.$router.push({
+              path: '/product/list',
+              query: {
+                status: '3'
+              }
+            })
           }).catch(err => {
             this.saveLoading = false
           })
@@ -1353,16 +1379,22 @@ let vm = {
         }
       })
     },
+    handleExceed(files, fileList) {
+      // 图片数量提示
+      this.$message({
+        message: '图片数量不能大于' + this.imgLimit,
+        type: 'warning'
+      })
+    },
     beforeImgUpload(file) {
       // console.log(file)
       const isJPG = file.type === 'image/jpeg' || file.type === 'image/jpg' || file.type === 'image/png' || file.type === 'image/gif'
       const isLt3M = file.size / 1024 / 1024 < 3;
-
       if (!isJPG) {
-        this.$message.error('上传头像图片只能是 jpg、jpeg、gif、png 格式!');
+        this.$message.error('上传图片只能是 jpg、jpeg、gif、png 格式!')
       }
       if (!isLt3M) {
-        this.$message.error('上传头像图片大小不能超过 2MB!');
+        this.$message.error('上传图片大小不能超过 2MB!')
       }
       return isJPG && isLt3M;
     },

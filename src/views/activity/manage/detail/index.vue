@@ -1,6 +1,5 @@
 <template>
   <div>
-    ggggg
     <template v-if="showList">
       <list></list>
     </template>
@@ -14,21 +13,15 @@
 import list from './list'
 export default {
   name: 'detailPatent',
-  directives: { waves },
   data() {
     return {
       showList: false,
       showChildren: false
     }
   },
-  components: { list, Pagination },
-  computed: {
-
-  },
+  components: { list },
   created() {
-    console.log('inside')
-    console.log(this.$route.path)
-    if(this.$route.path === '/activity/manage') {
+    if(this.$route.path === '/activity/manage/detail') {
       this.showList = true
     } else {
       this.showChildren = true

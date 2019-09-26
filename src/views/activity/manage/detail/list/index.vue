@@ -1,16 +1,15 @@
 <template>
   <div class="app-container">
-    list a
-    <!-- <div class="filter-container mb20">
-      <el-button v-if="btnsPermission.remove.auth" v-waves :disabled="disable">批量{{btnsPermission.remove.name}}</el-button>
-      <el-button v-if="btnsPermission.add.auth" v-waves type="primary">{{btnsPermission.add.name}}</el-button>
+    <div class="filter-container mb20">
+      <el-button v-if="btnsPermission.remove.auth" v-waves :disabled="disable" @click="handleRemove(2)">批量{{btnsPermission.remove.name}}</el-button>
+      <el-button v-if="btnsPermission.add.auth" v-waves type="primary" @click="add">{{btnsPermission.add.name}}</el-button>
     </div>
     <el-table
       v-loading="listLoading"
       :data="detailData"
+      @selection-change="mulSelect"
       :header-cell-style="{background: '#f3f3f3'}" 
       border
-      @sort-change="sortChange"
       style="width: 100%">
       <el-table-column
         type="selection"
@@ -49,7 +48,6 @@
         align="center"
         prop="hits"
         label="浏览量"
-        sortable="custom"
         width="120"
         show-overflow-tooltip>
       </el-table-column>
@@ -57,16 +55,16 @@
         align="center"
         label="操作">
         <div class="more-btn" slot-scope="scope">
-          <el-button v-if="btnsPermission.remove.auth" type="primary" size="small" @click="manage(scope.row)">{{btnsPermission.remove.name}}</el-button>
+          <el-button v-if="btnsPermission.remove.auth" :disabled="disable" type="primary" size="small" @click="handleRemove(1, scope.row)">{{btnsPermission.remove.name}}</el-button>
         </div>
       </el-table-column>
-    </el-table> -->
+    </el-table>
   </div>
 </template>
 
 <script>
 import waves from '@/directive/waves'
-import { getManageDetailList, addManageDetail, updateManageDetail } from '@/api/act/manage'
+import { getManageDetailList, addManageDetail, updateManageDetail, deleteManageDetail } from '@/api/act/manage'
 
 export default {
   name: 'manageDetail',
@@ -74,9 +72,13 @@ export default {
   data() {
     return {
       detailData: [],
+      disable: false,
       listQuery: {
-        goodListId: ''
+        goodListId: '',
+        pageIndex: 1,
+        pageSize: 10
       },
+      mulSelectData: [],
       btnsPermission: {
         remove: {
           auth: true,
@@ -91,40 +93,103 @@ export default {
     }
   },
   created() {
-    // this.listQuery.goodListId = this.$route.query.id
-    // this.getManageDetailList()
+    this.listQuery.goodListId = this.$route.query.id
+    this.getManageDetailList()
   },
   methods: {
     getManageDetailList() {
       // 获取商品列表
       this.listLoading = true
       getManageDetailList(this.listQuery).then(res => {
-        if(Array.isArray(res.data)) {
+        if(Array.isArray(res.data.records)) {
           this.listLoading = false
-          this.detailData = res.data
+          let data = []
+          res.data.records.forEach(item => {
+            data.push({
+              id: item.goods.id, 
+              name: item.goods.name,
+              imgUri: item.goods.imgUri,
+              categoryName: item.goods.categoryName,
+              minPrice: item.goods.minPrice,
+              maxPrice: item.goods.maxPrice,
+              hits: item.goods.hits
+            })
+          })
+          this.detailData = data
         }
       }).catch(err => {
         this.listLoading = false
       })
     },
-    manage(row) {
-      this.$router.push({
-        path: '/activity/manage/detail',
-        query: { id: row.id }
+    handleRemove(type, row) {
+      // 移除与批量移除
+      let noticeMsg = ''
+      let succMsg = ''
+      let ids = ''
+      if(type === 1) {
+        noticeMsg = '确认要'+ this.btnsPermission.remove.name +'该商品？'
+        succMsg = this.btnsPermission.remove.name + '成功'
+        ids = row.id
+      } else {
+        if(this.mulSelectData.length === 0) {
+           this.$message({
+            message: '请先选中要' + this.btnsPermission.remove.name + '的商品',
+            type: 'warning'
+          })
+          return false
+        }
+        noticeMsg = '确认要批量'+ this.btnsPermission.remove.name +'该商品？'
+        succMsg = '批量' + this.btnsPermission.remove.name + '成功'
+        this.mulSelectData.forEach(item => {
+          ids += ids.length === 0 ? item.id : (',' + item.id)
+        })
+      }
+      this.$confirm(noticeMsg, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.listLoading = true
+        this.disable = true
+        deleteManageDetail({
+          goodListId: this.listQuery.goodListId,
+          goodsIdList: ids
+        }).then(res => {
+          this.listLoading = false
+          this.disable = false
+          this.getManageDetailList()
+          this.$notify({
+            title: succMsg,
+            dangerouslyUseHTMLString: true,
+            type: 'success'
+          })
+        }).catch(err => {
+          this.listLoading = false
+          this.disable = false
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '取消'
+        });       
       })
+    },
+    mulSelect(val) {
+      this.mulSelectData = val
     },
     getPage(data) {
      // 分页事件
       this.listQuery.pageIndex = data.page
       this.getList()
     },
-    sortChange(data) {
-      // 排序
-      console.log(data)
-      // this.listQuery.sortColumn = data.prop
-      // this.listQuery.pageIndex = 1
-      // this.listQuery.sortType = data.order === 'descending' ? 0 : 1
-      // this.getList()
+    add() {
+      // 添加商品
+      this.$router.push({
+        path: 'detail/add',
+        query: {
+          cId: this.listQuery.goodListId
+        }
+      })
     }
   }
 }

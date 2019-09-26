@@ -474,8 +474,8 @@ export default {
     getUserBtnByPId({ parentId: this.$route.meta.id }).then(res => {
       if(Array.isArray(res.data)) {
         res.data.map((val) => {
-          if(this.btnsPermission.hasOwnProperty(val.code)) {
-            this.btnsPermission[val.code].auth = val.checked === 1
+          if(this.btnsPermission.hasOwnProperty(val.code) && val.status === 1 && val.checked === 1) {
+            this.btnsPermission[val.code].auth = true
             this.btnsPermission[val.code].name = val.name
           }
         })

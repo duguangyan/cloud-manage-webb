@@ -12,7 +12,7 @@ export function getManageList(data) {
 // 根据Id获取栏目详情列表
 export function getManageDetailList(data) {
   return request({
-    url: '/act/goodListDetail/getGoodsIdList',
+    url: '/act/goodListDetail/listPage',
     method: 'post',
     data
   })
@@ -31,6 +31,15 @@ export function addManageDetail(data) {
 export function updateManageDetail(data) {
   return request({
     url: '/act/goodListDetail/updateAll',
+    method: 'post',
+    data
+  })
+}
+
+// 移除商品目录商品
+export function deleteManageDetail(data) {
+  return request({
+    url: '/act/goodListDetail/delete',
     method: 'post',
     data
   })

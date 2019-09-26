@@ -109,6 +109,7 @@
             :on-preview="handlePictureCardPreview"
             :before-upload="beforeImgUpload"
             :file-list="banner.pathBox"
+            :on-exceed="handleExceed"
             :on-remove="handleRemove">
             <i class="el-icon-plus"></i>
           </el-upload>
@@ -617,6 +618,13 @@ export default {
         this.$message.error('上传头像图片大小不能超过 3MB!');
       }
       return isJPG && isLt4M;
+    },
+    handleExceed(files, fileList) {
+      // 图片数量提示
+      this.$message({
+        message: '图片数量不能大于1',
+        type: 'warning'
+      })
     },
     handleRemove(file, fileList) {
       // 删除图片

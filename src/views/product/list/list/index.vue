@@ -19,7 +19,7 @@
         <el-button v-waves class="filter-item" type="primary" :disabled="disable" icon="el-icon-search" @click="handleFilter">{{btnsPermission.search.name}}</el-button>
         <el-button v-waves class="filter-item" @click="resetList">重置</el-button>
       </template>
-      <el-button  @click="jump" v-waves class="filter-item add-btn">{{btnsPermission.add.name}}</el-button>
+      <el-button v-if="btnsPermission.add.auth"  @click="jump" v-waves class="filter-item add-btn">{{btnsPermission.add.name}}</el-button>
     </div>
     <div v-if="btnsPermission.search.auth" class="mb20">
       <template v-if="saleType === '3'">
@@ -248,18 +248,19 @@ export default {
     }
   },
   components: { Pagination },
-  computed: {
-
-  },
   created() {
+    if(this.$route.query.status) {
+      this.saleType = this.$route.query.status
+      this.listQuery.status = this.$route.query.status
+    }
     this.getList()
   },
   mounted() {
     getUserBtnByPId({ parentId: this.$route.meta.id }).then(res => {
       if(Array.isArray(res.data)) {
         res.data.map((val) => {
-          if(this.btnsPermission.hasOwnProperty(val.code)) {
-            this.btnsPermission[val.code].auth = val.checked === 1
+          if(this.btnsPermission.hasOwnProperty(val.code) && val.status === 1 && val.checked === 1) {
+            this.btnsPermission[val.code].auth = true
             this.btnsPermission[val.code].name = val.name
           }
         })

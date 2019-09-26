@@ -208,3 +208,12 @@ export function getGoodsDetail(query) {
     params: query
   })
 }
+
+// 根据栏目获取商品列表
+export function getColumnGoodsList(query) {
+  return request({
+    url: '/goods/goods/pageColumnGoods',
+    method: 'get',
+    params: query
+  })
+}
