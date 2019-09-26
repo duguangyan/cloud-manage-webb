@@ -1,15 +1,15 @@
-function deepCopy(p, c) {
-  c = c || {}
-  for (var i in p) {
-    if (typeof p[i] === 'object') {
-      c[i] = p[i].constructor === Array ? [] : {}
-      deepCopy(p[i], c[i])
+function deepCopy(data, shadow) {
+  shadow = shadow || {}
+  for (var key in data) {
+    // 如果是对象，递归
+    if (typeof data[key] === 'object') {
+      shadow[key] = Array.isArray(data[key]) ? [] : {}
+      deepCopy(data[key], shadow[key])
     } else {
-      c[i] = p[i]
+      shadow[key] = data[key]
     }
   }
-
-  return c
+  return shadow
 }
 
 export function preCopy(data) {
