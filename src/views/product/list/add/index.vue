@@ -945,7 +945,7 @@ let vm = {
         this.showStyle.id = val
       } else if(type === 'more') {
         this.moreSpecTableShow = true
-        this.showStyle.type = 3
+        this.showStyle.type = '3'
         this.showStyle.id = val
       } else if(type === 'spec') {
         this.addForm.moreSpec[pindex].isSpecSelect = true
