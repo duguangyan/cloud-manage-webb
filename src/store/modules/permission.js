@@ -49,7 +49,7 @@ const redirectSource = {
 const _import = require('@/router/_import_' + process.env.NODE_ENV) // 获取组件的方法
 // const _import = require('@/router/_import_development') // 获取组件的方法
 
-const httpReg = /(http|https):\/\/([\w.]+\/?)\S*/
+const httpReg = /((http|https):\/\/)?(www.)\S+/
 const srcReg = /^[A-Za-z]+$/
 
 function filterAsyncRouter(asyncRouterMap, index) { // 遍历后台传来的路由字符串，转换为组件对象
@@ -67,6 +67,17 @@ function filterAsyncRouter(asyncRouterMap, index) { // 遍历后台传来的路�
       } else if (httpReg.test(route.url)) {
         route.component = Layout
         route.path = route.url
+        if (route.target === 1) {
+          route.path = 'iframe'
+          route.children = [
+            {
+              path: 'iframe',
+              component: () => import('@/views/iframe/index'),
+              name: 'Dashboard',
+              meta: { title: route.name, icon: route.icon, affix: true }
+            }
+          ]
+        }
       } else if (srcReg.test(route.url)) {
         route.component = Layout
         if (redirectSource[route.url]) {
@@ -122,7 +133,6 @@ const actions = {
       let accessedRouters = []
       getRoles({ userId: this.getters.userId }).then(res => {
         accessedRouters = filterAsyncRouter(res.data, 0)
-        console.log(accessedRouters)
         commit('SET_ROUTES', accessedRouters)
         resolve()
       })

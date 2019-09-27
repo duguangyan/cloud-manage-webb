@@ -291,8 +291,8 @@
             <el-input v-model="spec.name" maxlength="20" placeholder="请输入属性名称" />
           </el-form-item>
           <el-form-item label="展示方式" prop="showType">
-            <el-radio v-model="spec.showType" size="medium" :label="1" border>阶梯方式</el-radio>
-            <el-radio v-model="spec.showType" size="medium" :label="2" border>普通方式</el-radio>
+            <el-radio v-model="spec.showType" size="medium" :label="2" border>阶梯方式</el-radio>
+            <el-radio v-model="spec.showType" size="medium" :label="1" border>普通方式</el-radio>
           </el-form-item>
           <el-form-item v-show="spec.showType === 1" label="规格值后缀" prop="afterDes" :rules="{
             required: spec.showType === 1, message: '属性值不能为空', trigger: 'blur'

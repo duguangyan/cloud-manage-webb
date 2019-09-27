@@ -27,6 +27,7 @@
       border
       @sort-change="sortChange"
       :data="tableData"
+      :row-class-name="tableRowClassName"
       :header-cell-style="{background: '#f3f3f3'}" 
       tooltip-effect="dark"
       style="width: 100%"
@@ -333,6 +334,12 @@ export default {
     selectAble(row, index) {
       // 是否可选
       return !row.isSelect
+    },
+    tableRowClassName({row, rowIndex}) {
+      // 不可选行置灰
+      if(row.isSelect) {
+        return 'cancle-row'
+      }
     }
   }
 }
@@ -352,5 +359,10 @@ export default {
 <style lang="scss">
   .el-date-editor .el-range-separator{
     width: auto;
+  }
+</style>
+<style>
+  .cancle-row{
+    background: #eee!important;
   }
 </style>

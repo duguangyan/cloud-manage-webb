@@ -28,6 +28,7 @@
         </el-form-item>
         <template v-for="(item, index) in baseData">
           <el-form-item 
+          v-if="item"
           :key="index" 
           :label="item.name" 
           :rules="{
@@ -549,7 +550,7 @@ let vm = {
       addressIndex: -1,
       addressData: {},
       tableShow: false,
-        moreTableShow: false,
+      moreTableShow: false,
       addForm: {
         title: '',
         remark: '',
@@ -559,6 +560,7 @@ let vm = {
         freightWeight: '',
         freightName: '',
         sku: {},
+        fileType: 1,
         generate: [],
         imgsBox: [],
         unitMore: '',
@@ -699,7 +701,6 @@ let vm = {
         let generate = []
         this.addForm.title = res.data.goods.name
         this.addForm.remark = res.data.goods.detail
-        this.addForm.unitMore = res.data.goods.unit
         this.productTitle = res.data.categoryPath
         this.addForm.freight = res.data.goods.postSettingId
         this.freightData.forEach(item => {
@@ -716,37 +717,39 @@ let vm = {
         if(Array.isArray(res.data.goodsDetailAttrList)) {
           res.data.goodsDetailAttrList.forEach((item, index) => {
             if(item.categoryAttrId === '') {
-              editBaseData.push({
+              editBaseData[index] = {
                 inputType: '',
                 name: item.name,
                 list: item.goodsDetailAttrValueList[0].value
-              })
-              generate.push({
+              }
+              generate[index] = {
                 id: '',
                 name: item.name,
                 list: item.goodsDetailAttrValueList[0].value
-              })
+              }
             } else {
               this.baseCenterData.forEach((bItem, bIndex) => {
                 if(item.categoryAttrId === bItem.id) {
                   let itemObj = bItem
                   let generateObj = this.addForm.generate[bIndex]
-                  editBaseData.push(itemObj)
+                  editBaseData[bIndex] = itemObj
                   if(bItem.inputType === 0 || bItem.inputType === 2) {
                     generateObj.list = []
                     item.goodsDetailAttrValueList.forEach((vItem, vIndex) => {
                       generateObj.list.push(vItem.value)
                     })
+                    if(bItem.inputType === 2) {
+                      generateObj.checkAll = this.checkboxObj[bIndex].length === item.goodsDetailAttrValueList.length ? true : false
+                    }
                   } else {
                     generateObj.list = item.goodsDetailAttrValueList[0].value
                   }
-                  generate.push(generateObj)
+                  generate[bIndex] = generateObj
                   return false
                 }
               })
             }
-            
-          });
+          })
         }
         this.addForm.generate = generate
         this.baseData = editBaseData
@@ -761,6 +764,7 @@ let vm = {
         })
         this.addForm.imgsBox = imgBox
         if(String(res.data.goods.showStyle) === '3') {
+          this.addForm.unitMore = res.data.goods.unit
           this.showStyle.type = res.data.goods.showStyle
           this.getUnitList()
           this.getSpecList()
@@ -785,12 +789,12 @@ let vm = {
           this.addForm.moreSpec = specData
           this.specValueBlur('', 'true', true)
         } else { 
+          this.addForm.unit = res.data.goods.unit
           let msgObj = {}
           msgObj.skuArr = []
           msgObj.showStyle = res.data.goods.showStyle
           msgObj.name = res.data.goodsDetailSpecList[0].name
           this.showStyle.id = res.data.goodsDetailSpecList[0].categorySpecId
-          this.addForm.unit = res.data.goodsDetailSpecList[0].categorySpecId
           if (res.data.goods.showStyle === '1') {
             res.data.goodsSkuList.forEach(item => {
               msgObj.skuArr.push({
@@ -920,7 +924,7 @@ let vm = {
       fileUpload(formData).then(res => {
         this.addForm.imgsBox.push({
           url: res.data,
-          type: 1,
+          type: this.fileType,
           uid: file.file.uid
         })
         file.file.status = 'success'
@@ -941,7 +945,6 @@ let vm = {
         this.showStyle.id = val
       } else if(type === 'more') {
         this.moreSpecTableShow = true
-        this.addForm.unit = this.unitMore
         this.showStyle.type = 3
         this.showStyle.id = val
       } else if(type === 'spec') {
@@ -1166,8 +1169,8 @@ let vm = {
         let speSort = 0
         let speObj = {}
         let skuSort = 0
+        goodsVO.unit = this.addForm.unit
         speObj.sort = speSort++
-        
         if (this.addForm.sku[key].showStyle === '1') {
           speObj.goodsSpecValueList = []
           let boxSort = 0
@@ -1316,7 +1319,8 @@ let vm = {
       goodsVO.goodsImgList = []
       this.addForm.imgsBox.forEach(imgItem => {
         goodsVO.goodsImgList.push({
-          imgUrl: imgItem.url
+          imgUrl: imgItem.url,
+          type: imgItem.type
         })
       })
       if(type === 2) {
@@ -1368,7 +1372,7 @@ let vm = {
     handleCheckAllChange(val, index, id) {
       // 全选
       this.addForm.generate[index].list = val ? this.checkboxObj[index] : [];
-      this.isIndeterminate = false;
+      this.isIndeterminate = false
     },
     handleRemove(file, fileList) {
       // 删除图片
@@ -1387,16 +1391,35 @@ let vm = {
       })
     },
     beforeImgUpload(file) {
-      // console.log(file)
-      const isJPG = file.type === 'image/jpeg' || file.type === 'image/jpg' || file.type === 'image/png' || file.type === 'image/gif'
-      const isLt3M = file.size / 1024 / 1024 < 3;
-      if (!isJPG) {
-        this.$message.error('上传图片只能是 jpg、jpeg、gif、png 格式!')
+      if(file.type === 'video/mp4') {
+        this.fileType = 2
+        if(file.size / 1024 / 1024 < 200) {
+           return true
+        } else {
+          this.$message.error('上传视频大小不能超过 200MB!')
+          return false
+        }
+      } else if(file.type === 'image/jpeg' || file.type === 'image/jpg' || file.type === 'image/png' || file.type === 'image/gif') {
+        this.fileType = 1
+        if(file.size / 1024 / 1024 < 3) {
+           return true
+        } else {
+          this.$message.error('上传图片大小不能超过 3MB!')
+          return false
+        }
+      } else {
+        this.$message.error('上传文件类型错误!')
+        return false
       }
-      if (!isLt3M) {
-        this.$message.error('上传图片大小不能超过 2MB!')
-      }
-      return isJPG && isLt3M;
+      // const isJPG = file.type === 'image/jpeg' || file.type === 'image/jpg' || file.type === 'image/png' || file.type === 'image/gif'
+      // const isLt3M = file.size / 1024 / 1024 < 3;
+      // if (!isJPG) {
+      //   this.$message.error('上传图片只能是 jpg、jpeg、gif、png 格式!')
+      // }
+      // if (!isLt3M) {
+      //   this.$message.error('上传图片大小不能超过 2MB!')
+      // }
+      // return isJPG && isLt3M;
     },
     handlePictureCardPreview(file) {
       // 图片预览
