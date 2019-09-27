@@ -1117,18 +1117,13 @@ let vm = {
             obj.sort = sortList++
             obj.goodsAttrValueList = []
             if(Array.isArray(item.list)) {
+              let addRemark = ''
               if(item.isRemark) {
-                obj.remark = ''
-                let ref = String(item.id)
                 let err = false
+                let ref = String(item.id)
                 try {
-                  this.$refs[ref][0].getCheckedNodes()[0].pathNodes.forEach(rItem => {
-                    obj.remark += obj.remark.length === 0 ? rItem.label : ('-' + rItem.label)
-                    sortValue++
-                    obj.goodsAttrValueList.push({
-                      value: rItem.data.id,
-                      sort: sortValue
-                    })
+                  this.$refs[ref][0].getCheckedNodes()[0].pathLabels.forEach(rItem => {
+                    addRemark += addRemark.length === 0 ? rItem : ('-' + rItem)
                   })
                 } catch (error) {
                   err = true
@@ -1140,16 +1135,17 @@ let vm = {
                 if(err) {
                   return false
                 }
-                this.placeProduct = obj.remark
-              } else {
-                item.list.forEach(itemList => {
-                  sortValue++
-                  obj.goodsAttrValueList.push({
-                    value: itemList,
-                    sort: sortValue
-                  })
-                })
+                this.placeProduct = addRemark
               }
+              item.list.forEach(itemList => {
+                let itemObj = {}
+                if(item.isRemark) {
+                  itemObj.remark = addRemark
+                }
+                itemObj.value = itemList
+                itemObj.sort = sortValue++
+                obj.goodsAttrValueList.push(itemObj)
+              })
             } else {
               obj.goodsAttrValueList.push({
                 value: item.list,

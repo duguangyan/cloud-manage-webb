@@ -37,6 +37,7 @@
 <script>
 import waves from '@/directive/waves'
 import { getManageList } from '@/api/act/manage'
+import { getUserBtnByPId } from '@/api/upms/menu'
 
 export default {
   name: 'manageList',
@@ -44,10 +45,12 @@ export default {
   data() {
     return {
       manageData: [],
-      listQuery: {},
+      listQuery: {
+        
+      },
       btnsPermission: {
         manage: {
-          auth: true,
+          auth: false,
           name: '管理商品'
         }
       },
@@ -56,6 +59,18 @@ export default {
   },
   created() {
     this.getManageList()
+  },
+  mounted() {
+    getUserBtnByPId({ parentId: this.$route.meta.id }).then(res => {
+      if(Array.isArray(res.data)) {
+        res.data.map((val) => {
+          if(this.btnsPermission.hasOwnProperty(val.code)) {
+            this.btnsPermission[val.code].auth = val.checked === 1
+            this.btnsPermission[val.code].name = val.name
+          }
+        })
+      }
+    })
   },
   methods: {
     getManageList() {

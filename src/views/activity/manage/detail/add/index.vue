@@ -25,7 +25,6 @@
       ref="multipleTable"
       v-loading="listLoading"
       border
-      @sort-change="sortChange"
       :data="tableData"
       :row-class-name="tableRowClassName"
       :header-cell-style="{background: '#f3f3f3'}" 
@@ -58,15 +57,13 @@
       </el-table-column>
       <el-table-column
         align="center"
-        sortable="custom"
-        prop="minprice"
+        prop="minPrice"
         label="价格"
         width="120"
         show-overflow-tooltip>
       </el-table-column>
       <el-table-column
         align="center"
-        sortable="custom"
         prop="hits"
         label="浏览量"
         width="120"
@@ -90,7 +87,6 @@ import { getUserBtnByPId } from '@/api/upms/menu'
 import { getProductTree } from '@/api/goods/product'
 import { addManageDetail } from '@/api/act/manage'
 
-
 export default {
   name: 'detailAdd',
   directives: { waves },
@@ -99,11 +95,11 @@ export default {
       btnsPermission: {
         search: {
           name: '搜索',
-          auth: true
+          auth: false
         },
         add: {
           name: '添加',
-          auth: true
+          auth: false
         }
       },
       mulSelectData: [],
@@ -113,9 +109,7 @@ export default {
         categoryId: '',
         keywords: '',
         pageIndex: 1,
-        pageSize: 10,
-        sortColumn: 'min_price',
-        sortType: 0
+        pageSize: 10
       },
       treeOptions: [],
       treeProps: {
@@ -300,9 +294,7 @@ export default {
         categoryId: '',
         keywords: '',
         pageIndex: 1,
-        pageSize: 10,
-        sortColumn: 'min_price',
-        sortType: 0
+        pageSize: 10
       }
       this.treeValue = ''
       this.getColumnGoodsList()
@@ -316,21 +308,17 @@ export default {
       this.listQuery.pageIndex = data.page
       this.getColumnGoodsList()
     },
-    sortChange(data) {
-      // 排序
-      if(data.prop === 'minPrice') {
-        this.listQuery.sortColumn = 'min_price'
-      } else if(data.prop === 'spuSalesNum') {
-        this.listQuery.sortColumn = 'spu_sales_num'
-      } else if(data.prop === 'hits') {
-        this.listQuery.sortColumn = 'hits'
-      } else if(data.prop === 'totalStock') {
-        this.listQuery.sortColumn = 'total_stock'
-      }
-      this.listQuery.pageIndex = 1
-      this.listQuery.sortType = data.order === 'descending' ? 0 : 1
-      this.getColumnGoodsList()
-    },
+    // sortChange(data) {
+    //   // 排序
+    //   if(data.prop === 'minPrice') {
+    //     this.listQuery.sortColumn = 'price'
+    //   } else if(data.prop === 'hits') {
+    //     this.listQuery.sortColumn = 'hits'
+    //   }
+    //   this.listQuery.pageIndex = 1
+    //   this.listQuery.sortType = data.order === 'descending' ? 0 : 1
+    //   this.getColumnGoodsList()
+    // },
     selectAble(row, index) {
       // 是否可选
       return !row.isSelect

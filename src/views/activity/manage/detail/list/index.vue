@@ -65,6 +65,7 @@
 <script>
 import waves from '@/directive/waves'
 import { getManageDetailList, addManageDetail, updateManageDetail, deleteManageDetail } from '@/api/act/manage'
+import { getUserBtnByPId } from '@/api/upms/menu'
 
 export default {
   name: 'manageDetail',
@@ -81,11 +82,11 @@ export default {
       mulSelectData: [],
       btnsPermission: {
         remove: {
-          auth: true,
+          auth: false,
           name: '移除'
         },
         add: {
-          auth: true,
+          auth: false,
           name: '添加商品'
         }
       },
@@ -95,6 +96,18 @@ export default {
   created() {
     this.listQuery.goodListId = this.$route.query.id
     this.getManageDetailList()
+  },
+  mounted() {
+    getUserBtnByPId({ parentId: this.$route.meta.id }).then(res => {
+      if(Array.isArray(res.data)) {
+        res.data.map((val) => {
+          if(this.btnsPermission.hasOwnProperty(val.code)) {
+            this.btnsPermission[val.code].auth = val.checked === 1
+            this.btnsPermission[val.code].name = val.name
+          }
+        })
+      }
+    })
   },
   methods: {
     getManageDetailList() {

@@ -1,6 +1,6 @@
 <template>
   <div class="login-container">
-    <iframe :src="url" style="height: 100%;width:7.5rem; frameborder=no" frameborder="no" border="0" marginWidth=0
+    <iframe class="iframe" ref="iframe" v-loading.fullscreen.lock="fullscreenLoading" :src="url" frameborder="no" border="0" marginWidth=0
 			 marginHeight=0></iframe>
   </div>
 </template>
@@ -8,19 +8,52 @@
 <script>
 
 export default {
-  name: "iframe",
+  name: "myiframe",
   data() {
     return {
-      url: 'www.baidu.com'
+      url: 'http://youdao.com/',
+      fullscreenLoading: false,
     };
   },
-  mounted() {
+  created() {
+    this.fullscreenLoading = true
   },
-  methods: {
+  mounted() {
+    this.iframeInit()
+    window.onresize = () => {
+      this.iframeInit()
+    }
+  },
+methods: {
+    iframeInit() {
+      const iframe = this.$refs.iframe
+      const clientHeight = document.documentElement.clientHeight - 90
+      iframe.style.height = `${clientHeight}px`
+      if (iframe.attachEvent) {
+        iframe.attachEvent('onload', () => {
+          this.fullscreenLoading = false
+        })
+      } else {
+        iframe.onload = () => {
+          this.fullscreenLoading = false
+        }
+      }
+    },
+    getUrlPath: function() {
+      let url = window.location.href
+      url = url.replace('/iframe', '')
+      return url
+    }
   }
 };
 </script>
 
-<style lang="scss">
-
+<style>
+.iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+}
 </style>

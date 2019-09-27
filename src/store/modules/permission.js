@@ -1,6 +1,9 @@
 import { constantRoutes } from '@/router'
 import { getRoles } from '@/api/upms/user'
 import Layout from '@/layout'
+import IFRAME from '@/views/iframe/index.vue'
+console.log('---------------------')
+console.log(IFRAME)
 
 // 路由资源
 const moduleSource = [
@@ -35,7 +38,7 @@ const hiddenData = [
   'order/sell/detail/index',
   'freight/template/edit/index',
   'freight/template/list/index',
-  'activity/manage/detail/index',
+  'activity/manage/detail/index'
 ]
 // 重定向路由
 const redirectSource = {
@@ -55,6 +58,7 @@ const srcReg = /^[A-Za-z]+$/
 function filterAsyncRouter(asyncRouterMap, index) { // 遍历后台传来的路由字符串，转换为组件对象
   const accessedRouters = asyncRouterMap.filter(route => {
     let exsit = true
+    let x = true
     if (route.url) {
       route.hidden = false
       if (moduleSource.indexOf(route.url) > -1) {
@@ -66,18 +70,28 @@ function filterAsyncRouter(asyncRouterMap, index) { // 遍历后台传来的路�
         }
       } else if (httpReg.test(route.url)) {
         route.component = Layout
-        route.path = route.url
-        if (route.target === 1) {
-          route.path = 'iframe'
+        if (route.operation === 1) {
+          x = false
+          route.path = '/iframe'
+          // route.redirect = '/iframe/index'
           route.children = [
             {
-              path: 'iframe',
-              component: () => import('@/views/iframe/index'),
-              name: 'Dashboard',
-              meta: { title: route.name, icon: route.icon, affix: true }
+              path: 'index',
+              component: {
+                template: '<div>99999999999999999999999999999999</div>'
+              },
+              mounted() {
+                alert(1)
+              },
+              meta: { title: 'Documentation', icon: 'documentation', affix: true }
             }
           ]
+        } else {
+          route.path = route.url
         }
+        console.log(route.name)
+        console.log(route)
+        console.log(route.children)
       } else if (srcReg.test(route.url)) {
         route.component = Layout
         if (redirectSource[route.url]) {
@@ -102,7 +116,7 @@ function filterAsyncRouter(asyncRouterMap, index) { // 遍历后台传来的路�
     } else {
       return false
     }
-    if (route.children && route.children.length > 0) {
+    if (route.children && route.children.length > 0 && x) {
       route.children = filterAsyncRouter(route.children, 1)
     } else {
       route.children = []
