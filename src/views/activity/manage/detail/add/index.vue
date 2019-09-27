@@ -34,6 +34,7 @@
       <el-table-column
         type="selection"
         align="center"
+        :selectable="selectAble"
         width="55">
       </el-table-column>
       <el-table-column
@@ -328,6 +329,10 @@ export default {
       this.listQuery.pageIndex = 1
       this.listQuery.sortType = data.order === 'descending' ? 0 : 1
       this.getColumnGoodsList()
+    },
+    selectAble(row, index) {
+      // 是否可选
+      return !row.isSelect
     }
   }
 }

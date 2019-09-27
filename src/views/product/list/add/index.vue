@@ -805,7 +805,7 @@ let vm = {
             this.getUnit(msgObj)
           } else if(String(res.data.goods.showStyle) === '2') {
             let skuData = JSON.parse(res.data.goodsSkuList[0].priceExp)
-            msgObj.store = res.data.goodsSkuList[0].stock
+            msgObj.stock = res.data.goodsSkuList[0].stock
             skuData.forEach(item => {
               msgObj.skuArr.push({
                 price: item.price,
