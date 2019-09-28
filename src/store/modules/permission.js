@@ -50,7 +50,7 @@ const redirectSource = {
 const _import = require('@/router/_import_' + process.env.NODE_ENV) // 获取组件的方法
 // const _import = require('@/router/_import_development') // 获取组件的方法
 
-const httpReg = /((http|https):\/\/)?(www.)\S+/
+const httpReg = /(http|https):\/\/\S+/
 const srcReg = /^[A-Za-z]+$/
 
 function filterAsyncRouter(asyncRouterMap, index) { // 遍历后台传来的路由字符串，转换为组件对象
@@ -69,10 +69,10 @@ function filterAsyncRouter(asyncRouterMap, index) { // 遍历后台传来的路�
         // route.component = Layout
         if (route.operation === 1) {
           if (index === 0) {
-            route.path = '/iframe:' + route.url
+            route.path = '/iframe:' + encodeURI(route.name)
             route.component = Layout
             // route.path = route.url
-            route.alias = '/iframe:' + route.url
+            // route.alias = '/iframe:' + route.url
             route.children = [
               {
                 url: route.url,
@@ -85,7 +85,7 @@ function filterAsyncRouter(asyncRouterMap, index) { // 遍历后台传来的路�
               }
             ]
           } else {
-            route.path = '/iframe:' + route.url
+            route.path = '/iframe:' + encodeURI(route.name)
             route.component = _import('iframe/index')
             if (route.isHidden) {
               route.hidden = true
@@ -108,6 +108,7 @@ function filterAsyncRouter(asyncRouterMap, index) { // 遍历后台传来的路�
         exsit = false
       }
       if (exsit) {
+        // console.log(route.url)
         route.meta = {
           title: route.name,
           icon: route.icon,

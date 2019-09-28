@@ -1,9 +1,8 @@
 <template>
-  <div class="login-container">
-    <iframe class="iframe" ref="iframe" v-loading.fullscreen.lock="fullscreenLoading" :src="url" frameborder="no" border="0" marginWidth=0
+  <div v-loading="fullscreenLoading" class="login-container">
+    <iframe class="iframe" ref="iframe" :src="url" frameborder="no" border="0" marginWidth=0
 			 marginHeight=0></iframe>
   </div>
- 
 </template>
 
 <script>
@@ -17,7 +16,7 @@ export default {
     };
   },
   created() {
-    this.url = 'http://' + this.$route.meta.url
+    this.url = this.$route.meta.url
   },
   
   mounted() {
@@ -41,11 +40,6 @@ methods: {
           this.fullscreenLoading = false
         }
       }
-    },
-    getUrlPath: function() {
-      let url = window.location.href
-      url = url.replace('/iframe', '')
-      return url
     }
   }
 };
