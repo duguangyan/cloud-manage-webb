@@ -340,7 +340,7 @@ const defaultProp = {
   id: '',
   name: '',
   status: '', 
-  type: -1,
+  type: '',
   level: '',
   list: [
     { value: '' }
@@ -958,7 +958,7 @@ export default {
       }
       this.dialogVisible = false
       this.$notify({
-        title: 'Success',
+        title: '成功',
         dangerouslyUseHTMLString: true,
         message: succMsg,
         type: 'success'
@@ -1000,7 +1000,7 @@ export default {
         this.spec.afterDes = row.valueSuffix
         this.dialogType = 'spec'
         this.dialogMsg = '编辑规格管理'
-      } else {
+      } else if(type === 3) {
         console.log(row)
         this.dialogType = 'prop'
         this.dialogMsg = '编辑属性模板'
@@ -1010,6 +1010,7 @@ export default {
         this.prop.afterDes = row.exp
         this.prop.notice = row.hint
         this.prop.type = row.inputType
+        this.prop.list = row.valueSet
         if(row.inputType === 0) {
            this.prop.level = Number(row.valueSet[0].value)
         }

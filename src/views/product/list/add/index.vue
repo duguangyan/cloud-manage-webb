@@ -16,7 +16,7 @@
       <div  class="text item">
         <el-form-item label="标题" prop="title"
         :rules="{
-            required: true, message: '标题必填', trigger: 'blur'
+            required: true, message: '标题必填', trigger: 'change'
         }">
           <el-input 
           class="long-input" 
@@ -41,7 +41,6 @@
                 v-model="addForm.generate[index].list"
                 :label="item.id"
                 :placeholder="item.hint"
-                @focus="((val) => focus(val, item.id))"
                 :options="addressOptions"
                 :style="{width: item.length + 'px'}"
                 :props="addressData[item.id]"
@@ -125,13 +124,13 @@
                   >
                   <el-table-column  label="起批量" width="220" align="center">
                     <template slot-scope="scope">
-                      <span class="mr5">起批数</span><el-input class="table-input" v-model.trim="addForm.sku[showStyle.id].list[scope.$index].number" size="small" maxlength="12" />
+                      <span class="mr5">起批数</span><el-input class="table-input" v-model.trim="addForm.sku[showStyle.id].list[scope.$index].number" size="small" maxlength="12" @keyup.native="numValid(addForm.sku[showStyle.id].list[scope.$index], 'number', 2)" />
           
                     </template>
                   </el-table-column>
                   <el-table-column label="价格" width="220" align="center">
                     <template slot-scope="scope">
-                      <span class="mr5">单价</span><el-input class="table-input" v-model.trim="addForm.sku[showStyle.id].list[scope.$index].price" size="small" maxlength="12" />
+                      <span class="mr5">单价</span><el-input class="table-input" v-model.trim="addForm.sku[showStyle.id].list[scope.$index].price" size="small" maxlength="12" @keyup.native="numValid(addForm.sku[showStyle.id].list[scope.$index], 'price', 1)" />
                     </template>
                   </el-table-column>
                   <el-table-column label="操作" align="center">
@@ -143,7 +142,6 @@
                         <el-button v-show="scope.$index === addForm.sku[showStyle.id].list.length - 1" size="mini" type="primary" plain @click="addStair(scope.$index, showStyle.id)">
                           新增规格
                         </el-button>
-                        <!-- <span v-show="scope.$index > 0 || stairArr.length > 1" class="mr10 unit-delete" @click="removeStair(scope.$index, showStyle.id)">删除</span><span v-show="scope.$index === stairArr.length - 1" class="unit-add" @click="addStair(scope.$index, showStyle.id)">新增规格</span> -->
                       </div>
                     </template>
                   </el-table-column>
@@ -156,22 +154,22 @@
                   border>
                   <el-table-column  label="规格名称" width="220" align="center">
                     <template slot-scope="scope">
-                      <el-input class="table-input mr5" v-model.trim="addForm.sku[showStyle.id].list[scope.$index].name" size="small" maxlength="12" /><span>{{valueSuffixObj[showStyle.id]}}</span>
+                      <el-input class="table-input mr5" v-model.trim="addForm.sku[showStyle.id].list[scope.$index].name" size="small" maxlength="12" @keyup.native="numValid(addForm.sku[showStyle.id].list[scope.$index], 'name', 1)" /><span>{{valueSuffixObj[showStyle.id]}}</span>
                     </template>
                   </el-table-column>
                   <el-table-column label="起批量" width="220" align="center">
                     <template slot-scope="scope">
-                      <el-input class="table-input" v-model.trim="addForm.sku[showStyle.id].list[scope.$index].number" size="small" maxlength="12" />
+                      <el-input class="table-input" v-model.trim="addForm.sku[showStyle.id].list[scope.$index].number" size="small" maxlength="12" @keyup.native="numValid(addForm.sku[showStyle.id].list[scope.$index], 'number', 1)" />
                     </template>
                   </el-table-column>
                   <el-table-column label="价格" width="220" align="center">
                     <template slot-scope="scope">
-                      <el-input class="table-input mr5" v-model.trim="addForm.sku[showStyle.id].list[scope.$index].price" size="small" maxlength="12" /><span>元</span>
+                      <el-input class="table-input mr5" v-model.trim="addForm.sku[showStyle.id].list[scope.$index].price" size="small" maxlength="12" @keyup.native="numValid(addForm.sku[showStyle.id].list[scope.$index], 'price', 1)" /><span>元</span>
                     </template>
                   </el-table-column>
                   <el-table-column label="库存" width="220" align="center">
                     <template slot-scope="scope">
-                      <el-input class="table-input" v-model.trim="addForm.sku[showStyle.id].list[scope.$index].store" size="small" maxlength="12" />
+                      <el-input class="table-input" v-model.trim="addForm.sku[showStyle.id].list[scope.$index].store" size="small" maxlength="12" @keyup.native="numValid(addForm.sku[showStyle.id].list[scope.$index],'store', 3)" />
                     </template>
                   </el-table-column>
                   <el-table-column label="操作" align="center">
@@ -183,7 +181,6 @@
                         <el-button v-show="scope.$index === addForm.sku[showStyle.id].list.length - 1" size="mini" type="primary" plain @click="addBox(scope.$index, showStyle.id)">
                           新增规格
                         </el-button>
-                        <!-- <span v-show="scope.$index > 0 || boxArr.length > 1" class="mr10 unit-delete" @click="removeBox(scope.$index, showStyle.id)">删除</span><span v-show="scope.$index === boxArr.length - 1" class="unit-add" @click="addBox(scope.$index, showStyle.id)">新增规格</span> -->
                       </div>
                     </template>
                   </el-table-column>
@@ -257,7 +254,7 @@
                 align="center"
                 >
                 <template slot-scope="scope">
-                  <el-input v-model.trim="addForm.moreSpecData[scope.$index].startNum" class="table-input" size="small" maxlength="12" />
+                  <el-input v-model.trim="addForm.moreSpecData[scope.$index].startNum" class="table-input" size="small" maxlength="12" @keyup.native="numValid(addForm.moreSpecData[scope.$index], 'startNum', 2)" />
                 </template>
               </el-table-column>
               <el-table-column
@@ -265,14 +262,14 @@
                 align="center"
                 >
                 <template slot-scope="scope">
-                  <el-input v-model.trim="addForm.moreSpecData[scope.$index].price" class="table-input" size="small" maxlength="12" />
+                  <el-input v-model.trim="addForm.moreSpecData[scope.$index].price" class="table-input" size="small" maxlength="12" @keyup.native="numValid(addForm.moreSpecData[scope.$index], 'price', 1)" />
                 </template>
               </el-table-column>
               <el-table-column
                 align="center"
                 label="库存">
                 <template slot-scope="scope">
-                  <el-input v-model.trim="addForm.moreSpecData[scope.$index].store" class="table-input" size="small" maxlength="12" />
+                  <el-input v-model.trim="addForm.moreSpecData[scope.$index].store" class="table-input" size="small" maxlength="12" @keyup.native="numValid(addForm.moreSpecData[scope.$index], 'store', 3)" />
                 </template>
               </el-table-column>
             </el-table>
@@ -295,6 +292,7 @@
             action="https://jsonplaceholder.typicode.com/posts/"
             list-type="picture-card"
             :http-request="uploadImg"
+            :multiple="true"
             v-model="addForm.imgBox"
             :limit="imgLimit"
             :on-preview="handlePictureCardPreview"
@@ -305,7 +303,7 @@
             <i class="el-icon-plus"></i>
           </el-upload>
           <div>
-            <p>还能添加{{imgLimit}}张图片或视频；</p>
+            <p>还能添加<span style="color: #ff0000">{{10 - addForm.imgsBox.length}}</span>张图片或视频；</p>
             <p>* 仅支持3M以内jpg、jpeg、gif、png格式图片上传；图片建议尺寸500*500；</p>
             <p>* 文件大小不能超过3MB，包括图片和视频；图片建议尺寸500*500；支持JPG、GIF、PNG格式；</p>
             <p>* 默认第一个文件为商品封面图，如果是视频则取第一帧画面作为封面图。</p>
@@ -633,7 +631,8 @@ let vm = {
       // 通过ID获取规格模板
       this.listLoading = true
       getByCategoryId({
-        categoryId : this.categoryId
+        categoryId : this.categoryId,
+        status: 1
       }).then(res => {
         this.listLoading = false
         if(Array.isArray(res.data)) {
@@ -850,7 +849,8 @@ let vm = {
       // 通过ID获取规格模板
       this.moreLoading = true
        getUnit({
-        categoryId: this.categoryId
+        categoryId: this.categoryId,
+        status: 1
       }).then(res => {
         this.moreLoading = false
         if(Array.isArray(res.data)) {
@@ -898,7 +898,7 @@ let vm = {
     },
     async getUnitList() {
       this.moreLoading = true
-      await getUnitList({ categoryId: this.categoryId }).then(res => {
+      await getUnitList({ categoryId: this.categoryId, status: 1 }).then(res => {
         this.moreLoading = false
         if(Array.isArray(res.data)) {
           this.sellMoreData = res.data
@@ -1361,9 +1361,20 @@ let vm = {
       }
       
     },
-    focus(val, id) {
-      // this.addressProps.id = id
-      // this.cascaderId = id
+    numValid(obj, name, type) {
+      if(type === 1) {
+        if(!/^[0-9]+(.[0-9]*)?$/.test(obj[name])) {
+          obj[name] = ''
+        }
+      } else if(type === 2) {
+        if(!/^[1-9][0-9]*$/.test(obj[name])) {
+          obj[name] = ''
+        }
+      } else if(type === 3) {
+        if(!/^([1-9][0-9]*)|0$/.test(obj[name])) {
+          obj[name] = ''
+        }
+      } 
     },
     handleCheckAllChange(val, index, id) {
       // 全选
@@ -1382,7 +1393,7 @@ let vm = {
     handleExceed(files, fileList) {
       // 图片数量提示
       this.$message({
-        message: '图片数量不能大于' + this.imgLimit,
+        message: '上传图片或视频数量不能大于' + this.imgLimit,
         type: 'warning'
       })
     },
@@ -1431,7 +1442,7 @@ let vm = {
       // 添加更多报价规格
       if(this.sellSpeData.length === 0) {
         this.moreLoading = true
-        await getSpeList({ categoryId: this.categoryId }).then(res => {
+        await getSpeList({ categoryId: this.categoryId, status: 1 }).then(res => {
           this.moreLoading = false
           if(Array.isArray(res.data)) {
             this.sellSpeData = res.data
@@ -1613,7 +1624,7 @@ let vm = {
         type: 'warning'
       }).then(() => {
         this.$router.push({
-          path: '/freight_edit'
+          path: '/freight/template/edit'
         })
       }).catch(() => {
         this.$message({
@@ -1914,4 +1925,14 @@ export default vm;
       }
     }
   }
+</style>
+<style>
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+}
+input[type="number"]{
+    -moz-appearance: textfield;
+}
 </style>

@@ -57,10 +57,14 @@
       </el-table-column>
       <el-table-column
         align="center"
-        prop="minPrice"
         label="价格"
         width="120"
         show-overflow-tooltip>
+        <template slot-scope="scope">
+          <span>{{scope.row.minPrice}}</span>
+          <span v-if="scope.row.maxPrice">~</span> 
+          <span>{{scope.row.maxPrice}}</span>
+        </template>
       </el-table-column>
       <el-table-column
         align="center"
