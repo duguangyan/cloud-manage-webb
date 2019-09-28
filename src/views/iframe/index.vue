@@ -3,6 +3,7 @@
     <iframe class="iframe" ref="iframe" v-loading.fullscreen.lock="fullscreenLoading" :src="url" frameborder="no" border="0" marginWidth=0
 			 marginHeight=0></iframe>
   </div>
+ 
 </template>
 
 <script>
@@ -11,14 +12,16 @@ export default {
   name: "myiframe",
   data() {
     return {
-      url: 'http://youdao.com/',
+      url: '',
       fullscreenLoading: false,
     };
   },
   created() {
-    this.fullscreenLoading = true
+    this.url = 'http://' + this.$route.meta.url
   },
+  
   mounted() {
+    this.fullscreenLoading = true
     this.iframeInit()
     window.onresize = () => {
       this.iframeInit()

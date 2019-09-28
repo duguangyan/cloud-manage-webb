@@ -374,7 +374,7 @@
     <div class="bottom-box">
       <div>
         <el-button v-waves class="filter-item" @click="submitForm('productForm', 2)">预览</el-button>
-        <el-button v-if="eiditId.length === 0" v-waves class="filter-item" @click="submitForm('productForm', 0)">保存待上架</el-button>
+        <el-button v-waves class="filter-item" @click="submitForm('productForm', 0)">保存待上架</el-button>
         <el-button type="primary" v-waves class="filter-item" @click="submitForm('productForm', 1)">上架出售</el-button>
       </div>
     </div>
@@ -1351,7 +1351,7 @@ let vm = {
             this.$router.push({
               path: '/product/list',
               query: {
-                status: '3'
+                status: type === 0 ? '1' : '3'
               }
             })
           }).catch(err => {

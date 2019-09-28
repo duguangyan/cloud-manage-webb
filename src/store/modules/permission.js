@@ -2,8 +2,6 @@ import { constantRoutes } from '@/router'
 import { getRoles } from '@/api/upms/user'
 import Layout from '@/layout'
 import IFRAME from '@/views/iframe/index.vue'
-console.log('---------------------')
-console.log(IFRAME)
 
 // 路由资源
 const moduleSource = [
@@ -58,7 +56,6 @@ const srcReg = /^[A-Za-z]+$/
 function filterAsyncRouter(asyncRouterMap, index) { // 遍历后台传来的路由字符串，转换为组件对象
   const accessedRouters = asyncRouterMap.filter(route => {
     let exsit = true
-    let x = true
     if (route.url) {
       route.hidden = false
       if (moduleSource.indexOf(route.url) > -1) {
@@ -69,29 +66,34 @@ function filterAsyncRouter(asyncRouterMap, index) { // 遍历后台传来的路�
           route.hidden = true
         }
       } else if (httpReg.test(route.url)) {
-        route.component = Layout
+        // route.component = Layout
         if (route.operation === 1) {
-          x = false
-          route.path = '/iframe'
-          // route.redirect = '/iframe/index'
-          route.children = [
-            {
-              path: 'index',
-              component: {
-                template: '<div>99999999999999999999999999999999</div>'
-              },
-              mounted() {
-                alert(1)
-              },
-              meta: { title: 'Documentation', icon: 'documentation', affix: true }
+          if (index === 0) {
+            route.path = '/iframe:' + route.url
+            route.component = Layout
+            // route.path = route.url
+            route.alias = '/iframe:' + route.url
+            route.children = [
+              {
+                url: route.url,
+                name: route.name,
+                id: route.id,
+                operation: route.operation,
+                icon: route.icon,
+                sort: route.sort,
+                isHidden: true
+              }
+            ]
+          } else {
+            route.path = '/iframe:' + route.url
+            route.component = _import('iframe/index')
+            if (route.isHidden) {
+              route.hidden = true
             }
-          ]
+          }
         } else {
           route.path = route.url
         }
-        console.log(route.name)
-        console.log(route)
-        console.log(route.children)
       } else if (srcReg.test(route.url)) {
         route.component = Layout
         if (redirectSource[route.url]) {
@@ -109,14 +111,15 @@ function filterAsyncRouter(asyncRouterMap, index) { // 遍历后台传来的路�
         route.meta = {
           title: route.name,
           icon: route.icon,
-          id: route.id
+          id: route.id,
+          url: route.url
         }
         route.target = route.operation === 2 ? '_blank' : ''
       }
     } else {
       return false
     }
-    if (route.children && route.children.length > 0 && x) {
+    if (route.children && route.children.length > 0) {
       route.children = filterAsyncRouter(route.children, 1)
     } else {
       route.children = []
@@ -146,6 +149,7 @@ const actions = {
     return new Promise((resolve, reject) => {
       let accessedRouters = []
       getRoles({ userId: this.getters.userId }).then(res => {
+        location.urls = {}
         accessedRouters = filterAsyncRouter(res.data, 0)
         commit('SET_ROUTES', accessedRouters)
         resolve()
