@@ -33,6 +33,7 @@ const hiddenData = [
   'product/list/release/index',
   'product/list/detail/index',
   'product/list/add/index',
+  'product/list/edit/index',
   'order/sell/detail/index',
   'freight/template/edit/index',
   'freight/template/list/index',
@@ -59,6 +60,11 @@ function filterAsyncRouter(asyncRouterMap, index) { // 遍历后台传来的路�
     if (route.url) {
       route.hidden = false
       if (moduleSource.indexOf(route.url) > -1) {
+        // if (route.url === 'product/list/edit/index') {
+        //   route.component = _import('product/list/add/index')
+        // } else {
+        //   route.component = _import(route.url)
+        // }
         route.component = _import(route.url)
         const urlArr = route.url.split('/')
         route.path = urlArr[urlArr.length - 2]

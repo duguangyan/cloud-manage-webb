@@ -149,6 +149,7 @@
           <el-button v-if="btnsPermission.edit.auth && (saleType === '1' || saleType === '4')" type="primary" size="small" @click="msgEdit(scope)">{{btnsPermission.edit.name}}</el-button>
           <el-button v-if="btnsPermission.onSale.auth && (saleType === '1' || saleType === '4')" type="primary" size="small" @click="saleChange('one', 0, scope)">{{btnsPermission.onSale.name}}</el-button>
           <el-button v-if="btnsPermission.offSale.auth && saleType === '3'" type="primary" size="small" @click="saleChange('one', 1, scope)">{{btnsPermission.offSale.name}}</el-button>
+          <el-button v-if="btnsPermission.detail.auth" type="primary" size="small" @click="getDetail(scope)">{{btnsPermission.detail.name}}</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -189,9 +190,14 @@ export default {
         offSale: {
           name: '下架',
           auth: false
+        },
+        detail: {
+          name: '查看',
+          auth: false
         }
       },
       disable: false,
+      pageId: '',
       listQuery: {
         createTimeStart: '',
         createTimeEnd: '',
@@ -256,7 +262,8 @@ export default {
     this.getList()
   },
   mounted() {
-    getUserBtnByPId({ parentId: this.$route.meta.id }).then(res => {
+    this.pageId = this.$route.meta.id
+    getUserBtnByPId({ parentId: this.pageId }).then(res => {
       if(Array.isArray(res.data)) {
         res.data.map((val) => {
           if(this.btnsPermission.hasOwnProperty(val.code) && val.status === 1 && val.checked === 1) {
@@ -290,12 +297,10 @@ export default {
     },
     msgEdit(scope) {
       // 编辑商品
-      if(scope.row.id.length > 0) {
-        this.$router.push({path: 'list/add', query:{ 
-          id: scope.row.categoryId,
-          eid: scope.row.id
-          }})
-      }
+      this.$router.push({path: 'list/add', query:{ 
+        id: scope.row.categoryId,
+        eid: scope.row.id
+      }})
     },
     selectChange(val) {
       // 品种选择
@@ -431,7 +436,8 @@ export default {
     },
     sortChange(data) {
       // 排序
-      if(data.prop === 'minPrice') {
+      console.log(data)
+      if(data.prop === 'minprice') {
         this.listQuery.sortColumn = 'min_price'
       } else if(data.prop === 'spuSalesNum') {
         this.listQuery.sortColumn = 'spu_sales_num'
@@ -443,6 +449,14 @@ export default {
       this.listQuery.pageIndex = 1
       this.listQuery.sortType = data.order === 'descending' ? 0 : 1
       this.getList()
+    },
+    getDetail(scope) {
+      // 查看商品详情
+      this.$router.push({path: 'list/detail', query:{ 
+        id: scope.row.categoryId,
+        eid: scope.row.id,
+        pageId: this.pageId
+      }})
     }
   }
 }

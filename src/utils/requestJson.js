@@ -14,13 +14,16 @@ const service = axios.create({
 service.interceptors.request.use(
   config => {
     // do something before request is sent
-    console.log('-----------')
     if (store.getters.token) {
       // let each request carry token
       // ['X-Token'] is a custom headers key
       // please modify it according to the actual situation
       config.headers['X-Token'] = getToken()
     }
+    config.headers['user_id'] = store.getters.userId
+    config.headers['client_id'] = 'cmanager'
+    config.headers['device_id'] = store.getters.deviceId
+
     return config
   },
   error => {

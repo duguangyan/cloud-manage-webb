@@ -4,7 +4,7 @@
     <el-card class="box-card">
       <div class="text item">
         <span style="#303133">当前分类：</span>{{productTitle}}
-        <el-button type="primary" size="medium" v-waves class="filter-item" @click="changeType">切换分类</el-button>
+        <el-button v-if="eiditId.length === 0" type="primary" size="medium" v-waves class="filter-item" @click="changeType">切换分类</el-button>
         <!-- <el-cascader :options="addressOptions" :props="addressProps"></el-cascader> -->
       </div>
     </el-card>
@@ -128,7 +128,7 @@
           
                     </template>
                   </el-table-column>
-                  <el-table-column label="价格" width="220" align="center">
+                  <el-table-column label="价格(元)" width="220" align="center">
                     <template slot-scope="scope">
                       <span class="mr5">单价</span><el-input class="table-input" v-model.trim="addForm.sku[showStyle.id].list[scope.$index].price" size="small" maxlength="12" @keyup.native="numValid(addForm.sku[showStyle.id].list[scope.$index], 'price', 1)" />
                     </template>
@@ -162,7 +162,7 @@
                       <el-input class="table-input" v-model.trim="addForm.sku[showStyle.id].list[scope.$index].number" size="small" maxlength="12" @keyup.native="numValid(addForm.sku[showStyle.id].list[scope.$index], 'number', 1)" />
                     </template>
                   </el-table-column>
-                  <el-table-column label="价格" width="220" align="center">
+                  <el-table-column label="价格(元)" width="220" align="center">
                     <template slot-scope="scope">
                       <el-input class="table-input mr5" v-model.trim="addForm.sku[showStyle.id].list[scope.$index].price" size="small" maxlength="12" @keyup.native="numValid(addForm.sku[showStyle.id].list[scope.$index], 'price', 1)" /><span>元</span>
                     </template>
@@ -258,7 +258,7 @@
                 </template>
               </el-table-column>
               <el-table-column
-                label="价格"
+                label="价格(元)"
                 align="center"
                 >
                 <template slot-scope="scope">

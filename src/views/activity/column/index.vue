@@ -5,7 +5,7 @@
         广告名称：
         <el-input v-model="listQuery.name"  placeholder="请输入广告名称" style="width: 200px;" class="filter-item mr20" @keyup.enter.native="handleFilter" />
         广告位名称：
-        <el-input v-model="listQuery.name"  placeholder="请输入广告位名称" style="width: 200px;" class="filter-item mr20" @keyup.enter.native="handleFilter" />
+        <el-input v-model="listQuery.adPositionName"  placeholder="请输入广告位名称" style="width: 200px;" class="filter-item mr20" @keyup.enter.native="handleFilter" />
         状态：
         <el-select v-model="listQuery.status" class="mr20" placeholder="请选择">
           <el-option
@@ -479,14 +479,18 @@ export default {
       this.diaLoading = true
       getAdById({ id: row.id }).then(res => {
         this.diaLoading = false
+        this.banner.id = res.data.id
+        this.banner.pid = res.data.pid
         this.banner.name = res.data.name
+        this.banner.beginTime = res.data.createTime
+        this.banner.endTime = res.data.endTime
         this.banner.adPositionName = res.data.adPositionName
         this.banner.path = res.data.path
         this.banner.type = res.data.type
         this.banner.url = res.data.url
         this.banner.sort = res.data.sort
         this.banner.dateValue = []
-        this.banner.dateValue[0] = res.data.beginTime
+        this.banner.dateValue[0] = res.data.createTime
         this.banner.dateValue[1] = res.data.endTime
         this.banner.pathBox = []
         this.banner.pathBox.push({

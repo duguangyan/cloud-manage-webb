@@ -19,6 +19,7 @@ const user = {
     name: '',
     avatar: '',
     userId: '',
+    deviceId: '',
     shop: {}
   },
   mutations: {
@@ -57,6 +58,9 @@ const user = {
         content: state.refresh_token,
         type: 'session'
       })
+    },
+    SET_DEVICE_ID: (state, id) => {
+      state.deviceId = id
     },
     SET_USER_INFO: (state, userInfo) => {
       state.userInfo = userInfo
@@ -114,6 +118,7 @@ const user = {
       const uuid = getUuid()
       const { username, password, authcode } = userInfo
       return new Promise((resolve, reject) => {
+        commit('SET_DEVICE_ID', uuid)
         login({
           username: username.trim(),
           password: password,
@@ -127,7 +132,6 @@ const user = {
         })
           .then(response => {
             const data = response.data
-            console.log(response)
             commit('SET_ACCESS_TOKEN', data.access_token)
             commit('SET_REFRESH_TOKEN', data.refresh_token)
             // setToken(data.access_token);
@@ -149,7 +153,6 @@ const user = {
             if (!data) {
               reject('Verification failed, please Login again.')
             }
-
             const { username, avatar, id } = data
 
             commit('SET_NAME', username)
