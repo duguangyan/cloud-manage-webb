@@ -20,8 +20,15 @@
           v-if="item"
           :key="index" 
           :label="item.name + ':'" >
-           <span v-if="item.inputType === 0">{{item.goodsDetailAttrValueList[0].remark}}</span>
-           <span v-else>{{item.goodsDetailAttrValueList[0].value}}</span>
+          <template v-if="item.inputType === 0">
+            <span>{{item.goodsDetailAttrValueList[0].remark}}</span>
+          </template>
+          <template v-else-if="item.inputType === 2">
+            <span class="mr10" v-for="(vItem, vIndex) in item.goodsDetailAttrValueList" :key="vIndex">{{vItem.value}}</span>
+          </template>
+          <template v-else>
+            <span>{{item.goodsDetailAttrValueList[0].value}}</span>
+          </template>
           </el-form-item>
         </template>
       </div>
@@ -40,7 +47,7 @@
         </el-form-item>
         <el-form-item 
           v-if="unitType === '2'"
-          label="库存">
+          label="库存:">
             <span>{{stairStock}}</span>
         </el-form-item>
         <el-form-item>  
@@ -137,7 +144,7 @@
       </div>
       <div  class="text item">
         <el-form-item 
-          label="商品视图">
+          label="商品视图:">
             <div class="imgs-item" v-for="(item, index) in imgsBox" :key="index" @click="handlePictureCardPreview(item.imgUrl)">
               <img :src="item.imgUrl" alt="">
             </div>
@@ -554,6 +561,7 @@ export default vm;
     width: 150px;
   }
   .app-container{
+    position: relative;
     padding-bottom: 140px;
     .tr{
       text-align: right;

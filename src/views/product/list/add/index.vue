@@ -120,12 +120,12 @@
               <div v-if="showStyle.type === '2'">
                  <el-table
                   :data="addForm.sku[showStyle.id].list"
+                  style="width: 700px"
                   border
                   >
                   <el-table-column  label="起批量" width="220" align="center">
                     <template slot-scope="scope">
                       <span class="mr5">起批数</span><el-input class="table-input" v-model.trim="addForm.sku[showStyle.id].list[scope.$index].number" size="small" maxlength="12" @keyup.native="numValid(addForm.sku[showStyle.id].list[scope.$index], 'number', 2)" />
-          
                     </template>
                   </el-table-column>
                   <el-table-column label="价格(元)" width="220" align="center">
@@ -133,13 +133,13 @@
                       <span class="mr5">单价</span><el-input class="table-input" v-model.trim="addForm.sku[showStyle.id].list[scope.$index].price" size="small" maxlength="12" @keyup.native="numValid(addForm.sku[showStyle.id].list[scope.$index], 'price', 1)" />
                     </template>
                   </el-table-column>
-                  <el-table-column label="操作" align="center">
+                  <el-table-column min-width="350px" label="操作" align="center">
                     <template slot-scope="scope">
                       <div style="text-align: left;padding-left: 50px;">
                         <el-button v-show="scope.$index > 0 || addForm.sku[showStyle.id].list.length > 1" size="mini" type="danger" plain @click="removeStair(scope.$index, showStyle.id)">
                           删除
                         </el-button>
-                        <el-button v-show="scope.$index === addForm.sku[showStyle.id].list.length - 1" size="mini" type="primary" plain @click="addStair(scope.$index, showStyle.id)">
+                        <el-button v-show="scope.$index < 2 && scope.$index === addForm.sku[showStyle.id].list.length - 1" size="mini" type="primary" plain @click="addStair(scope.$index, showStyle.id)">
                           新增规格
                         </el-button>
                       </div>
@@ -172,7 +172,7 @@
                       <el-input class="table-input" v-model.trim="addForm.sku[showStyle.id].list[scope.$index].store" size="small" maxlength="12" @keyup.native="numValid(addForm.sku[showStyle.id].list[scope.$index],'store', 3)" />
                     </template>
                   </el-table-column>
-                  <el-table-column label="操作" align="center">
+                  <el-table-column min-width="250px" label="操作" align="center">
                     <template slot-scope="scope">
                       <div style="text-align: left;padding-left: 50px;">
                         <el-button v-show="scope.$index > 0 || addForm.sku[showStyle.id].list.length > 1" size="mini" type="danger" plain @click="removeBox(scope.$index, showStyle.id)">
@@ -381,10 +381,10 @@
         <div class="preview">
           <div class="calrousel-box" :style="{ background: 'no-repeat url(' + goodsVo.goodsImgList[0].imgUrl + ')', backgroundSize: 'cover' }">
             <div class="left-icon">
-              <i class="el-icon-arrow-left"></i>
+              <img :src="icons.back" alt="">
             </div>
             <div class="right-icon">
-              <i class="el-icon-share"></i>
+              <img :src="icons.share" alt="">
             </div>
             <div class="num">1/{{goodsVo.goodsImgList.length}}</div>
           </div>
@@ -393,16 +393,27 @@
               <span v-if="goodsVo.goodsSkuList.length > 1" class="price">
                 {{goodsVo.goodsSkuList[0].price | money}} ~ {{goodsVo.goodsSkuList[goodsVo.goodsSkuList.length - 1].price | money}}
               </span>
-              <span v-else class="unit">
+              <span v-else class="price">
                 {{goodsVo.goodsSkuList[0].price | money}}
               </span>
               <span>/{{goodsVo.goodsSkuList[0].skuAttrValues[0].name}}</span>
-              <span class="place">{{placeProduct}}</span>
+              <!-- <span class="place">{{placeProduct}}</span> -->
             </div>
-            <div v-else-if="showStyle.type === '2'" class="title">
-              <span class="price">{{goodsVo.goodsSkuList[0].priceExpList[0].price | money}}</span>
-              <span class="uinit">/{{goodsVo.goodsSkuList[0].skuAttrValues[0].name}}</span>
-              <span class="place">{{placeProduct}}</span>
+            <div v-else-if="showStyle.type === '2'" class="title clearfix">
+              <div class="stair-title" v-for="(item, index) in goodsVo.goodsSkuList[0].priceExpList" :key="index">
+                <div><span class="price">{{item.price | money}}</span>/<span>{{goodsVo.goodsSkuList[0].skuAttrValues[0].name}}</span></div>
+                <div>{{item.startQuantity}}{{goodsVo.goodsSkuList[0].skuAttrValues[0].name}}起批</div>
+              </div>
+            </div>
+            <div v-if="showStyle.type == '3'" class="title">
+              <span v-if="goodsVo.goodsSkuList.length > 1" class="price">
+                {{goodsVo.goodsSkuList[0].price | money}} ~ {{goodsVo.goodsSkuList[goodsVo.goodsSkuList.length - 1].price | money}}
+              </span>
+              <span v-else class="price">
+                {{goodsVo.goodsSkuList[0].price | money}}
+              </span>
+              <span>/{{productUnit}}</span>
+              <div class="start-num">{{goodsVo.goodsSkuList[0].startNum}}{{productUnit}}起批</div>
             </div>
             <div class="des">{{goodsVo.name}}</div>
             <div class="message-box">
@@ -411,38 +422,70 @@
               <span :title="addForm.freightName">{{addForm.freightName}}</span>
             </div>
           </div>
-          <div v-if="showStyle.type === '1'" class="product-prop">
-            <div class="tc">规格</div>
-            <ul>
+          <div v-if="showStyle.type === '1'" class="product-box">
+            <div class="tc">
+              <span class="title-des">规格</span>
+            </div>
+            <ul class="product-unit">
               <li class="clearfix" v-for="(item, index) in goodsVo.goodsSkuList" :key="index">
-                <span class="prop">{{item.skuAttrValues[0].value}} {{valueSuffixObj[showStyle.id]}}</span>
-                <span class="value tr pr20">{{item.price | money}}</span>
+                <span>{{item.startNum}}{{item.skuAttrValues[0].name}}起批</span>
+                <span class=" tc">{{item.skuAttrValues[0].value}}{{valueSuffixObj[showStyle.id]}}</span>
+                <span class="tr">{{item.price | money}}/{{item.skuAttrValues[0].name}}</span>
               </li>
             </ul>
           </div>
-          <div class="product-prop">
-            <div class="tc">商品属性</div>
-            <ul>
+          <div v-if="showStyle.type === '3'" class="product-box">
+            <div class="tc">
+              <span class="title-des">规格</span>
+            </div>
+            <ul class="product-unit">
+              <li class="clearfix" v-for="(item, index) in goodsVo.goodsSkuList" :key="index">
+                <div class="unit-name">
+                  <span class="mr20" v-for="(vItem, vIndex) in item.skuAttrValues" :key="vIndex">{{vItem.name}} {{vItem.value}}</span>
+                </div>
+                <div class="unit-price tr">{{item.price | money}}/{{productUnit}}</div>
+              </li>
+            </ul>
+          </div>
+          <div class="product-box">
+            <div class="tc">
+              <span class="title-des">商品属性</span>
+            </div>
+            <ul class="product-prop">
               <li class="clearfix" v-for="(item, index) in goodsVo.goodsAttrList" :key="index">
-                <span class="prop">{{item.name}}</span>
-                <template v-if="item.remark">
-                  <span class="value">{{item.remark}}</span>
-                </template>
-                <template v-else>
-                  <span class="mr5 value" v-for="(vItem, vIndex) in item.goodsAttrValueList" :key="vIndex">{{vItem.value}}</span>
-                </template>
+                <div class="prop">{{item.name}}</div>
+                <div class="value">
+                  <template v-if="item.goodsAttrValueList[0].remark">
+                    <span>{{item.goodsAttrValueList[0].remark}}</span>
+                  </template>
+                  <template v-else>
+                    <span class="mr5" v-for="(vItem, vIndex) in item.goodsAttrValueList" :key="vIndex">{{vItem.value}}</span>     
+                  </template>
+                </div>
               </li>
             </ul>
           </div>
           <div class="product-detail">
-            <div class="tc">商品详情</div>
+            <div class="tc">
+              <span class="title-des">商品详情</span>
+            </div>
             <p>{{goodsVo.detail}}</p>
             <img v-for="(item, index) in goodsVo.goodsImgList" :key="index" :src="item.imgUrl" alt="">
           </div>
         </div>
         <div class="product-buy">
-            <div class="in">收藏</div>
-            <div class="in">进货单</div>
+            <div class="in">
+              <div>
+                <img :src="icons.love" alt="">
+              </div>
+              收藏
+            </div>
+            <div class="in">
+              <div>
+                <img :src="icons.order" alt="">
+              </div>
+              进货单
+            </div>
             <div class="cart">加入进货单</div>
             <div class="buy">立即购买</div>
         </div>
@@ -477,7 +520,10 @@ import { getByCategoryId, getUnit, saveGoods, editGoods, getUnitList, getSpeList
 import { getFreight } from '@/api/goods/logistics'
 import { getAd } from '@/api/upms/strict'
 import { fileUpload } from '@/api/goods/upload'
-import { constants } from 'crypto';
+import loveImg from '@/icons/img/love.png'
+import backImg from '@/icons/img/back.png'
+import orderImg from '@/icons/img/order.png'
+import shareImg from '@/icons/img/share.png'
 let id = 0;
 let vm = {
   name: 'addProduct',
@@ -509,6 +555,12 @@ let vm = {
       baseData: [],
       skuId: '',
       specId: '',
+      icons: {
+        back: backImg,
+        love: loveImg,
+        share: shareImg,
+        order: orderImg
+      },
       goodsVo: {
         goodsAttrList: [],
         goodsImgList: [],
@@ -607,7 +659,8 @@ let vm = {
       dialogProp: false,
       spanArr: [],
       goodsSkuData: [],
-      skuCounter: 0
+      skuCounter: 0,
+      productUnit: ''
     }
   },
   components: {  },
@@ -762,9 +815,10 @@ let vm = {
           })
         })
         this.addForm.imgsBox = imgBox
+        this.showStyle.id = res.data.goods.unit
         if(String(res.data.goods.showStyle) === '3') {
-          this.addForm.unitMore = res.data.goods.unit
           this.showStyle.type = res.data.goods.showStyle
+          this.addForm.unitMore = res.data.goods.unit
           this.getUnitList()
           this.getSpecList()
           // 多规格数据渲染
@@ -793,7 +847,6 @@ let vm = {
           msgObj.skuArr = []
           msgObj.showStyle = res.data.goods.showStyle
           msgObj.name = res.data.goodsDetailSpecList[0].name
-          this.showStyle.id = res.data.goodsDetailSpecList[0].categorySpecId
           if (res.data.goods.showStyle === '1') {
             res.data.goodsSkuList.forEach(item => {
               msgObj.skuArr.push({
@@ -933,9 +986,13 @@ let vm = {
     handleClick(tab, event) {
       // 报价方式切换
       if(this.activeName === 'second') {
-        this.getUnitList()
+        if(this.sellMoreData.length === 0) {
+          this.getUnitList()
+        }
       } else {
-        this.getUnit()
+        if(this.sellData.length === 0) {
+          this.getUnit()
+        }
       }
     },
     unitChange(val, type, pindex) {
@@ -1172,6 +1229,7 @@ let vm = {
           let boxSort = 0
           speObj.categorySpecId = sku[key].id
           speObj.name = sku[key].name
+          speObj.valueSuffix = this.valueSuffixObj[this.addForm.unit] 
           sku[key].list.forEach(item => {
             let skuObj = {}
             if(this.addForm.freightType === 2) {
@@ -1321,6 +1379,13 @@ let vm = {
       })
       if(type === 2) {
         this.goodsVo = goodsVO
+        if(this.showStyle.type === '3') {
+          this.sellMoreData.forEach(item => {
+            if(item.id === this.showStyle.id) {
+              this.productUnit = item.name
+            }
+          })
+        }
         this.preView()
       } else {
         this.saveLoading = true
@@ -1604,7 +1669,7 @@ let vm = {
       }).catch(() => {
         this.$message({
           type: 'info',
-          message: '已取消删除'
+          message: '已取消操作'
         })       
       })
     },
@@ -1629,7 +1694,7 @@ let vm = {
       }).catch(() => {
         this.$message({
           type: 'info',
-          message: '已取消删除'
+          message: '已取消操作'
         })       
       })
     }
@@ -1661,6 +1726,9 @@ export default vm;
     }
     .mr20{
       margin-right: 20px;
+    }
+    .mb20{
+      margin-bottom: 20px;
     }
     .long-input{
       max-width: 1000px;
@@ -1721,18 +1789,18 @@ export default vm;
       overflow-y: scroll;
       .preview-box{
         position: relative;
-        width: 580px;
-        height: 1000px;
+        width: 375px;
+        height: 667px;
         margin: 0 auto;
         .preview{
-          width: 580px;
-          height: 1000px;
+          width: 375px;
+          height: 667px;
           background: #f5f5f5;
           position: relative;
           margin: 80px auto 0 auto;
           overflow-y: scroll;
-          padding-bottom: 80px;
-          font-size: 18px;
+          padding-bottom: 50px;
+          font-size: 14px;
           color: #000;
           &::-webkit-scrollbar-track-piece {
             background: none;
@@ -1752,56 +1820,72 @@ export default vm;
           }
           .tc{
             text-align: center;
-            margin-bottom: 20px;
           }
           .calrousel-box{
-            height: 580px;
+            height: 375px;
             position: relative;
             .left-icon,.right-icon{
-              width: 40px;
-              height: 40px;
+              width: 27px;
+              height: 27px;
               display: flex;
-              justify-content: center;
-              align-items: center;
-              font-size: 40px;
               position: absolute;
-              top: 45px;
-              border-radius: 50%;
-              background: rgba(0, 0, 0, .5)
+              top: 10px;
+              img{
+                width: 100%;
+                height: auto;
+              }
             }
             .left-icon{
-              left: 20px;
+              left: 10px;
             }
             .right-icon{
-              right: 20px;
+              right: 10px;
             }
             .num{
-              width: 60px;
-              height: 20px;
-              line-height: 20px;
+              min-width: 40px;
+              height: 18px;
+              line-height: 18px;
               text-align: center;
               border-radius: 20px;
               position: absolute;
               right: 20px;
               bottom: 15px;
-              font-size: 18px;
+              font-size: 12px;
               color: #fff;
               background: rgba(0, 0, 0, .5)
             }
           }
           .title-box{
-            padding: 25px 20px 15px 25px;
-            margin-bottom: 15px;
+            padding: 15px;
+            margin-bottom: 10px;
             background: #fff;
             .title{
+              margin-bottom: 8px;
+              .stair-title{
+                width: 115px;
+                height: 60px;
+                float: left;
+                text-align: center;
+                div{
+                  height: 30px;
+                  line-height: 30px;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                }
+              }
+              .start-num{
+                color: #999;
+                font-size: 12px;
+              }
               .price{
                 color: #f5222d;
-                font-size: 24px;
+                font-size: 14px;
+                line-height: 24px;
                 margin-bottom: 15px;
                 font-weight: bold;
               }
               .unit{
-                font-size: 18px;
+                font-size: 12px;
                 color: #000;
                 font-weight: normal;
               }
@@ -1811,18 +1895,18 @@ export default vm;
               }
             }
             .des{
-              color: #000;
-              font-size: 22px;
-              line-height: 32px;
-              margin-bottom: 15px;
+              color: #333;
+              font-size: 14px;
+              line-height: 24px;
+              margin-bottom: 8px;
               font-weight: bold;
             }
             .message-box{
               background: #e6faed;
-              height: 56px;
+              height: 36px;
               border-radius: 5px;
               color: #49c173;
-              font-size: 14px;
+              font-size: 12px;
               display: flex;
               justify-content: space-around;
               align-items: center;
@@ -1836,67 +1920,139 @@ export default vm;
               }
             }
           }
-          .product-prop{
-            padding-top: 30px;
+          .title-des{
+            position: relative;
+            &::before {
+                content: '';
+                width: 2px;
+                height: 2px;
+                display: block;
+                position: absolute;
+                background-color: #B3B3B3;
+                top: 50%;
+                left: -10px;
+                -webkit-transform: translateY(-50%);
+                transform: translateY(-50%);
+                -webkit-box-shadow: -6px 0 0 0 #B3B3B3, -8px 0 0 0 #B3B3B3, -10px 0 0 0 #B3B3B3, -12px 0 0 0 #B3B3B3, -14px 0 0 0 #B3B3B3, -16px 0 0 0 #B3B3B3, -18px 0 0 0 #B3B3B3, -20px 0 0 0 #B3B3B3;
+                box-shadow: -6px 0 0 0 #B3B3B3, -8px 0 0 0 #B3B3B3, -10px 0 0 0 #B3B3B3, -12px 0 0 0 #B3B3B3, -14px 0 0 0 #B3B3B3, -16px 0 0 0 #B3B3B3, -18px 0 0 0 #B3B3B3, -20px 0 0 0 #B3B3B3;
+            }
+              &::after {
+                content: '';
+                width: 2px;
+                height: 2px;
+                display: block;
+                position: absolute;
+                background-color: #B3B3B3;
+                top: 50%;
+                right: -10px;
+                -webkit-transform: translateY(-50%);
+                transform: translateY(-50%);
+                -webkit-box-shadow: 6px 0 0 0 #B3B3B3, 8px 0 0 0 #B3B3B3, 10px 0 0 0 #B3B3B3, 12px 0 0 0 #B3B3B3, 14px 0 0 0 #B3B3B3, 16px 0 0 0 #B3B3B3, 18px 0 0 0 #B3B3B3, 20px 0 0 0 #B3B3B3;
+                box-shadow: 6px 0 0 0 #B3B3B3, 8px 0 0 0 #B3B3B3, 10px 0 0 0 #B3B3B3, 12px 0 0 0 #B3B3B3, 14px 0 0 0 #B3B3B3, 16px 0 0 0 #B3B3B3, 18px 0 0 0 #B3B3B3, 20px 0 0 0 #B3B3B3;
+            }
+          }
+          .product-box{
+            padding: 12px 15px;
             background: #fff;
-            margin-bottom: 15px;
-            min-height: 80px;
-            ul{
+            margin-bottom: 10px;
+            min-height: 55px;
+            .product-unit{
               li{
-                min-height: 65px;
-                line-height: 65px;
+                min-height: 40px;
+                line-height: 40px;
                 color: #999;
                 border-bottom: 1px dotted #f5f5f5;
-                padding-left: 20px;
                 &:last-child{
                   border-bottom: none;
                 }
+                .unit-name{
+                  width: 195px;
+                  float: left;
+                  white-space: nowrap;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                }
+                .unit-price{
+                  width: 120px;
+                  float: left;
+                  white-space: nowrap;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                }
                 span{
-                  display: inline-block;
+                  float: left;
+                  overflow: hidden;
+                  width: 115px;
+                  white-space: nowrap;
+                  text-overflow: ellipsis;
+                }
+              }
+            }
+            .product-prop{
+              li{
+                min-height: 40px;
+                line-height: 40px;
+                color: #999;
+                border-bottom: 1px dotted #f5f5f5;
+                &:last-child{
+                  border-bottom: none;
                 }
                 .prop{
-                  width: 125px;
                   float: left;
+                  width: 120px;
+                  padding-right: 10px;
                 }
                 .value{
-                  width: 430px;
                   float: left;
+                  max-width: 215px;
                 }
               }
             }
           }
           .product-detail{
-            padding-top: 30px;
+            padding-top: 12px;
             background: #fff;
             p{
-              line-height: 36px;
-              padding: 0 20px;
+              line-height: 24px;
+              padding: 0 15px;
+              font-size: 12px;
             }
             img{
               max-width: 100%;
-              margin: 20px 0;
+              margin-bottom: 10px;
             }
           }
         }
         .product-buy{
-            height: 78px;
-            line-height: 78px;
+            height: 50px;
             text-align: center;
             background: #fff;
             position: absolute;
             bottom: 0;
             left: 0;
             .in{
+              padding-top: 9px;
+              font-size: 12px;
               float: left;
-              width: 90px;
-              height: 78px;
+              width: 57px;
+              height: 50px;
+              &:first-child{
+                width: 58px;
+              }
+              div{
+                img{
+                  width: 18px;
+                  height: auto;
+                }
+              }
             }
             .buy,.cart{
+              line-height: 50px;
               float: left;
-              width: 200px;
-              height: 78px;
+              width: 130px;
+              height: 50px;
               color: #fff;
-              font-size: 23px;
+              font-size: 15px;
               font-weight: bold;
             }
             .cart{
