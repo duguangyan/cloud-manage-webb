@@ -11,8 +11,8 @@
         <el-form-item label="发货地址:" prop="province">
           <el-select v-model="postSolution.province" placeholder="请选择省份" @change="changeProvince">
             <el-option
-              v-for="item in provinceList"
-              :key="item.id"
+              v-for="(item,index) in provinceList"
+              :key="item.id + index"
               :label="item.name"
               :value="item.name"
             ></el-option>
@@ -60,7 +60,7 @@
       <template v-if="+postSolution.isPost===0">
         <li>
           <el-form-item label="计价方式:" prop="type">
-            <el-radio-group v-model="postSolution.type" @change="changeType">
+            <el-radio-group v-model="postSolution.type">
               <el-radio :label="1">按件数</el-radio>
               <el-radio :label="2">按体积</el-radio>
               <el-radio :label="3">按重量</el-radio>
@@ -72,7 +72,7 @@
           <div class="specific">操作说明:</div>
           <div>
             <el-form-item
-              :label="'首'+(+postSolution.type===1?'件数:':+postSolution.type===2?'体积:':'重:')"
+              :label="'首'+accText"
               prop="defaultPost.firstVolume"
             >
               <el-input
@@ -80,7 +80,7 @@
                 v-model="postSolution.defaultPost.firstVolume"
                 clearable
               ></el-input>
-              <span>{{+postSolution.type===1?'件':+postSolution.type===2?'立方米':'千克'}}</span>
+              <span>{{unitText}}</span>
               &emsp;
             </el-form-item>
 
@@ -91,7 +91,7 @@
             </el-form-item>
 
             <el-form-item
-              :label="'续'+(+postSolution.type===1?'件:':+postSolution.type===2?'体积:':'重:')"
+              :label="'续'+unitText"
               prop="defaultPost.continueVolume"
             >
               <el-input
@@ -99,7 +99,7 @@
                 v-model="postSolution.defaultPost.continueVolume"
                 clearable
               ></el-input>
-              <span>{{+postSolution.type===1?'件':+postSolution.type===2?'立方米':'千克'}}</span>
+              <span>{{unitText}}</span>
               &emsp;
             </el-form-item>
 
@@ -124,9 +124,9 @@
           <!-- row 1 -->
           <div class="rows table-head">
             <div class="cell">运送到</div>
-            <div class="cell">首重(千克)</div>
+            <div class="cell">首{{accText}}({{unitText}})</div>
             <div class="cell">首费(元)</div>
-            <div class="cell">续重(千克)</div>
+            <div class="cell">续{{accText}}({{unitText}})</div>
             <div class="cell">续费(元)</div>
             <div class="cell">操作</div>
           </div>
@@ -137,7 +137,7 @@
             :rules="itemRules"
             class="rows"
             v-for="(item,index) in postSolution.solutionItemList"
-            :key="item.id"
+            :key="item.id+index"
             :ref="'solutionItem'+index"
           >
             <div class="cell w1">
@@ -210,7 +210,7 @@
             :rules="freeRules"
             class="rows"
             v-for="(item,index) in postSolution.solutionFreeItemList"
-            :key="item.id"
+            :key="index+item.id"
             :ref="'solutionFreeItem'+index"
           >
             <div class="cell w1">
@@ -314,7 +314,9 @@ var vm = {
   data() {
     vm = this;
     return {
-      temp: '',
+      switch: /* 更改type开关 */ true,
+      accText: /* 计量文案 */ '',
+      unitText: /* 单位文案 */ '',
       curIndex: /* 当前项邮费方案的序 */ -1,
       fullscreenLoading: false,
       itemRules: /*城市方案邮费表单规则*/ {
@@ -458,7 +460,7 @@ var vm = {
       },
       solutionFreeItem: /* 条件邮费方案项 */ {
         areaExp: [],
-        hasArea: /* 是否有选地区 */ "",
+        hasArea: /* 是否有选地区 */ 0,
         id: "",
         postSolutionId: "",
         price: "",
@@ -468,7 +470,7 @@ var vm = {
       },
       solutionItem: /* 城市邮费方案项 */ {
         areaExp: [],
-        hasArea: /* 是否有选地区 */ "",
+        hasArea: /* 是否有选地区 */ 0,
         continuePrice: /* 续重价钱 */ "",
         continueVolume: /* 续重 */ "",
         firstPrice: /*首量价钱*/ "",
@@ -488,7 +490,11 @@ var vm = {
         vm.postSolution.type = 1;
       }
     },
-
+    "postSolution.type"(val,oldVal){
+      vm.changeText(val)
+      vm.switch && vm.changeType(val,oldVal)
+      vm.switch = false
+    }
   },
   created() {
     // youID表示编辑
@@ -499,7 +505,6 @@ var vm = {
         let d = data.data;
         // 分离是否包邮
         d.type === 0 ? (d.isPost = 1) : (d.isPost = 0);
-        vm.temp = d.type
 
         // 抽离默认城市邮费方案
         d.defaultPost = Object.assign({ ...d.solutionItemList[0] });
@@ -513,7 +518,7 @@ var vm = {
           } catch (e) {
             item.areaExp = [];
           }
-          item.hasArea = "1";
+          item.hasArea = 1;
           vm.extCityItems = vm.extCityItems.concat(item.areaExp);
           return vm.transfer(item);
         });
@@ -523,7 +528,7 @@ var vm = {
           } catch (e) {
             item.areaExp = [];
           }
-          item.hasArea = "1";
+          item.hasArea = 1;
           vm.extCondItems = vm.extCondItems.concat(item.areaExp);
           return vm.transfer(item);
         });
@@ -537,6 +542,8 @@ var vm = {
 
         // 发货地址处理
         vm.postSolution = Object.assign({}, d);
+
+        vm.changeText(d.type)
 
         getAd({
           parentId: "0"
@@ -556,15 +563,24 @@ var vm = {
     //
   },
   methods: {
-    changeType(val){
+    changeText(val){
+      vm.unitText = +val===1?'件':+val===2?'立方米':'千克'
+      vm.accText = +val===1?'件数:':+val===2?'体积:':'重:'
+    },
+    changeType(val,oldVal){
       vm.$confirm("切换将删除所有邮费方案,是否继续？")
         .then(_ => {
           vm.clearModule();
-          vm.temp = vm.postSolution.type
+          vm.postSolution.type = val
+          setTimeout(()=>{
+            vm.switch = true
+          },0)
         })
         .catch(() => {
-          vm.postSolution.type;
-          vm.postSolution.type= vm.temp;
+          vm.postSolution.type = oldVal
+          setTimeout(()=>{
+            vm.switch = true
+          },0)
         });
     },
     clearModule() {
@@ -645,7 +661,7 @@ var vm = {
         delete res.defaultPost;
 
         // 删除isPost
-        +res.isPost === 1 ? (res.type = 0) : (res.type = 1);
+        +res.isPost === 1 ? (res.type = 0) : '';
         delete res.isPost;
 
         // 查找省市区的ID
@@ -842,9 +858,6 @@ var vm = {
         return item;
       });
 
-      // 已选择地区去重
-      // vm[filKey] = [...new Set(vm[filKey])];
-
       // 清空已选地区列表
       vm[filKey] = [];
 
@@ -877,9 +890,9 @@ var vm = {
         item.areaExp = list;
         // 如果长度为0,更新是否有选择地区的状态
         if (list.length > 0) {
-          item.hasArea = "1";
+          item.hasArea = 1;
         } else {
-          item.hasArea = "";
+          item.hasArea = 0;
         }
 
         // 存储当前遍历的地区列表到已存在列表中
@@ -890,7 +903,7 @@ var vm = {
       vm[filKey] = vm[filKey].concat(preCopy(vm[souKey]).areaExp);
 
       // 当前的方案项重置|插入到方案列表
-      vm[souKey].hasArea = curList.length > 0 ? true : "";
+      vm[souKey].hasArea = curList.length > 0 ? 1 : 0;
       sourList[vm.curIndex] = preCopy(vm[souKey]);
 
       // 已存在列表的去重处理
