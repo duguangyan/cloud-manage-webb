@@ -520,10 +520,10 @@ import { getByCategoryId, getUnit, saveGoods, editGoods, getUnitList, getSpeList
 import { getFreight } from '@/api/goods/logistics'
 import { getAd } from '@/api/upms/strict'
 import { fileUpload } from '@/api/goods/upload'
-import loveImg from '@/icons/img/love.png'
-import backImg from '@/icons/img/back.png'
-import orderImg from '@/icons/img/order.png'
-import shareImg from '@/icons/img/share.png'
+import loveImg from '@/assets/img/love.png'
+import backImg from '@/assets/img/back.png'
+import orderImg from '@/assets/img/order.png'
+import shareImg from '@/assets/img/share.png'
 let id = 0;
 let vm = {
   name: 'addProduct',

@@ -86,28 +86,37 @@
 
     <el-dialog :visible.sync="dialogVisible" :closeOnClickModal="false" :title="dialogMsg">
       <template v-if="dialogType === 'role'">
-        <el-table
-          v-loading="roleListLoading"
-          ref="roleMmulTable"
-          :data="roleTable"
-          tooltip-effect="dark"
-          style="width: 100%"
-          @select="roleSelectFun"
-          @select-all="roleSelectAllFun">
-          <el-table-column
-            type="selection"
-            width="55">
-          </el-table-column>
-          <el-table-column
-            prop="name"
-            label="角色名">
-          </el-table-column>
-          <el-table-column
-            prop="systemName"
-            label="所属系统">
-          </el-table-column>
-        </el-table>
-        <pagination v-show="roleTotal>0" :total="roleTotal" :page.sync="roleListQuery.pageIndex" :limit.sync="roleListQuery.pageSize"  @pagination="getRoleList" />
+         <el-form label-width="80px" label-position="left" >
+          <el-form-item label="用户昵称">
+              <span>{{role.nickName}}</span>
+            </el-form-item>
+            <el-form-item label="角色列表">
+              <el-table
+                v-loading="roleListLoading"
+                border
+                ref="roleMmulTable"
+                :data="roleTable"
+                tooltip-effect="dark"
+                style="width: 100%"
+                @select="roleSelectFun"
+                @select-all="roleSelectAllFun">
+                <el-table-column
+                  type="selection"
+                  align="center"
+                  width="55">
+                </el-table-column>
+                <el-table-column
+                  prop="name"
+                  label="角色名">
+                </el-table-column>
+                <el-table-column
+                  prop="systemName"
+                  label="所属系统">
+                </el-table-column>
+              </el-table>
+            </el-form-item>
+          <pagination v-show="roleTotal>0" :total="roleTotal" :page.sync="roleListQuery.pageIndex" :limit.sync="roleListQuery.pageSize"  @pagination="getRoleList" />
+         </el-form>
       </template>
       <template v-else>
         <el-form ref="editForm" :model="role" label-width="80px" label-position="left" :rules="editRules">

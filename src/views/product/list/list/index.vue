@@ -297,7 +297,7 @@ export default {
     },
     msgEdit(scope) {
       // 编辑商品
-      this.$router.push({path: 'list/add', query:{ 
+      this.$router.push({path: 'list/edit', query:{ 
         id: scope.row.categoryId,
         eid: scope.row.id
       }})

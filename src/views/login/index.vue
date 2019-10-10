@@ -49,7 +49,7 @@
       </el-form-item>
       <el-form-item prop="authcode">
         <span class="svg-container">
-          <svg-icon icon-class="user" />
+          <svg-icon icon-class="form" />
         </span>
         <el-input
           ref="authcode"

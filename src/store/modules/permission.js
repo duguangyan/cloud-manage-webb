@@ -9,6 +9,7 @@ const moduleSource = [
   'product/list/index',
   'product/list/release/index',
   'product/list/detail/index',
+  'product/list/edit/index',
   'product/list/add/index',
   'stat/analyze/index',
   'stat/general/index',
@@ -60,12 +61,12 @@ function filterAsyncRouter(asyncRouterMap, index) { // 遍历后台传来的路�
     if (route.url) {
       route.hidden = false
       if (moduleSource.indexOf(route.url) > -1) {
-        // if (route.url === 'product/list/edit/index') {
-        //   route.component = _import('product/list/add/index')
-        // } else {
-        //   route.component = _import(route.url)
-        // }
-        route.component = _import(route.url)
+        if (route.url === 'product/list/add/index') {
+          route.component = _import('product/list/edit/index')
+        } else {
+          route.component = _import(route.url)
+        }
+        // route.component = _import(route.url)
         const urlArr = route.url.split('/')
         route.path = urlArr[urlArr.length - 2]
         if (hiddenData.includes(route.url)) {
@@ -112,7 +113,6 @@ function filterAsyncRouter(asyncRouterMap, index) { // 遍历后台传来的路�
         exsit = false
       }
       if (exsit) {
-        // console.log(route.url)
         route.meta = {
           title: route.name,
           icon: route.icon,
