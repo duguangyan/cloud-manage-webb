@@ -1,7 +1,6 @@
 import { constantRoutes } from '@/router'
 import { getRoles } from '@/api/upms/user'
 import Layout from '@/layout'
-import IFRAME from '@/views/iframe/index.vue'
 
 // 路由资源
 const moduleSource = [
@@ -12,6 +11,7 @@ const moduleSource = [
   'product/list/detail/index',
   'product/list/add/index',
   'stat/analyze/index',
+  'stat/general/index',
   'order/sell/index',
   'order/sell/detail/index',
   'activity/banner/index',
@@ -77,8 +77,6 @@ function filterAsyncRouter(asyncRouterMap, index) { // 遍历后台传来的路�
           if (index === 0) {
             route.path = '/iframe:' + encodeURI(route.name)
             route.component = Layout
-            // route.path = route.url
-            // route.alias = '/iframe:' + route.url
             route.children = [
               {
                 url: route.url,
