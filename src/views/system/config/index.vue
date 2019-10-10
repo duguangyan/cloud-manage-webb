@@ -1,11 +1,12 @@
 <template>
   <div class="app-container">
     <div class="filter-container" style="padding-bottom: 10px">
-      <el-input v-if="btnsPermission.search.auth" v-model="listQuery.name" placeholder="系统名" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      系统名：<el-input v-if="btnsPermission.search.auth" v-model="listQuery.name" maxlength="64" placeholder="请输入系统名" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
       <el-button v-if="btnsPermission.search.auth" v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         {{btnsPermission.search.name}}
       </el-button>
-      <el-button v-if="btnsPermission.add.auth" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
+      <el-button v-if="btnsPermission.search.auth" v-waves class="filter-item" @click="resetSearch">重置</el-button>
+      <el-button v-if="btnsPermission.add.auth" class="filter-item" style="margin-left: 10px;" @click="handleCreate">
         {{btnsPermission.add.name}}
       </el-button>
     </div>
@@ -59,8 +60,8 @@
 
 
     <el-dialog :title="textMap[dialogStatus]" :closeOnClickModal="false" :visible.sync="dialogFormVisible">
-      <el-form v-loading="diaLoading" ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
-        <el-form-item label="系统名">
+      <el-form v-loading="diaLoading" ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px">
+        <el-form-item prop="name" label="系统名">
           <el-input v-model="temp.name" maxlength="64" />
         </el-form-item>
         <el-form-item label="备注">
@@ -129,6 +130,18 @@ export default {
           auth: false
         }
       },
+      rules: {
+        name: [{
+          required: true,
+          trigger: 'blur',
+          message: '请填写字典名'
+        }],
+        value: [{
+            required: true,
+            trigger: 'blur',
+            message: '请填写字典值'
+        }]
+      },
       temp: {
         id: '',
         name: '',
@@ -139,11 +152,6 @@ export default {
       textMap: {
         update: '编辑',
         create: '新增系统'
-      },
-      rules: {
-        type: [{ required: true, message: 'type is required', trigger: 'change' }],
-        timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
-        title: [{ required: true, message: 'title is required', trigger: 'blur' }]
       },
       statusOptions: ['published', 'draft', 'deleted'],
     }
@@ -213,10 +221,7 @@ export default {
               type: 'success',
               duration: 2000
             })
-            setTimeout(() => {
-              this.fetchData()
-            }, 2000)
-            
+            this.fetchData()
           }).catch(err => {
             this.diaDisable = false
             this.diaLoading = false
@@ -239,19 +244,13 @@ export default {
             this.diaDisable = false
             this.diaLoading = false
             this.dialogFormVisible = false
-            for (const v of this.list) {
-              if (v.id === this.temp.id) {
-                const index = this.list.indexOf(v)
-                this.list.splice(index, 1, this.temp)
-                break
-              }
-            }
             this.$notify({
               title: '成功',
               message: '数据修改成功！',
               type: 'success',
               duration: 2000
             })
+            this.fetchData()
           }).catch(err => {
             this.diaDisable = false
             this.diaLoading = false
@@ -279,19 +278,10 @@ export default {
           this.listLoading = true
           deleteSystem({id: data.id}).then(response => {
             this.listLoading = false
-            for (const v of this.list) {
-              if (v.id === data.id) {
-                const index = this.list.indexOf(v)
-                this.list.splice(index, 1)
-                break
-              }
-            }
-            
             this.$message({
               type: 'success',
               message: '删除成功!'
-            });
-
+            })
             if(this.list.length === 0 && this.allPages - 1 > 0) {
               --this.listQuery.pageIndex
             }
@@ -303,13 +293,15 @@ export default {
           this.$message({
             type: 'info',
             message: '已取消删除'
-          });          
-        });
-     this.$message({
-        message: '操作成功',
-        type: 'success'
-      })
-
+          })   
+        })
+    },
+    resetSearch() {
+      this.listQuery = {
+        pageIndex: 1,
+        pageSize: 10
+      },
+      this.fetchData()
     }
   }
 }

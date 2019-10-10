@@ -4,7 +4,7 @@
     <div class="filter-container">
       <template v-if="btnsPermission.search.auth">
         名称：
-        <el-input v-model="listQuery.name"  placeholder="请输入用户姓名" style="width: 200px;" class="filter-item mr10" @keyup.enter.native="handleFilter" />
+        <el-input v-model="listQuery.name" maxlength="64" placeholder="请输入用户姓名" style="width: 200px;" class="filter-item mr10" @keyup.enter.native="handleFilter" />
         状态：
         <el-select v-model="listQuery.status" class="mr10" placeholder="请选择">
           <el-option
@@ -33,6 +33,7 @@
 
     <el-table
       v-if="isLazy"
+      :header-cell-style="{background: '#f3f3f3'}" 
       ref="treeTable"
       v-loading="listLoading"
       :data="meanData"
@@ -121,6 +122,7 @@
      <el-table
         v-show="!isLazy"
         rel="searchTree"
+        :header-cell-style="{background: '#f3f3f3'}" 
         :data="searchData"
         style="width: 100%;margin-bottom: 20px;"
         row-key="id"
@@ -203,20 +205,20 @@
     </el-table>
 
     <el-dialog :visible.sync="dialogVisible" :closeOnClickModal="false" :title="dialogType==='edit'?'编辑':'新增资源'">
-      <el-form v-loading="diaLoading" :model="role" label-width="80px" label-position="left">
+      <el-form ref="meanForm" v-loading="diaLoading" :model="role" label-width="80px" label-position="left" :rules="rules">
         <el-form-item label="父级">
           <span v-if="checkParentName.length > 0" class="mr10">{{checkParentName}}</span>
           <span v-else-if="role.parentName !== undefined && role.parentName !== ''" class="mr10">{{role.parentName}}</span>
           <span v-else class="mr10">顶级</span>
           <el-button v-waves class="filter-item" size="small" @click="selectParent">选择父级</el-button>
         </el-form-item>
-        <el-form-item label="名称">
+        <el-form-item prop="name" label="名称">
           <el-input v-model="role.name" maxlength="64" placeholder="请输入名称" />
         </el-form-item>
         <el-form-item label="排序">
           <el-input v-model="role.sort" maxlength="11" placeholder="请输入排序" />
         </el-form-item>
-        <el-form-item label="类型">
+        <el-form-item prop="type" label="类型">
           <el-select v-model="role.type" placeholder="请选择">
             <el-option
               v-for="item in typeData"
@@ -278,7 +280,7 @@
       </el-form>
       <div style="text-align:right;">
         <el-button type="danger" @click="dioCancle">取消</el-button>
-        <el-button type="primary" @click="confirmRole" :disabled="diaDisable">确定</el-button>
+        <el-button type="primary" @click="regFun" :disabled="diaDisable">确定</el-button>
       </div>
     </el-dialog>
 
@@ -378,6 +380,18 @@ export default {
           name: '删除',
           auth: false
         }
+      },
+      rules: {
+        name: [{
+          required: true,
+          trigger: 'blur',
+          message: '请填写名称'
+        }],
+        type: [{
+            required: true,
+            trigger: 'change',
+            message: '请选择类型'
+        }]
       },
       statusData: [
         {
@@ -683,9 +697,6 @@ export default {
       this.prarentDialogVisible = true
       await this.getRoutes()
     },
-    typeChange(val) {
-      // console.log(val)
-    },
     selectIcon() {
       // 选择图标
       this.iconDialogVisible = true
@@ -734,6 +745,14 @@ export default {
       }
       return res
     },
+    regFun() {
+      // 输入校验
+      this.$refs.meanForm.validate((valid) => {
+        if (valid) {
+          this.confirmRole()
+        }
+      });
+    },
     async confirmRole() {
       const isEdit = this.dialogType === 'edit'
       let succMsg = ''
@@ -760,13 +779,6 @@ export default {
          })
          this.diaDisable = false
          this.diaLoading = false
-        // for (const v of this.resourceData) {
-        //     if (v.id === this.role.id) {
-        //       const index = this.resourceData.indexOf(v)
-        //       this.resourceData.splice(index, 1, this.role)
-        //       break
-        //     }
-        // }
         this.getMeanFirstRec()
       } else {
         succMsg = '新增成功'

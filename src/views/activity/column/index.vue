@@ -3,9 +3,9 @@
     <div class="filter-container mb20">
       <div v-if="btnsPermission.search.auth" class="mb40 mr20">
         广告名称：
-        <el-input v-model="listQuery.name"  placeholder="请输入广告名称" style="width: 200px;" class="filter-item mr20" @keyup.enter.native="handleFilter" />
+        <el-input v-model="listQuery.name" maxlength="50" placeholder="请输入广告名称" style="width: 200px;" class="filter-item mr20" @keyup.enter.native="handleFilter" />
         广告位名称：
-        <el-input v-model="listQuery.adPositionName"  placeholder="请输入广告位名称" style="width: 200px;" class="filter-item mr20" @keyup.enter.native="handleFilter" />
+        <el-input v-model="listQuery.adPositionName" maxlength="30" placeholder="请输入广告位名称" style="width: 200px;" class="filter-item mr20" @keyup.enter.native="handleFilter" />
         状态：
         <el-select v-model="listQuery.status" class="mr20" placeholder="请选择">
           <el-option

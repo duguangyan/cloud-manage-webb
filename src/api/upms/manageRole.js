@@ -32,6 +32,22 @@ export function getRoleResourceTree(query) {
   })
 }
 
+export function addResource(data) {
+  return request({
+    url: '/upms/role/addResource',
+    method: 'post',
+    data
+  })
+}
+
+export function deleteResource(query) {
+  return request({
+    url: '/upms/role/delResource',
+    method: 'get',
+    params: query
+  })
+}
+
 export function addResourceBatch(data) {
   return request({
     url: '/upms/role/addResourceBatch',

@@ -3,7 +3,7 @@
     <div class="filter-container mb20">
       <div v-if="btnsPermission.search.auth" class="mb40">
         广告位名称：
-        <el-input v-model="listQuery.name"  placeholder="请输入广告位名称" style="width: 200px;" class="filter-item mr20" @keyup.enter.native="handleFilter" />
+        <el-input v-model="listQuery.name" maxlength="30" placeholder="请输入广告位名称" style="width: 200px;" class="filter-item mr20" @keyup.enter.native="handleFilter" />
         <el-button v-waves class="filter-item" type="primary" :disabled="disable" icon="el-icon-search" @click="handleFilter">{{btnsPermission.search.name}}</el-button>
         <el-button v-waves class="filter-item" @click="resetList">重置</el-button>
       </div>

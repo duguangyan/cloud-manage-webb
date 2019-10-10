@@ -3,10 +3,11 @@
 
     <div v-if="btnsPermission.search.auth" class="filter-container">
       角色名称：
-      <el-input v-model="listQuery.name"  placeholder="请输入角色名" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.name" maxlength="64"  placeholder="请输入角色名" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
       {{btnsPermission.search.name}}
       </el-button>
+      <el-button v-waves class="filter-item" @click="resetSearch">重置</el-button>
     </div>
 
     <el-button v-if="btnsPermission.add.auth" type="primary" size="small" @click="handleAddRole">{{btnsPermission.add.name}}</el-button>
@@ -16,6 +17,7 @@
       ref="multipleTable" 
       :data="rolesData"
       tooltip-effect="dark" 
+      border
       :header-cell-style="{background: '#f3f3f3'}" 
       style="width: 100%;margin-top:10px;">
       <el-table-column align="center" label="角色名称" width="220">
@@ -43,10 +45,14 @@
     </el-table>
 
     <el-dialog :visible.sync="dialogVisible" :closeOnClickModal="false" :title="dialogTitle">
-      <el-form v-loading="diaLoading" :model="role" label-width="80px" label-position="left">
+      <el-form ref="roleForm" v-loading="diaLoading" :model="role" label-width="80px" label-position="left">
         <template v-if="dialogType ==='edit' || dialogType === 'new'">
-         <el-form-item label="角色名称">
-            <el-input v-model="role.name" maxlength="64" placeholder="请输入角色名称" />
+         <el-form-item label="角色名称"
+         prop="name"
+         :rules="{
+            required: true, message: '请填写角色名称', trigger: 'blur'
+          }">
+            <el-input v-model.trim="role.name" maxlength="64" placeholder="请输入角色名称" />
           </el-form-item>
           <el-form-item label="备注">
             <el-input
@@ -57,23 +63,28 @@
               placeholder="请输入备注"
             />
           </el-form-item>
-          <el-form-item label="系统">
-          <el-select v-model="role.systemId" placeholder="请选择">
-            <el-option
-              v-for="item in systemData"
-              :key="item.id"
-              :label="item.name"
-              :value="item.id">
-            </el-option>
-          </el-select>
+          <el-form-item label="系统" 
+          prop="systemId"
+          :rules="{
+            required: true, message: '请选择所属系统', trigger: 'change'
+          }">
+            <el-select v-model="role.systemId" placeholder="请选择">
+              <el-option
+                v-for="item in systemData"
+                :key="item.id"
+                :label="item.name"
+                :value="item.id">
+              </el-option>
+            </el-select>
           </el-form-item>
         </template>
         <template v-else>
           <el-form-item label="角色名称">
-            <span>{{role.name}}</span>
+            <span>{{checkRoleName}}</span>
           </el-form-item>
           <el-form-item label="权限列表">
             <el-tree
+              v-loading="treeLoading"
               ref="tree"
               :check-strictly="checkStrictly"
               :data="routesData"
@@ -81,13 +92,17 @@
               show-checkbox
               node-key="id"
               class="permission-tree"
+              @check="treeCheck"
             />
           </el-form-item>
         </template>
       </el-form>
-      <div style="text-align:right;">
+      <div v-if="dialogType === 'roles'" style="text-align:right;">
+        <el-button type="danger" @click="dialogVisible=false">关闭</el-button>
+      </div>
+      <div v-else style="text-align:right;">
         <el-button type="danger" @click="dialogVisible=false">取消</el-button>
-        <el-button type="primary" :disabled="diaDisable" @click="confirmRole">确定</el-button>
+        <el-button type="primary" :disabled="diaDisable" @click="regFun">确定</el-button>
       </div>
     </el-dialog>
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageIndex" :limit.sync="listQuery.pageSize"  @pagination="getList" />
@@ -99,7 +114,7 @@ import path from 'path'
 import { deepClone } from '@/utils'
 import waves from '@/directive/waves'
 import { getUserBtnByPId } from '@/api/upms/menu'
-import { getRoles, addRole, deleteRole, updateRole, getRoleList, addResourceBatch, getRoleResources, getRoleResourceTree } from '@/api/upms/manageRole'
+import { getRoles, addRole, deleteRole, updateRole, getRoleList, addResource, deleteResource, getRoleResources, getRoleResourceTree } from '@/api/upms/manageRole'
 import { getSystem } from '@/api/upms/systemList'
 import Pagination from '@/components/Pagination'
 const defaultRole = {
@@ -118,10 +133,14 @@ export default {
       listLoading: false,
       diaLoading: false,
       diaDisable: false,
+      treeLoading: false,
       routes: [],
+      canCheck: false,
       systemData: [],
       rolesList: [],
       rolesData: [],
+      checkRoleId: '',
+      checkRoleName: '',
       btnsPermission: {
         search: {
           name: '搜索',
@@ -278,10 +297,13 @@ export default {
     async handleEdit(scope) {
       this.dialogTitle = '分配权限'
       this.dialogType = 'roles'
+      this.canCheck = false
       this.dialogVisible = true
-      // this.checkStrictly = true
-      this.role = deepClone(scope.row)
-      getRoleResourceTree({roleId: this.role.id}).then(res => {
+      this.checkRoleId = scope.row.id
+      this.checkRoleName = scope.row.name
+      this.treeLoading = true
+      getRoleResourceTree({roleId: scope.row.id}).then(res => {
+        this.treeLoading = false
         this.serviceRoutes = res.data
         this.routes = this.generateRoutes(res.data)
         this.$nextTick(() => {
@@ -291,7 +313,6 @@ export default {
         // this.checkStrictly = false
         })
       })
-      
     },
     handleDelete({ row }) {
       this.$confirm('确定要删除该角色?', 'Warning', {
@@ -331,6 +352,14 @@ export default {
       }
       return res
     },
+    regFun() {
+      // 输入校验
+      this.$refs.roleForm.validate((valid) => {
+        if (valid) {
+          this.confirmRole()
+        } 
+      });
+    },
     async confirmRole() {
       if (this.dialogType === 'edit') {
          this.diaDisable = true
@@ -367,21 +396,7 @@ export default {
         this.diaDisable = false
         this.diaLoading = false
         this.getRoleList()
-      } else {
-        this.diaDisable = true
-        this.diaLoading = true
-        const checkedKeysId = this.$refs.tree.getCheckedKeys().concat(this.$refs.tree.getHalfCheckedKeys()).join(',')
-        await addResourceBatch({
-           roleId: this.role.id,
-           resourceIds: checkedKeysId
-        }).catch(err => {
-          this.diaDisable = false
-          this.diaLoading = false
-        })
-        this.diaDisable = false
-        this.diaLoading = false
-      }
-
+      } 
       const { description, key, name } = this.role
       this.dialogVisible = false
       this.$notify({
@@ -390,7 +405,6 @@ export default {
         type: 'success'
       })
     },
-    // reference: src/view/layout/components/Sidebar/SidebarItem.vue
     onlyOneShowingChild(children = [], parent) {
       let onlyOneChild = null
       const showingChildren = children.filter(item => !item.hidden)
@@ -409,6 +423,50 @@ export default {
       }
 
       return false
+    },
+    treeCheck(data, check) {
+      // 分配权限、取消权限
+      let isCheck = false
+      check.checkedKeys.forEach(item => {
+        if(item === data.id) {
+          isCheck = true
+          return false
+        }
+      })
+      this.treeLoading = true
+      if (isCheck) {
+        addResource({
+          roleId: this.checkRoleId,
+          resourceId: data.id
+        }).then(res => {
+          this.treeLoading = false
+          this.$notify({
+            title: '分配权限成功',
+            message: `已为用户分配${data.title}权限`,
+            type: 'success'
+          })
+        })
+      } else {
+        deleteResource({
+          roleId: this.checkRoleId,
+          resourceId: data.id
+        }).then(res => {
+          this.treeLoading = false
+          this.$notify({
+            title: '取消权限成功',
+            message: `已取消用户${data.title}权限`,
+            type: 'success'
+          })
+        })
+      }
+    },
+    resetSearch() {
+      this.listQuery = {
+        name: '',
+        pageIndex: 1,
+        pageSize: 10
+      },
+      this.getRoleList()
     }
   }
 }

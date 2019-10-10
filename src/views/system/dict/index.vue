@@ -13,6 +13,7 @@
       style="width: 100%"
       row-key="id"
       border
+      :header-cell-style="{background: '#f3f3f3'}"
       lazy
       :load="load"
       :tree-props="{children: 'children', hasChildren: 'hasChildren'}">
@@ -54,9 +55,9 @@
     </el-table>
 
   <el-dialog :visible.sync="dialogVisible" :closeOnClickModal="false" :title="dialogType==='edit'?'编辑字典':'添加字典'">
-      <el-form v-loading="diaLoading" :model="role" label-width="80px" label-position="left">
-        <el-form-item label="字典名">
-          <el-input v-model="role.name" maxlength="64" placeholder="请输入字典名" />
+      <el-form ref="dictForm" v-loading="diaLoading" :model="role" label-width="80px" label-position="left" :rules="rules">
+        <el-form-item prop="name" label="字典名">
+          <el-input v-model.trim="role.name" maxlength="64" placeholder="请输入字典名" />
         </el-form-item>
         <el-form-item label="状态" v-if="dialogType==='edit'">
           <el-select v-model="role.status" placeholder="请选择">
@@ -68,8 +69,8 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="字典值">
-          <el-input v-model="role.value" maxlength="255" placeholder="请输入字典值" />
+        <el-form-item prop="value" label="字典值">
+          <el-input v-model.trim="role.value" maxlength="255" placeholder="请输入字典值" />
         </el-form-item>
          <el-form-item label="备注">
           <el-input
@@ -83,7 +84,7 @@
       </el-form>
       <div style="text-align:right;">
         <el-button type="danger" @click="dialogVisible=false">取消</el-button>
-        <el-button type="primary" :disabled="diaDisable" @click="confirmRole">确定</el-button>
+        <el-button type="primary" :disabled="diaDisable" @click="regFun">确定</el-button>
       </div>
     </el-dialog>
 </div>
@@ -133,14 +134,21 @@ export default {
         update: 'Edit',
         create: 'Create'
       },
+      rules: {
+        name: [{
+          required: true,
+          trigger: 'blur',
+          message: '请填写字典名'
+        }],
+        value: [{
+            required: true,
+            trigger: 'blur',
+            message: '请填写字典值'
+        }]
+      },
       changeId: '',
       changePid: '',
       dialogType: 'new',
-      rules: {
-        type: [{ required: true, message: 'type is required', trigger: 'change' }],
-        timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
-        title: [{ required: true, message: 'title is required', trigger: 'blur' }]
-      },
       temp: {
         id: '',
         name: '',
@@ -286,6 +294,14 @@ export default {
         type: 'success'
       })
 
+    },
+    regFun() {
+      // 输入校验
+      this.$refs.dictForm.validate((valid) => {
+        if (valid) {
+          this.confirmRole()
+        }
+      });
     },
     async confirmRole() {
       const isEdit = this.dialogType === 'edit'

@@ -431,7 +431,7 @@ export default {
     },
     getPage(data) {
      // 分页事件
-      this.listQuery.page = data.page
+      this.listQuery.pageIndex = data.page
       this.getList()
     },
     sortChange(data) {

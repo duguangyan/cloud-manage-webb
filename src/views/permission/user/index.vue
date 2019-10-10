@@ -2,11 +2,12 @@
   <div class="app-container"  v-loading="btnLoading">
 
     <div v-if="btnsPermission.search.auth" class="filter-container">
-      <el-input v-model="listQuery.realName"  placeholder="请输入真实姓名" style="width: 200px;" class="filter-item mr10" @keyup.enter.native="handleFilter" />
+      真实姓名：
+      <el-input v-model="listQuery.realName" maxlength="20" placeholder="请输入真实姓名" style="width: 200px;" class="filter-item mr10" @keyup.enter.native="handleFilter" />
       账号：
-      <el-input v-model="listQuery.username"  placeholder="请输入用户账号" style="width: 200px;" class="filter-item mr10" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.username" maxlength="32" placeholder="请输入用户账号" style="width: 200px;" class="filter-item mr10" @keyup.enter.native="handleFilter" />
       手机号码：
-      <el-input v-model="listQuery.phone"  placeholder="请输入手机号码" style="width: 200px;" class="filter-item mr10" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.phone" maxlength="20" placeholder="请输入手机号码" style="width: 200px;" class="filter-item mr10" @keyup.enter.native="handleFilter" />
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">{{btnsPermission.search.name}}</el-button>
       <el-button v-waves class="filter-item" @click="resetSearch">重置</el-button>
     </div>
@@ -19,6 +20,7 @@
       ref="multipleTable" 
       :data="userData"
       tooltip-effect="dark" 
+      border
       @selection-change="handleSelectionChange"
       :header-cell-style="{background: '#f3f3f3'}" 
       style="width: 100%;margin-top:10px;">
@@ -90,7 +92,8 @@
           :data="roleTable"
           tooltip-effect="dark"
           style="width: 100%"
-          @select="roleSelectFun">
+          @select="roleSelectFun"
+          @select-all="roleSelectAllFun">
           <el-table-column
             type="selection"
             width="55">
@@ -115,7 +118,7 @@
           <el-input v-model.trim="role.realName" maxlength="20" placeholder="请输入真实姓名" />
         </el-form-item>
          <el-form-item label="手机号码" prop="phone">
-          <el-input v-model.trim="role.phone" placeholder="请输入手机号码" />
+          <el-input v-model.trim="role.phone" maxlength="20" placeholder="请输入手机号码" />
         </el-form-item>
         <el-form-item label="账号" prop="username">
           <el-input v-model.trim="role.username" maxlength="32" placeholder="请输入账号" />
@@ -320,6 +323,30 @@ export default {
       }
       this.addLen = val.length
     },
+    roleSelectAllFun(selection) {
+      let allData = []
+      if(selection.length > 0) {
+        allData = selection
+      } else {
+        allData = this.roleTable
+      }
+      allData.forEach(item => {
+        if(this.addLen < allData.length) {
+          if(item.userHave === 0) {
+            this.addObj.add(item.id)
+          } else {
+            this.deleteObj.delete(item.id)
+          }
+        } else {
+          if(item.userHave === 1) {
+            this.deleteObj.add(item.id)
+          } else {
+            this.addObj.delete(item.id)
+          }
+        }
+      })
+      this.addLen = allData.length
+    },
     handleSelectionChange(val) {
       // 多选事件
       this.userMulSelect = val
@@ -353,6 +380,7 @@ export default {
       })
       this.roleTotal = data.total
       this.addLen = 0
+      this.$refs.roleMmulTable.clearSelection()
       if(Array.isArray(data.records)) {
         this.roleTable = data.records
         this.roleTable.map((val, index) => {
@@ -426,6 +454,8 @@ export default {
       this.dialogVisible = true
       this.checkStrictly = true
       this.roleTable = []
+      this.addObj = new Set()
+      this.deleteObj = new Set()
       this.getRoleList()
     },
     handleLockMul() {
@@ -526,7 +556,7 @@ export default {
         this.diaDisable = true
         this.roleListLoading = true
         const { data } = await addUser({
-          systemId: '553ebb6cad7440c99d5f89b26ef4fd2c',
+          systemId: this.role.systemId,
           nickName: this.role.nickName,
           username: this.role.username,
           realName: this.role.realName,
@@ -540,26 +570,21 @@ export default {
         this.roleListLoading = false
         this.getUserList()
       } else if(this.dialogType === 'role') {
-        // let roleIds = ''
-        // this.selectObj.map((val, index) => {
-        //   val.map((valIn, indexIn) => {
-        //     if(index === 0) {
-        //     roleIds += valIn.id
-        //     } else {
-        //       roleIds += ',' + valIn.id
-        //     }
-        //   })
-          
-        // })
         let addIds = ''
         let deleteIds = ''
         this.addObj.forEach((item) => {
           addIds += addIds.length === 0? item: ',' + item
         })
         this.deleteObj.forEach((item) => {
-
           deleteIds += deleteIds.length === 0? item: ',' + item
         })
+        if(addIds.length === 0 && deleteIds.length === 0) {
+          this.$message({
+            message: '请先选择角色',
+            type: 'warning'
+          })
+          return false
+        }
         this.diaDisable = true
         this.roleListLoading = true
         const { data } = await processUserRoleBatch({

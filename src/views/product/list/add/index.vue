@@ -133,7 +133,7 @@
                       <span class="mr5">单价</span><el-input class="table-input" v-model.trim="addForm.sku[showStyle.id].list[scope.$index].price" size="small" maxlength="12" @keyup.native="numValid(addForm.sku[showStyle.id].list[scope.$index], 'price', 1)" />
                     </template>
                   </el-table-column>
-                  <el-table-column min-width="350px" label="操作" align="center">
+                  <el-table-column min-width="250px" label="操作" align="center">
                     <template slot-scope="scope">
                       <div style="text-align: left;padding-left: 50px;">
                         <el-button v-show="scope.$index > 0 || addForm.sku[showStyle.id].list.length > 1" size="mini" type="danger" plain @click="removeStair(scope.$index, showStyle.id)">
