@@ -26,6 +26,7 @@
       style="width: 100%;margin-top:10px;">
       <el-table-column
         type="selection"
+        align="center"
         width="55"> 
       </el-table-column>
       <el-table-column align="center" label="头像" width="220">

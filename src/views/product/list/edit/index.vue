@@ -555,6 +555,7 @@ let vm = {
       baseData: [],
       skuId: '',
       specId: '',
+      unitName: '',
       icons: {
         back: backImg,
         love: loveImg,
@@ -682,11 +683,14 @@ let vm = {
   methods: {
     getByCategoryId() {
       // 通过ID获取规格模板
-      this.listLoading = true
-      getByCategoryId({
+      let CateParam = {
         categoryId : this.categoryId,
-        status: 1
-      }).then(res => {
+      }
+      if(this.eiditId.length === 0) {
+        CateParam.status = 1
+      }
+      this.listLoading = true
+      getByCategoryId(CateParam).then(res => {
         this.listLoading = false
         if(Array.isArray(res.data)) {
           let adData = {}
@@ -817,6 +821,7 @@ let vm = {
         this.addForm.imgsBox = imgBox
         this.showStyle.id = res.data.goods.unit
         if(String(res.data.goods.showStyle) === '3') {
+          this.unitName = res.data.goods.unitName
           this.showStyle.type = res.data.goods.showStyle
           this.addForm.unitMore = res.data.goods.unit
           this.getUnitList()
@@ -847,6 +852,7 @@ let vm = {
           msgObj.skuArr = []
           msgObj.showStyle = res.data.goods.showStyle
           msgObj.name = res.data.goodsDetailSpecList[0].name
+          this.unitName = res.data.goodsDetailSpecList[0].name
           if (res.data.goods.showStyle === '1') {
             res.data.goodsSkuList.forEach(item => {
               msgObj.skuArr.push({
@@ -936,6 +942,21 @@ let vm = {
           });
           this.$set(this.addForm, 'sku', skuInitObj)
           this.sellData = res.data
+          if(this.eiditId.length > 0) {
+            let hasChild = false
+            this.sellData.forEach(item => {
+              if(item.id === this.addForm.unit) {
+                hasChild = true
+                return false
+              }
+            })
+            if(!hasChild) {
+              this.sellData.push({
+                id: this.addForm.unit,
+                name: this.unitName
+              })
+            }
+          }
         }
         if(msgObj !== undefined) {
           this.addForm.sku[this.showStyle.id] = {}
@@ -955,13 +976,28 @@ let vm = {
         this.moreLoading = false
         if(Array.isArray(res.data)) {
           this.sellMoreData = res.data
+          if(this.eiditId.length > 0) {
+            let hasChild = false
+            this.sellMoreData.forEach(item => {
+              if(item.id === this.addForm.unitMore) {
+                hasChild = true
+                return false
+              }
+            })
+            if(!hasChild) {
+              this.sellMoreData.push({
+                id: this.addForm.unitMore,
+                name: this.unitName
+              })
+            }
+          }
         }
       }).catch(err => [
         this.moreLoading = false
       ])
     },
     getSpecList() {
-      getSpeList({ categoryId: this.categoryId }).then(res => {
+      getSpeList({ categoryId: this.categoryId, status: 1 }).then(res => {
         this.moreLoading = false
         if(Array.isArray(res.data)) {
           this.sellSpeData = res.data

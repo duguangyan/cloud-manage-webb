@@ -188,12 +188,9 @@
 
 <script>
 import waves from '@/directive/waves'
-import { getUnit, saveGoods, editGoods, getUnitList, getSpeList, getGoodsDetail, handlerGoods } from '@/api/goods/list'
+import { getGoodsDetail, handlerGoods } from '@/api/goods/list'
 import { getUserBtnByPId } from '@/api/upms/menu'
 import { getFreight } from '@/api/goods/logistics'
-import { getAd } from '@/api/upms/strict'
-import { fileUpload } from '@/api/goods/upload'
-import { constants } from 'crypto';
 let id = 0;
 let vm = {
   name: 'detailProduct',
@@ -291,8 +288,7 @@ let vm = {
           this.imgsBox = res.data.goodsImgVOList
         }
         if(String(res.data.goods.showStyle) === '3') {
-          this.getUnitList()
-          this.getSpecList()
+          this.unitName = res.data.goods.unitName
           // 多规格数据渲染
           let specData = []
           res.data.goodsDetailSpecList.forEach(item => {
@@ -312,15 +308,10 @@ let vm = {
           this.moreSpec = specData
           this.specValueBlur('', 'true', true)
         } else { 
-          let msgObj = {}
-          msgObj.skuArr = []
-          msgObj.showStyle = res.data.goods.showStyle
-          msgObj.name = res.data.goodsDetailSpecList[0].name
-
           this.unitName = res.data.goodsDetailSpecList[0].name
           if (res.data.goods.showStyle === '1') {
             this.normalData = res.data.goodsSkuList
-            this.getUnit()
+            this.valueSuffix = res.data.goodsDetailSpecList[0].valueSuffix
           } else if(String(res.data.goods.showStyle) === '2') {
             let skuData = JSON.parse(res.data.goodsSkuList[0].priceExp)
             this.stairStock = res.data.goodsSkuList[0].stock
@@ -330,7 +321,6 @@ let vm = {
                 number: item.startQuantity
               })
             })
-            this.getUnit()
           }
         }
         
@@ -356,51 +346,6 @@ let vm = {
           })
         }
         this.getGoodsDetail()
-      })
-    },
-    getUnit() {
-      // 通过ID获取规格模板
-      this.moreLoading = true
-       getUnit({
-        categoryId: this.categoryId,
-        status: 1
-      }).then(res => {
-        this.moreLoading = false
-        if(Array.isArray(res.data)) {
-          res.data.forEach(item => {
-            let itemId = item.id 
-            this.valueSuffixObj[itemId] = item.valueSuffix
-          });
-          if(this.unitId !== null) {
-            this.valueSuffix = this.valueSuffixObj[this.unitId]
-          }
-        }
-      })
-    },
-    async getUnitList() {
-      this.moreLoading = true
-      await getUnitList({ categoryId: this.categoryId, status: 1 }).then(res => {
-        this.moreLoading = false
-        if(Array.isArray(res.data)) {
-          res.data.forEach(item => {
-            if(item.id === this.unitId) {
-              this.unitName = item.name
-            }
-          })
-        }
-      }).catch(err => [
-        this.moreLoading = false
-      ])
-    },
-    getSpecList() {
-      getSpeList({ categoryId: this.categoryId }).then(res => {
-        this.moreLoading = false
-        if(Array.isArray(res.data)) {
-          this.sellSpeData = res.data
-        }
-        
-      }).catch(err => {
-        this.moreLoading = false
       })
     },
     handlePictureCardPreview(url) {
@@ -533,7 +478,7 @@ let vm = {
             this.productStatus = status
           })
         })
-    },
+    }
   }
 }
 export default vm;
