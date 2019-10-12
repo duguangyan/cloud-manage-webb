@@ -313,7 +313,7 @@ export default {
             type: 'success',
             message: '删除成功!'
           })
-          if(this.bannerData.length - 1 === 0 && this.allPages - 1 > 0) {
+          if(this.bannerData.length === 1 && this.allPages - 1 > 0) {
             --this.listQuery.pageIndex
           }
           this.getBannerList()

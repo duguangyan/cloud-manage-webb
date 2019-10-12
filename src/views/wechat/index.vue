@@ -40,7 +40,6 @@
 </template>
 
 <script>
-import { getAnalyseList } from '@/api/analyse/analyse'
 import Pagination from '@/components/Pagination'
 
 export default {
@@ -49,12 +48,6 @@ export default {
     return {
       checkList: ['选中且禁用','复选框 A'],
       radio1: '',
-      query: {
-        beginTime: '',
-        endTime: '',
-        pageIndex: 1,
-        pageSize: 10
-      },
       tableData: [{
             date: '2016-05-02',
             name: '王小虎',
@@ -85,29 +78,9 @@ export default {
 
   },
   created() {
-    this.setDateFun(30)
-    this.getAnalyseList()
+
   },
   methods: {
-    getAnalyseList() {
-      getAnalyseList(this.query).then(res => {
-        if(Array.isArray(res.data.records)) {
-          this.tableData = res.data.records
-        }
-      })
-    },
-    setDateFun(day) {
-      let date = new Date()
-      let endY = date.getFullYear()
-      let endM = date.getMonth() + 1
-      let endD = date.getDate()
-      date.setDate(endD - day)
-      let beginY = date.getFullYear()
-      let beginM = date.getMonth() + 1
-      let beginD = date.getDate()
-      this.query.beginTime = beginY + '-' + beginM + '-' + beginD
-      this.query.endTime = endY + '-' + endM + '-' + endD
-    },
     getPage(data) {
      // 分页事件
       this.listQuery.pageIndex = data.page

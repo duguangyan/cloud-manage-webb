@@ -463,7 +463,7 @@ export default {
             type: 'success',
             message: '删除成功!'
           })
-          if(this.adData.length - 1 === 0 && this.allPages - 1 > 0) {
+          if(this.adData.length === 1 && this.allPages - 1 > 0) {
             --this.listQuery.pageIndex
           }
           this.getAdList()

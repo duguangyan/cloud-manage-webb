@@ -229,7 +229,7 @@
           </el-select>
         </el-form-item>
         <el-form-item v-if="role.type === 1" label="按钮code">
-          <el-input v-model="role.code" maxlength="11" placeholder="请输入按钮code" />
+          <el-input v-model="role.code" maxlength="32" placeholder="请输入按钮code" />
         </el-form-item>
          <el-form-item v-if="role.type === 0 || role.type === 2" label="链接地址">
           <el-input v-model="role.url" maxlength="255" placeholder="请输入链接地址" />

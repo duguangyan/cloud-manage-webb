@@ -3,7 +3,7 @@
     <div class="filter-container">
       <el-input v-model="filterText"  placeholder="输入关键字进行过滤" style="width: 200px;" class="filter-item"/>
       <!-- <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">搜索</el-button> -->
-      <el-button v-waves class="filter-item" @click="handAddRoot">新增一级分类</el-button>
+      <el-button v-if="btnsPermission.addClassify.auth" v-waves class="filter-item" @click="handAddRoot">{{btnsPermission.addClassify.name + '一级分类'}}</el-button>
     </div>
     <div class="clearfix">
       <div class="left">
@@ -29,16 +29,16 @@
             <span class="col-cont" v-html="showFilter(node.label)" ></span>
             <span class="more">
               <i class="product-num" :ref="data.id"></i>
-              <i class="el-icon-edit" title="修改名称" @click.stop="msgEdit(node, data)" />
-              <i class="el-icon-remove-outline" 
+              <i v-if="btnsPermission.editClassify.auth" class="el-icon-edit" :title="btnsPermission.editClassify.name" @click.stop="msgEdit(node, data)" />
+              <i v-if="btnsPermission.deleteClassify.auth" class="el-icon-remove-outline" 
                 type="text"
                 size="mini"
-                title="删除分类"
+                :title="btnsPermission.deleteClassify.name"
                 @click.stop="() => handleDelete(node, data)" />
-              <i class="el-icon-circle-plus-outline" 
+              <i v-if="btnsPermission.addClassify.auth" class="el-icon-circle-plus-outline" 
                 type="text"
                 size="mini"
-                title="新增子集分类"
+                :title="btnsPermission.addClassify.name + '子集分类'"
                 @click.stop="() => append(node, data)" />
             </span>
           </span>
@@ -48,7 +48,7 @@
         <div class="data-box">
           <el-row type="flex" class="mb5" justify="space-around">
             <el-col><div class="box-title">计量单位管理</div></el-col>
-            <el-col><div class="tr"><el-button v-waves size="small" type="primary" @click="add(1)">新增</el-button></div></el-col>
+            <el-col><div class="tr"><el-button v-if="btnsPermission.addUnit.auth" v-waves size="small" type="primary" @click="add(1)">{{btnsPermission.addUnit.name}}</el-button></div></el-col>
           </el-row>
           <el-table
             :data="unitData"
@@ -87,11 +87,11 @@
               width="150"
               align="center">
               <template slot-scope="{row}">
-                <el-button type="primary" size="mini" @click="updateAdd(1, row)">
-                  编辑
+                <el-button v-if="btnsPermission.editUnit.auth" type="primary" size="mini" @click="updateAdd(1, row)">
+                  {{btnsPermission.editUnit.name}}
                 </el-button>
-                <el-button v-if="row.status!='deleted'" size="mini" type="danger" @click="deleteAdd(1, row.id)">
-                  删除
+                <el-button v-if="btnsPermission.deleteUnit.auth && row.status!='deleted'" size="mini" type="danger" @click="deleteAdd(1, row.id)">
+                  {{btnsPermission.deleteUnit.name}}
                 </el-button>
               </template>
             </el-table-column>
@@ -101,7 +101,7 @@
         <div class="data-box">
           <el-row type="flex" class="mb5" justify="space-around">
             <el-col><div class="box-title">规格管理</div></el-col>
-            <el-col><div class="tr"><el-button v-waves size="small" type="primary" @click="add(2)">新增</el-button></div></el-col>
+            <el-col><div class="tr"><el-button v-if="btnsPermission.addSpec.auth" v-waves size="small" type="primary" @click="add(2)">{{btnsPermission.addSpec.name}}</el-button></div></el-col>
           </el-row>
           <el-table
             :data="specData"
@@ -139,11 +139,11 @@
               width="150"
               align="center">
               <template slot-scope="{row}">
-                <el-button type="primary" size="mini" @click="updateAdd(2, row)">
-                  编辑
+                <el-button v-if="btnsPermission.editSpec.auth" type="primary" size="mini" @click="updateAdd(2, row)">
+                  {{btnsPermission.editSpec.name}}
                 </el-button>
-                <el-button v-if="row.status!='deleted'" size="mini" type="danger" @click="deleteAdd(2, row.id)">
-                  删除
+                <el-button v-if="btnsPermission.deleteSpec.auth && row.status!='deleted'" size="mini" type="danger" @click="deleteAdd(2, row.id)">
+                  {{btnsPermission.deleteSpec.name}}
                 </el-button>
               </template>
             </el-table-column>
@@ -153,7 +153,9 @@
         <div class="data-box">
           <el-row type="flex" class="mb5" justify="space-around">
             <el-col><div class="box-title">模板属性</div></el-col>
-            <el-col><div class="tr"><el-button v-waves size="small" type="primary" @click="add(3)">新增</el-button></div></el-col>
+            <el-col><div class="tr">
+              <el-button v-if="btnsPermission.addProp.auth" v-waves size="small" type="primary" @click="add(3)">{{btnsPermission.addProp.name}}</el-button></div>
+            </el-col>
           </el-row>
           <el-table
             :data="propData"
@@ -203,11 +205,11 @@
               width="160"
               align="center">
               <template slot-scope="{row}">
-                <el-button type="primary" size="mini" @click="updateAdd(3, row)">
-                  编辑
+                <el-button v-if="btnsPermission.editProp.auth" type="primary" size="mini" @click="updateAdd(3, row)">
+                  {{btnsPermission.editProp.name}}
                 </el-button>
-                <el-button v-if="row.status!='deleted'" size="mini" type="danger" @click="deleteAdd(3, row.id)">
-                  删除
+                <el-button v-if="btnsPermission.deleteProp.auth && row.status!='deleted'" size="mini" type="danger" @click="deleteAdd(3, row.id)">
+                  {{btnsPermission.deleteProp.name}}
                 </el-button>
               </template>
             </el-table-column>
@@ -325,6 +327,7 @@ import waves from '@/directive/waves'
 import { deepClone } from '@/utils'
 import { getProductTree, insertRootProduct, insertProduct, deleteProduct, updateProduct, searchProduct, getProductNum, moveProduct } from '@/api/goods/product'
 import { getUnitList, insetUnitList, updateUnitList, deleteUnitList, getSpeList, insetSpeList, updateSpeList, deleteSpeList, getPropList, insetPropList, updatePropList, deletePropList } from '@/api/goods/list'
+import { getUserBtnByPId } from '@/api/upms/menu'
 import { validWord } from '@/utils/validate'
 let id = 1000;
 const defaultRole = {
@@ -375,6 +378,56 @@ export default {
       unit: Object.assign({}, defaultUnit),
       prop: Object.assign({}, defaultProp),
       spec: Object.assign({}, defaultSpec),
+      btnsPermission: {
+        addClassify: {
+          name: '新增分类',
+          auth: false
+        },
+        deleteClassify: {
+          name: '删除分类',
+          auth: false
+        },
+        editClassify: {
+          name: '修改名称',
+          auth: false
+        },
+        addUnit: {
+          name: '新增',
+          auth: false
+        },
+        deleteUnit: {
+          name: '删除',
+          auth: false
+        },
+        editUnit: {
+          name: '编辑',
+          auth: false
+        },
+        addSpec: {
+          name: '新增',
+          auth: false
+        },
+        deleteSpec: {
+          name: '删除',
+          auth: false
+        },
+        editSpec: {
+          name: '编辑',
+          auth: false
+        },
+        addProp: {
+          name: '新增',
+          auth: false
+        },
+        deleteProp: {
+          name: '删除',
+          auth: false
+        },
+        editProp: {
+          name: '编辑',
+          auth: false
+        }
+      },
       filterText: '',
       productData: [],
       keyArr: [],
@@ -384,6 +437,7 @@ export default {
         pageSize: 10
       },
       num: 1,
+      canAddAtrr: false,
       rightBoxShow: false,
       defaultProps: {
         children: 'children',
@@ -510,7 +564,19 @@ export default {
       this.$refs.tree.filter(val);
     }
   },
-  components: {  },
+  mounted() {
+    this.pageId = this.$route.meta.id
+    getUserBtnByPId({ parentId: this.pageId }).then(res => {
+      if(Array.isArray(res.data)) {
+        res.data.map((val) => {
+          if(this.btnsPermission.hasOwnProperty(val.code) && val.status === 1 && val.checked === 1) {
+            this.btnsPermission[val.code].auth = true
+            this.btnsPermission[val.code].name = val.name
+          }
+        })
+      }
+    })
+  },
   computed: {
     // 实时监听表格
     tables: function() {
@@ -1001,7 +1067,6 @@ export default {
         this.dialogType = 'spec'
         this.dialogMsg = '编辑规格管理'
       } else if(type === 3) {
-        console.log(row)
         this.dialogType = 'prop'
         this.dialogMsg = '编辑属性模板'
         this.prop.id = row.id

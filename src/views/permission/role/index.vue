@@ -83,17 +83,66 @@
             <span>{{checkRoleName}}</span>
           </el-form-item>
           <el-form-item label="权限列表">
-            <el-tree
+            <el-table
+              ref="tableTree"
               v-loading="treeLoading"
-              ref="tree"
-              :check-strictly="checkStrictly"
-              :data="routesData"
-              :props="defaultProps"
-              show-checkbox
-              node-key="id"
-              class="permission-tree"
-              @check="treeCheck"
-            />
+              :data="tableData"
+              style="width: 100%;margin-bottom: 20px;"
+              row-key="id"
+              :indent="15"
+              :header-cell-style="{background: '#f3f3f3'}"
+              border>
+              <el-table-column
+              width="55"
+              align="center"
+              type="index"
+              label="选择">
+                <template slot-scope="scope">
+                 <el-checkbox v-model="checkRoleArr[scope.row.index]" @change="(val) => checkChange(val, scope.row)"></el-checkbox>
+                </template>
+              </el-table-column>
+              <el-table-column
+                prop="name"
+                label="名称"
+                show-overflow-tooltip>
+              </el-table-column>
+              <el-table-column
+                width="50"
+                align="center"
+                label="类型">
+                <template slot-scope="scope">
+                <span v-if="scope.row.type === 0">菜单</span>
+                <span v-else-if="scope.row.type === 1">按钮</span>
+                <span v-else-if="scope.row.type === 2">接口</span>
+              </template>
+              </el-table-column>
+              <el-table-column
+                prop="url"
+                align="center"
+                label="链接地址"
+                show-overflow-tooltip>
+              </el-table-column>
+              <el-table-column
+                width="50"
+                align="center"
+                label="状态">
+                <template slot-scope="scope">
+                <span v-if="scope.row.status === 0">禁用</span>
+                <span v-else-if="scope.row.status === 1">启用</span>
+              </template>
+              </el-table-column>
+              <el-table-column
+                width="100"
+                align="center"
+                label="授权">
+                <template slot-scope="scope">
+                  <span v-if="scope.row.auth === -1">禁止</span>
+                  <span v-else-if="scope.row.auth === 0">不需要认证</span>
+                  <span v-else-if="scope.row.auth === 1">已认证</span>
+                  <span v-else-if="scope.row.auth === 2">角色</span>
+                </template>
+              </el-table-column>
+            </el-table>
           </el-form-item>
         </template>
       </el-form>
@@ -118,10 +167,12 @@ import { getRoles, addRole, deleteRole, updateRole, getRoleList, addResource, de
 import { getSystem } from '@/api/upms/systemList'
 import Pagination from '@/components/Pagination'
 const defaultRole = {
-  key: '',
+  id: '',
   name: '',
-  description: '',
-  routes: []
+  remark: '',
+  systemId: '',
+  systemName: '',
+  userHave: ''
 }
 
 export default {
@@ -134,7 +185,6 @@ export default {
       diaLoading: false,
       diaDisable: false,
       treeLoading: false,
-      routes: [],
       canCheck: false,
       systemData: [],
       rolesList: [],
@@ -163,15 +213,14 @@ export default {
           auth: false
         }
       },
+      bannerRow: {},
+      tableData: [],
+      checkRoleArr: [],
+      checkIndex: 0,
       dialogVisible: false,
       roleDialogVisible: false,
       dialogType: 'new',
       dialogTitle: '新增角色',
-      checkStrictly: true,
-      defaultProps: {
-        children: 'children',
-        label: 'title'
-      },
       total: 0,
       allPages: 0,
       listQuery: {
@@ -184,11 +233,6 @@ export default {
     }
   },
   components: { Pagination },
-  computed: {
-    routesData() {
-      return this.routes
-    }
-  },
   created() {
     this.getRoleList() 
   },
@@ -229,43 +273,61 @@ export default {
       const res = await getRoles({id: 1})
       this.rolesList = res.data.resources
     },
-    // Reshape the routes structure so that it looks the same as the sidebar
-    generateRoutes(routes) {
+    generateTable(routes) {
       const res = []
       for (let route of routes) {
-        // skip some route
-        if (route.hidden) { continue }
-        // const onlyOneShowingChild = this.onlyOneShowingChild(route.children, route)
-        const onlyOneShowingChild = false
-        if (route.children && onlyOneShowingChild && !route.alwaysShow) {
-          route = onlyOneShowingChild
-        }
+        this.checkIndex++
         const data = {
           id: route.id,
-          title: route.name
+          name: route.name,
+          operation: route.operation,
+          status: route.status,
+          type: route.type,
+          url: route.url,
+          auth: route.auth,
+          icon: route.icon,
+          checked: route.checked,
+          index: this.checkIndex
         }
-        // recursive child routes
-        if (route.children) {
-          data.children = this.generateRoutes(route.children)
+        this.checkRoleArr[this.checkIndex] = route.checked === 1
+        if (Array.isArray(route.children) && route.children.length > 0) {
+          data.haschildren = true
+          data.children = this.generateTable(route.children)
+        } else {
+          data.haschildren = false
         }
         res.push(data)
       }
       return res
     },
-    generateArr(routes) {
-      let data = []
-      routes.forEach(route => {
-        if(route.checked === 1) {
-          data.push(route)
-        }
-        if (route.children) {
-          const temp = this.generateArr(route.children)
-          if (temp.length > 0) {
-            data = [...data, ...temp]
-          }
-        }
-      })
-      return data
+    checkChange(val, row) {
+      // 分配权限
+      this.treeLoading = true
+      if (val) {
+        addResource({
+          roleId: this.checkRoleId,
+          resourceId: row.id
+        }).then(res => {
+          this.treeLoading = false
+          this.$notify({
+            title: '分配权限成功',
+            message: `已为角色分配${row.name}权限`,
+            type: 'success'
+          })
+        })
+      } else {
+        deleteResource({
+          roleId: this.checkRoleId,
+          resourceId: row.id
+        }).then(res => {
+          this.treeLoading = false
+          this.$notify({
+            title: '取消权限成功',
+            message: `已取消角色${row.name}权限`,
+            type: 'success'
+          })
+        })
+      }
     },
     async getSystem() {
       this.listLoading = true
@@ -291,7 +353,6 @@ export default {
       this.dialogTitle = '编辑'
       this.dialogType = 'edit'
       this.dialogVisible = true
-      // this.checkStrictly = true
       this.role = deepClone(scope.row)
     },
     async handleEdit(scope) {
@@ -304,14 +365,8 @@ export default {
       this.treeLoading = true
       getRoleResourceTree({roleId: scope.row.id}).then(res => {
         this.treeLoading = false
-        this.serviceRoutes = res.data
-        this.routes = this.generateRoutes(res.data)
-        this.$nextTick(() => {
-        const routes = Array.isArray(res.data)? this.generateArr(res.data): this.generateRoutes([])
-        this.$refs.tree.setCheckedNodes(routes)
-        // set checked state of a node not affects its father and child nodes
-        // this.checkStrictly = false
-        })
+        this.checkIndex = 0
+        this.tableData = this.generateTable(res.data)
       })
     },
     handleDelete({ row }) {
@@ -329,28 +384,11 @@ export default {
           type: '成功',
           message: '角色删除成功!'
         })
-        if(this.rolesData.length - 1 === 0 && this.allPages - 1 > 0) {
+        if(this.rolesData.length === 1 && this.allPages - 1 > 0) {
           --this.listQuery.pageIndex
         }
         this.getRoleList()
       }).catch(err => { console.error(err) })
-    },
-    generateTree(routes, basePath = '/', checkedKeys) {
-      const res = []
-
-      for (const route of routes) {
-        const routePath = path.resolve(basePath, route.path)
-
-        // recursive child routes
-        if (route.children) {
-          route.children = this.generateTree(route.children, routePath, checkedKeys)
-        }
-
-        if (checkedKeys.includes(routePath) || (route.children && route.children.length >= 1)) {
-          res.push(route)
-        }
-      }
-      return res
     },
     regFun() {
       // 输入校验
@@ -404,61 +442,6 @@ export default {
         dangerouslyUseHTMLString: true,
         type: 'success'
       })
-    },
-    onlyOneShowingChild(children = [], parent) {
-      let onlyOneChild = null
-      const showingChildren = children.filter(item => !item.hidden)
-
-      // When there is only one child route, the child route is displayed by default
-      if (showingChildren.length === 1) {
-        onlyOneChild = showingChildren[0]
-        onlyOneChild.path = path.resolve(parent.path, onlyOneChild.path)
-        return onlyOneChild
-      }
-
-      // Show parent if there are no child route to display
-      if (showingChildren.length === 0) {
-        onlyOneChild = { ... parent, path: '', noShowingChildren: true }
-        return onlyOneChild
-      }
-
-      return false
-    },
-    treeCheck(data, check) {
-      // 分配权限、取消权限
-      let isCheck = false
-      check.checkedKeys.forEach(item => {
-        if(item === data.id) {
-          isCheck = true
-          return false
-        }
-      })
-      this.treeLoading = true
-      if (isCheck) {
-        addResource({
-          roleId: this.checkRoleId,
-          resourceId: data.id
-        }).then(res => {
-          this.treeLoading = false
-          this.$notify({
-            title: '分配权限成功',
-            message: `已为用户分配${data.title}权限`,
-            type: 'success'
-          })
-        })
-      } else {
-        deleteResource({
-          roleId: this.checkRoleId,
-          resourceId: data.id
-        }).then(res => {
-          this.treeLoading = false
-          this.$notify({
-            title: '取消权限成功',
-            message: `已取消用户${data.title}权限`,
-            type: 'success'
-          })
-        })
-      }
     },
     resetSearch() {
       this.listQuery = {

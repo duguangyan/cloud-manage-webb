@@ -26,6 +26,7 @@
       style="width: 100%;margin-top:10px;">
       <el-table-column
         type="selection"
+        align="center"
         width="55"> 
       </el-table-column>
       <el-table-column align="center" label="头像" width="220">
@@ -524,7 +525,7 @@ export default {
             type: '成功',
             message: '角色删除成功!'
           })
-          if(this.userData.length - 1 === 0 && this.allPages - 1 > 0) {
+          if(this.userData.length === 1 && this.allPages - 1 > 0) {
             --this.listQuery.pageIndex
           }
           this.getUserList()
