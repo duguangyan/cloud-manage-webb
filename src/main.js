@@ -17,8 +17,10 @@ import '@/permission' // permission control
 import '@/filter'
 
 import echarts from 'echarts/lib/echarts'
-import 'echarts/lib/chart/bar'
+// import 'echarts/lib/chart/bar'
 import 'echarts/lib/chart/line'
+import 'echarts/lib/component/tooltip'
+import 'echarts/lib/component/title'
 
 Vue.prototype.$echarts = echarts
 
