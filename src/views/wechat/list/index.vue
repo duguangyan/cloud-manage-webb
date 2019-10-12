@@ -1,12 +1,23 @@
 <template>
   <div class="app-container">
-    <div class="filter-container" style="padding-bottom: 10px">
-      系统名：<el-input v-if="btnsPermission.search.auth" v-model="listQuery.name" maxlength="64" placeholder="请输入系统名" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-button v-if="btnsPermission.search.auth" v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+    <div v-if="btnsPermission.search.auth" class="filter-container" style="padding-bottom: 10px">
+      公众号名称：<el-input v-model="listQuery.name" maxlength="64" placeholder="请输入公众号名称" style="width: 200px;margin-right:10px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      应用ID：<el-input v-model="listQuery.appId" maxlength="64" placeholder="请输入应用ID" style="width: 200px;margin-right:10px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-select v-model="listQuery.type" placeholder="请选择类型">
+        <el-option
+          v-for="item in typeData"
+          :key="item.value"
+          :label="item.label"
+          :value="item.value">
+        </el-option>
+      </el-select>
+      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         {{btnsPermission.search.name}}
       </el-button>
       <el-button v-if="btnsPermission.search.auth" v-waves class="filter-item" @click="resetSearch">重置</el-button>
-      <el-button v-if="btnsPermission.add.auth" class="filter-item" style="margin-left: 10px;" @click="handleCreate">
+    </div>
+    <div v-if="btnsPermission.add.auth" style="margin-bottom: 10px;">
+      <el-button class="filter-item" style="margin-left: 10px;" @click="handleCreate">
         {{btnsPermission.add.name}}
       </el-button>
     </div>
@@ -23,15 +34,18 @@
       <el-table-column 
         prop="systemId"
         label="系统ID"
-        align="center">
+        align="center"
+        show-overflow-tooltip>
       </el-table-column>
       <el-table-column 
         prop="name"
         label="公众账号名称"
-        align="center">
+        align="center"
+        show-overflow-tooltip>
       </el-table-column>
       <el-table-column 
         label="类型"
+        width="80"
         align="center">
         <template slot-scope="scope">
           <span v-if="scope.row.type === 1">订阅号</span>
@@ -42,31 +56,41 @@
       <el-table-column 
         prop="appId"
         label="应用ID"
-        align="center">
+        align="center"
+        show-overflow-tooltip>
       </el-table-column>
       <el-table-column 
         prop="appSecret"
         label="应用密钥"
-        align="center">
+        align="center"
+        show-overflow-tooltip>
       </el-table-column>
       <el-table-column 
         prop="token"
         label="公众账号token"
-        align="center">
+        align="center"
+        show-overflow-tooltip>
       </el-table-column>
       <el-table-column 
         prop="encodingAESKey"
         label="加解密密钥"
-        align="center">
+        align="center"
+        show-overflow-tooltip>
       </el-table-column>
       <el-table-column 
         label="加密方式"
+        width="80"
         align="center">
         <template slot-scope="scope">
           <span v-if="scope.row.encrypt === 1">明文</span>
           <span v-else-if="scope.row.encrypt === 2">兼容</span>
           <span v-else-if="scope.row.encrypt === 3">安全</span>
         </template>
+      </el-table-column>
+       <el-table-column 
+        prop="accessToken"
+        label="凭证"
+        align="center">
       </el-table-column>
       <el-table-column 
         prop="expiresIn"
@@ -76,30 +100,34 @@
       <el-table-column 
         prop="expiresTime"
         label="凭证更新时间"
+        width="160"
         align="center">
       </el-table-column>
       <el-table-column 
         prop="createTime"
         label="凭证创建时间"
+        width="160"
         align="center">
       </el-table-column>
       <el-table-column 
         prop="modifyTime"
+        width="160"
         label="更新时间"
         align="center">
       </el-table-column>
       <el-table-column 
         prop="remark"
         label="备注"
-        align="center">
+        align="center"
+        show-overflow-tooltip>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="300" class-name="small-padding fixed-width">
+      <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width">
         <template slot-scope="{row}">
-          <el-button type="primary" size="mini" @click="handleUpdate(row)">
-            编辑
+          <el-button v-if="btnsPermission.edit.auth" type="primary" size="mini" @click="handleUpdate(row)">
+            {{btnsPermission.edit.name}}
           </el-button>
-          <el-button v-if="row.status!='deleted'" size="mini" type="danger" @click="handleDelete(row,'deleted')">
-            删除
+          <el-button v-if="btnsPermission.delete.auth" size="mini" type="danger" @click="handleDelete(row)">
+            {{btnsPermission.delete.name}}
           </el-button>
         </template>
       </el-table-column>
@@ -113,7 +141,7 @@
           <el-input v-model="temp.name" maxlength="64" />
         </el-form-item>
         <el-form-item prop="systemId" label="系统ID">
-          <el-input v-model="temp.systemId" maxlength="64" />
+          <el-input v-model="temp.systemId" maxlength="32" />
         </el-form-item>
         <el-form-item prop="type" label="类型">
           <el-select v-model="temp.type" placeholder="请选择">
@@ -126,10 +154,10 @@
           </el-select>
         </el-form-item>
         <el-form-item prop="appId" label="应用ID">
-          <el-input v-model="temp.appId" maxlength="64" />
+          <el-input v-model="temp.appId" maxlength="32" />
         </el-form-item>
         <el-form-item prop="appSecret" label="应用密钥">
-          <el-input v-model="temp.appSecret" maxlength="64" />
+          <el-input v-model="temp.appSecret" maxlength="32" />
         </el-form-item>
         <el-form-item prop="token" label="公众账号token">
           <el-input v-model="temp.token" maxlength="64" />
@@ -150,13 +178,12 @@
         <el-form-item label="备注">
           <el-input
             v-model="temp.remark"
-            maxlength="255"
+            maxlength="256"
             :autosize="{ minRows: 2, maxRows: 4}"
             type="textarea"
             placeholder="请输入备注内容"
           />
         </el-form-item>
-        
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">
@@ -172,7 +199,6 @@
 
 <script>
 import { getUserBtnByPId } from '@/api/upms/menu'
-import { getSystem, updateSystem, addSystem, deleteSystem } from '@/api/upms/systemList'
 import { addWechat, deleteWechat, updateWechat, getWechatList, getWechatById } from '@/api/wechat/list'
 import Pagination from '@/components/Pagination'
 import waves from '@/directive/waves' // waves directive
@@ -202,16 +228,27 @@ export default {
       allPages: 0,
       listQuery: {
         pageIndex: 1,
-        pageSize: 10
+        pageSize: 10,
+        type: '',
+        appId: '',
+        name: ''
       },
       btnsPermission: {
         search: {
           name: '查询',
-          auth: true
+          auth: false
         },
         add: {
           name: '添加',
-          auth: true
+          auth: false
+        },
+        delete: {
+          name: '删除',
+          auth: false
+        },
+        edit: {
+          name: '编辑',
+          auth: false
         }
       },
       rules: {
@@ -299,7 +336,7 @@ export default {
       dialogFormVisible: false,
       textMap: {
         update: '编辑',
-        create: '新增系统'
+        create: '新增'
       },
       statusOptions: ['published', 'draft', 'deleted'],
     }
@@ -335,14 +372,20 @@ export default {
     },
     resetTemp() {
       this.temp = {
-        id: '',
+        appId : '',
+        appSecret: '',
+        encodingAESKey: '',
+        encrypt: '',
         name: '',
-        remark: ''
+        remark: '',
+        systemId: '',
+        token: '',
+        type: ''
       }
     },
     handleFilter() {
       this.listQuery.pageIndex = 1
-      this.fetchData()
+      this.getWechatList()
     },
     handleCreate() {
       // 添加事件
@@ -448,7 +491,7 @@ export default {
       // this.temp = Object.assign({}, row) // copy obj
       
     },
-    handleDelete(data, msg) {
+    handleDelete(data) {
       // 删除
       this.$confirm('此操作将永久删除该账号, 是否继续?', '提示', {
           confirmButtonText: '确定',
@@ -479,9 +522,12 @@ export default {
     resetSearch() {
       this.listQuery = {
         pageIndex: 1,
-        pageSize: 10
-      },
-      this.fetchData()
+        pageSize: 10,
+        type: '',
+        appId: '',
+        name: ''
+      }
+      this.getWechatList()
     }
   }
 }
