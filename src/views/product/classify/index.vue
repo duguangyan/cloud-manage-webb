@@ -29,7 +29,7 @@
             <span class="col-cont" v-html="showFilter(node.label)" ></span>
             <span class="more">
               <i class="product-num" :ref="data.id"></i>
-              <i v-if="btnsPermission.editClassify.auth" class="el-icon-edit" :title="btnsPermission.editClassify.name + '子集分类'" @click.stop="msgEdit(node, data)" />
+              <i v-if="btnsPermission.editClassify.auth" class="el-icon-edit" :title="btnsPermission.editClassify.name" @click.stop="msgEdit(node, data)" />
               <i v-if="btnsPermission.deleteClassify.auth" class="el-icon-remove-outline" 
                 type="text"
                 size="mini"
@@ -38,7 +38,7 @@
               <i v-if="btnsPermission.addClassify.auth" class="el-icon-circle-plus-outline" 
                 type="text"
                 size="mini"
-                :title="btnsPermission.addClassify.name"
+                :title="btnsPermission.addClassify.name + '子集分类'"
                 @click.stop="() => append(node, data)" />
             </span>
           </span>
@@ -154,12 +154,6 @@
           <el-row type="flex" class="mb5" justify="space-around">
             <el-col><div class="box-title">模板属性</div></el-col>
             <el-col><div class="tr">
-              <span v-if="btnsPermission.defineProp.auth" style="font-size: 14px;color: #303133;">{{btnsPermission.defineProp.name}}</span>
-              <el-switch
-                v-if="btnsPermission.defineProp.auth"
-                v-model="canAddAtrr"
-                style="margin-right: 10px">
-              </el-switch>
               <el-button v-if="btnsPermission.addProp.auth" v-waves size="small" type="primary" @click="add(3)">{{btnsPermission.addProp.name}}</el-button></div>
             </el-col>
           </el-row>
@@ -432,10 +426,6 @@ export default {
         editProp: {
           name: '编辑',
           auth: false
-        },
-        defineProp: {
-          name: '商品能否自定义',
-          auth: false
         }
       },
       filterText: '',
@@ -577,7 +567,6 @@ export default {
   mounted() {
     this.pageId = this.$route.meta.id
     getUserBtnByPId({ parentId: this.pageId }).then(res => {
-      console.log(res.data)
       if(Array.isArray(res.data)) {
         res.data.map((val) => {
           if(this.btnsPermission.hasOwnProperty(val.code) && val.status === 1 && val.checked === 1) {
@@ -1078,7 +1067,6 @@ export default {
         this.dialogType = 'spec'
         this.dialogMsg = '编辑规格管理'
       } else if(type === 3) {
-        console.log(row)
         this.dialogType = 'prop'
         this.dialogMsg = '编辑属性模板'
         this.prop.id = row.id

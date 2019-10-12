@@ -28,7 +28,8 @@ const moduleSource = [
   'freight/template/list/index',
   'activity/manage/index',
   'activity/manage/detail/index',
-  'activity/manage/detail/add/index'
+  'activity/manage/detail/add/index',
+  'wechat/list/index'
 ]
 const hiddenData = [
   'product/list/release/index',
