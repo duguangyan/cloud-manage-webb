@@ -16,6 +16,12 @@ import '@/icons' // icon
 import '@/permission' // permission control
 import '@/filter'
 
+import echarts from 'echarts/lib/echarts'
+import 'echarts/lib/chart/bar'
+import 'echarts/lib/chart/line'
+
+Vue.prototype.$echarts = echarts
+
 /**
  * If you don't want to use mock-server
  * you want to use MockJs for mock api
