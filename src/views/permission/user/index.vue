@@ -525,7 +525,7 @@ export default {
             type: '成功',
             message: '角色删除成功!'
           })
-          if(this.userData.length - 1 === 0 && this.allPages - 1 > 0) {
+          if(this.userData.length === 1 && this.allPages - 1 > 0) {
             --this.listQuery.pageIndex
           }
           this.getUserList()

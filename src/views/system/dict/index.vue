@@ -277,7 +277,7 @@ export default {
             this.$message({
               type: 'success',
               message: '删除成功!'
-            });
+            })
             this.getDictById()
             // const {tree, treeNode, resolve} = this.maps.get(data.pid)
             // this.$set(this.$refs.treeTable.store.states.lazyTreeNodeMap, data.id, [])

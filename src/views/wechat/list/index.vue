@@ -69,11 +69,6 @@
         </template>
       </el-table-column>
       <el-table-column 
-        prop="accessToken"
-        label="凭证"
-        align="center">
-      </el-table-column>
-      <el-table-column 
         prop="expiresIn"
         label="凭证有效时间"
         align="center">
@@ -113,9 +108,44 @@
 
 
     <el-dialog :title="textMap[dialogStatus]" :closeOnClickModal="false" :visible.sync="dialogFormVisible">
-      <el-form v-loading="diaLoading" ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px">
-        <el-form-item prop="name" label="系统名">
+      <el-form v-loading="diaLoading" ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="120px">
+        <el-form-item prop="name" label="公众号名称">
           <el-input v-model="temp.name" maxlength="64" />
+        </el-form-item>
+        <el-form-item prop="systemId" label="系统ID">
+          <el-input v-model="temp.systemId" maxlength="64" />
+        </el-form-item>
+        <el-form-item prop="type" label="类型">
+          <el-select v-model="temp.type" placeholder="请选择">
+            <el-option
+              v-for="item in typeData"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item prop="appId" label="应用ID">
+          <el-input v-model="temp.appId" maxlength="64" />
+        </el-form-item>
+        <el-form-item prop="appSecret" label="应用密钥">
+          <el-input v-model="temp.appSecret" maxlength="64" />
+        </el-form-item>
+        <el-form-item prop="token" label="公众账号token">
+          <el-input v-model="temp.token" maxlength="64" />
+        </el-form-item>
+        <el-form-item prop="encrypt" label="加密方式">
+          <el-select v-model="temp.encrypt" placeholder="请选择">
+            <el-option
+              v-for="item in encryptData"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item prop="encodingAESKey" label="加密密钥">
+          <el-input v-model="temp.encodingAESKey" maxlength="64" />
         </el-form-item>
         <el-form-item label="备注">
           <el-input
@@ -143,7 +173,7 @@
 <script>
 import { getUserBtnByPId } from '@/api/upms/menu'
 import { getSystem, updateSystem, addSystem, deleteSystem } from '@/api/upms/systemList'
-import { addWechat, deleteWechat, updateWechat, getWechatList } from '@/api/wechat/list'
+import { addWechat, deleteWechat, updateWechat, getWechatList, getWechatById } from '@/api/wechat/list'
 import Pagination from '@/components/Pagination'
 import waves from '@/directive/waves' // waves directive
 
@@ -185,22 +215,86 @@ export default {
         }
       },
       rules: {
-        name: [{
+        encodingAESKey: [{
           required: true,
           trigger: 'blur',
-          message: '请填写字典名'
+          message: '请填写加密密钥'
         }],
-        value: [{
+        systemId: [{
+          required: true,
+          trigger: 'blur',
+          message: '请填写系统ID'
+        }],
+        appId: [{
+          required: true,
+          trigger: 'blur',
+          message: '请填写appID'
+        }],
+        appSecret: [{
             required: true,
             trigger: 'blur',
-            message: '请填写字典值'
-        }]
+            message: '请填写应用密钥'
+        }],
+        encrypt: [{
+            required: true,
+            trigger: 'change',
+            message: '请选择加密方式'
+        }],
+        name: [{
+            required: true,
+            trigger: 'blur',
+            message: '请填写公众帐号名称'
+        }],
+        token: [{
+            required: true,
+            trigger: 'blur',
+            message: '请填写公众帐号TOKEN'
+        }],
+        type: [{
+            required: true,
+            trigger: 'change',
+            message: '请选择类型'
+        }],
       },
       temp: {
-        id: '',
+        appId : '',
+        appSecret: '',
+        encodingAESKey: '',
+        encrypt: '',
         name: '',
-        remark: ''
+        remark: '',
+        systemId: '',
+        token: '',
+        type: ''
       },
+      typeData: [
+        {
+          value: 1,
+          label: '订阅号'
+        },
+        {
+          value: 2,
+          label: '服务号'
+        },
+        {
+          value: 3,
+          label: '小程序'
+        }
+      ],
+      encryptData: [
+        {
+          value: 1,
+          label: '明文'
+        },
+        {
+          value: 2,
+          label: '兼容'
+        },
+        {
+          value: 3,
+          label: '安全'
+        }
+      ],
       dialogStatus: '',
       dialogFormVisible: false,
       textMap: {
@@ -265,17 +359,27 @@ export default {
         if (valid) {
           this.diaDisable = true
           this.diaLoading = true
-          addSystem({name: this.temp.name, remark: this.temp.remark}).then(() => {
+          addWechat({
+            systemId: this.temp.systemId,
+            appId : this.temp.appId,
+            appSecret: this.temp.appSecret,
+            encodingAESKey: this.temp.encodingAESKey,
+            encrypt: this.temp.encrypt,
+            name: this.temp.name,
+            token: this.temp.token,
+            type: this.temp.type,
+            remark: this.temp.remark
+          }).then(() => {
             this.diaDisable = false
             this.diaLoading = false
             this.dialogFormVisible = false
             this.$notify({
               title: '成功',
-              message: '添加系统成功！',
+              message: '添加微信账号成功！',
               type: 'success',
               duration: 2000
             })
-            this.fetchData()
+            this.getWechatList()
           }).catch(err => {
             this.diaDisable = false
             this.diaLoading = false
@@ -286,7 +390,7 @@ export default {
     getList(data) {
       // 分页事件
       this.listQuery.pageIndex = data.page
-      this.fetchData()
+      this.getWechatList()
     },
     updateData() {
       // 编辑
@@ -294,7 +398,21 @@ export default {
         if (valid) {
           this.diaDisable = true
           this.diaLoading = true
-          updateSystem({id: this.temp.id, name: this.temp.name, remark: this.temp.remark}).then(response => {
+          let updateParam = {
+            id: this.temp.id,
+            systemId: this.temp.systemId,
+            appId : this.temp.appId,
+            appSecret: this.temp.appSecret,
+            encrypt: this.temp.encrypt,
+            name: this.temp.name,
+            token: this.temp.token,
+            type: this.temp.type,
+            encodingAESKey: this.temp.encodingAESKey
+          }
+          if(this.temp.remark !== null && this.temp.remark.length > 0) {
+            updateParam.remark = this.temp.remark
+          }
+          updateWechat(updateParam).then(response => {
             this.diaDisable = false
             this.diaLoading = false
             this.dialogFormVisible = false
@@ -304,7 +422,7 @@ export default {
               type: 'success',
               duration: 2000
             })
-            this.fetchData()
+            this.getWechatList()
           }).catch(err => {
             this.diaDisable = false
             this.diaLoading = false
@@ -315,31 +433,39 @@ export default {
     },
     handleUpdate(row) {
       // 编辑事件
-      this.temp = Object.assign({}, row) // copy obj
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
-      this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
+      this.diaLoading = true
+      this.diaDisable = true
+      getWechatById({id: row.id}).then(res => {
+        this.diaLoading = false
+        this.diaDisable = false
+        this.temp = res.data
+        this.$nextTick(() => {
+          this.$refs['dataForm'].clearValidate()
+        })
       })
+      // this.temp = Object.assign({}, row) // copy obj
+      
     },
     handleDelete(data, msg) {
       // 删除
-      this.$confirm('此操作将永久删除该系统, 是否继续?', '提示', {
+      this.$confirm('此操作将永久删除该账号, 是否继续?', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
           this.listLoading = true
-          deleteSystem({id: data.id}).then(response => {
+          deleteWechat({id: data.id}).then(response => {
             this.listLoading = false
             this.$message({
               type: 'success',
               message: '删除成功!'
             })
-            if(this.list.length === 0 && this.allPages - 1 > 0) {
+            if(this.list.length === 1 && this.allPages - 1 > 0) {
               --this.listQuery.pageIndex
             }
-            this.fetchData()
+            this.getWechatList()
           }).catch(err => {
             this.listLoading = false
           })

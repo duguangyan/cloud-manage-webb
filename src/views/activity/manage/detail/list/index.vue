@@ -170,6 +170,9 @@ export default {
         }).then(res => {
           this.listLoading = false
           this.disable = false
+          // if(this.detailData.length === 1 && this.allPages - 1 > 0) {
+          //   --this.listQuery.pageIndex
+          // }
           this.getManageDetailList()
           this.$notify({
             title: succMsg,

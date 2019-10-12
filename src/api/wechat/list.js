@@ -27,6 +27,15 @@ export function addWechat(data) {
   })
 }
 
+// 根据ID获取微信账号
+export function getWechatById(data) {
+  return request({
+    url: '/wechat/account/getById',
+    method: 'post',
+    data
+  })
+}
+
 // 更新微信账号
 export function updateWechat(data) {
   return request({
