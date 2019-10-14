@@ -145,7 +145,7 @@
       <div  class="text item">
         <el-form-item 
           label="商品视图:">
-            <div class="imgs-item" v-for="(item, index) in imgsBox" :key="index" @click="handlePictureCardPreview(item.imgUrl)">
+            <div class="imgs-item" v-for="(item, index) in imgsBox" :key="index" @click="handlePictureCardPreview(item.source, item.type)">
               <img :src="item.imgUrl" alt="">
             </div>
         </el-form-item>
@@ -181,7 +181,18 @@
       </div>
     </div>
     <el-dialog :visible.sync="dialogVisible">
-      <img width="100%" :src="dialogImageUrl" alt="">
+      <template v-if="dialogType === 1">
+        <div>
+          <img width="100%" :src="dialogImageUrl" alt="">
+        </div>
+      </template>
+      <template v-else-if="dialogType === 2">
+        <div>
+          <video width="100%" :src="dialogImageUrl" controls="controls">
+          您的浏览器不支持视频播放。
+          </video>
+        </div>
+      </template>
     </el-dialog>
   </div>
 </template>
@@ -236,6 +247,7 @@ let vm = {
       isCombine: false,
       diaLoading: false,
       moreLoading: false,
+      dialogType: 0,
       dialogImageUrl: '',
       dialogVisible: false,
       goodsSkuData: [],
@@ -285,7 +297,30 @@ let vm = {
           this.attrData = res.data.goodsDetailAttrList
         }
         if(Array.isArray(res.data.goodsImgVOList)) {
-          this.imgsBox = res.data.goodsImgVOList
+          let imgArr = []
+          res.data.goodsImgVOList.forEach(item => {
+            if(item.type === 1) {
+              imgArr.push({
+                imgUrl: item.imgUrl,
+                source: item.imgUrl,
+                type: 1
+              })
+            } else if(item.type === 2) {
+              let preUrl = ''
+              res.data.goodsImgVOList.forEach(vItem => {
+                if(vItem.type === 3 && vItem.sort === item.sort) {
+                  preUrl = vItem.imgUrl
+                  return false
+                }
+              })
+              imgArr.push({
+                imgUrl: preUrl,
+                source: item.imgUrl,
+                type: 2
+              })
+            }
+          })
+          this.imgsBox = imgArr
         }
         if(String(res.data.goods.showStyle) === '3') {
           this.unitName = res.data.goods.unitName
@@ -348,8 +383,9 @@ let vm = {
         this.getGoodsDetail()
       })
     },
-    handlePictureCardPreview(url) {
+    handlePictureCardPreview(url, type) {
       // 图片预览
+      this.dialogType = type
       this.dialogImageUrl = url;
       this.dialogVisible = true;
     },

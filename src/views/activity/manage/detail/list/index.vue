@@ -59,6 +59,7 @@
         </div>
       </el-table-column>
     </el-table>
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageIndex" :limit.sync="listQuery.pageSize"  @pagination="getPage" />
   </div>
 </template>
 
@@ -66,6 +67,7 @@
 import waves from '@/directive/waves'
 import { getManageDetailList, addManageDetail, updateManageDetail, deleteManageDetail } from '@/api/act/manage'
 import { getUserBtnByPId } from '@/api/upms/menu'
+import Pagination from '@/components/Pagination'
 
 export default {
   name: 'manageDetail',
@@ -79,6 +81,8 @@ export default {
         pageIndex: 1,
         pageSize: 10
       },
+      total: 0,
+      allPages: 0,
       mulSelectData: [],
       btnsPermission: {
         remove: {
@@ -93,6 +97,7 @@ export default {
       listLoading: false
     }
   },
+  components: { Pagination },
   created() {
     this.listQuery.goodListId = this.$route.query.id
     this.getManageDetailList()
@@ -116,6 +121,8 @@ export default {
       getManageDetailList(this.listQuery).then(res => {
         if(Array.isArray(res.data.records)) {
           this.listLoading = false
+          this.total = res.data.total
+          this.allPages = res.data.pages
           let data = []
           res.data.records.forEach(item => {
             data.push({
@@ -170,9 +177,9 @@ export default {
         }).then(res => {
           this.listLoading = false
           this.disable = false
-          // if(this.detailData.length === 1 && this.allPages - 1 > 0) {
-          //   --this.listQuery.pageIndex
-          // }
+          if(this.detailData.length === 1 && this.allPages  > 1) {
+            --this.listQuery.pageIndex
+          }
           this.getManageDetailList()
           this.$notify({
             title: succMsg,
@@ -196,7 +203,7 @@ export default {
     getPage(data) {
      // 分页事件
       this.listQuery.pageIndex = data.page
-      this.getList()
+      this.getManageDetailList()
     },
     add() {
       // 添加商品

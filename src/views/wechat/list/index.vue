@@ -17,7 +17,7 @@
       <el-button v-if="btnsPermission.search.auth" v-waves class="filter-item" @click="resetSearch">重置</el-button>
     </div>
     <div v-if="btnsPermission.add.auth" style="margin-bottom: 10px;">
-      <el-button class="filter-item" style="margin-left: 10px;" @click="handleCreate">
+      <el-button class="filter-item" type="primary" size="medium" style="margin-left: 10px;" @click="handleCreate">
         {{btnsPermission.add.name}}
       </el-button>
     </div>
@@ -32,8 +32,8 @@
       highlight-current-row
     >
       <el-table-column 
-        prop="systemId"
-        label="系统ID"
+        prop="systemName"
+        label="系统名"
         align="center"
         show-overflow-tooltip>
       </el-table-column>
@@ -140,8 +140,15 @@
         <el-form-item prop="name" label="公众号名称">
           <el-input v-model="temp.name" maxlength="64" />
         </el-form-item>
-        <el-form-item prop="systemId" label="系统ID">
-          <el-input v-model="temp.systemId" maxlength="32" />
+        <el-form-item prop="systemId" label="系统名">
+          <el-select v-model="temp.systemId" placeholder="请选择系统">
+              <el-option
+                v-for="item in systemData"
+                :key="item.id"
+                :label="item.name"
+                :value="item.id">
+              </el-option>
+            </el-select>
         </el-form-item>
         <el-form-item prop="type" label="类型">
           <el-select v-model="temp.type" placeholder="请选择">
@@ -200,6 +207,7 @@
 <script>
 import { getUserBtnByPId } from '@/api/upms/menu'
 import { addWechat, deleteWechat, updateWechat, getWechatList, getWechatById } from '@/api/wechat/list'
+import { getSystem } from '@/api/upms/systemList'
 import Pagination from '@/components/Pagination'
 import waves from '@/directive/waves' // waves directive
 
@@ -233,6 +241,7 @@ export default {
         appId: '',
         name: ''
       },
+      systemData: [],
       btnsPermission: {
         search: {
           name: '查询',
@@ -392,6 +401,9 @@ export default {
       this.resetTemp()
       this.dialogStatus = 'create'
       this.dialogFormVisible = true
+      if(this.systemData.length === 0) {
+        this.getSystem()
+      }
       this.$nextTick(() => {
         this.$refs['dataForm'].clearValidate()
       })
@@ -480,6 +492,10 @@ export default {
       this.dialogFormVisible = true
       this.diaLoading = true
       this.diaDisable = true
+      if(this.systemData.length === 0) {
+        this.getSystem()
+      }
+      console.log(2)
       getWechatById({id: row.id}).then(res => {
         this.diaLoading = false
         this.diaDisable = false
@@ -528,7 +544,21 @@ export default {
         name: ''
       }
       this.getWechatList()
-    }
+    },
+    getSystem() {
+      this.diaLoading = true
+      this.diaDisable = true
+      getSystem({
+        pageIndex: 1,
+        pageSize: 500
+      }).then(res => {
+        this.diaLoading = false
+        this.diaDisable = false
+        if(Array.isArray(res.data.records)) {
+          this.systemData = res.data.records
+        }
+      })
+    },
   }
 }
 </script>

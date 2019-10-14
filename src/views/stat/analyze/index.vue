@@ -19,6 +19,7 @@
       </el-checkbox-group>
     </div>
     <el-table
+      v-loading="listLoading"
       border
       :data="tableData"
       :header-cell-style="{background: '#f3f3f3'}">
@@ -105,6 +106,7 @@ export default {
         'payNum': true
       },
       dateValue: 30,
+      listLoading: false,
       query: {
         beginTime: '',
         endTime: '',
@@ -121,16 +123,15 @@ export default {
     }
   },
   components: { Pagination },
-  computed: {
-
-  },
   created() {
     this.setDateFun(30)
     this.getAnalyseList()
   },
   methods: {
     getAnalyseList() {
+      this.listLoading = true
       getAnalyseList(this.query).then(res => {
+        this.listLoading = false
         if(Array.isArray(res.data.records)) {
           this.tableData = res.data.records
         }

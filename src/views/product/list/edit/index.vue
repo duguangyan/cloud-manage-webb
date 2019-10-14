@@ -235,7 +235,7 @@
           </el-form-item>
           <el-form-item>  
             <el-table
-              v-if="moreSpecTableShow"
+              v-if="moreSpecTableShow && addForm.moreSpec.length > 0"
               :data="addForm.moreSpecData"
               :span-method="arraySpanMethod"
               border>
@@ -305,6 +305,7 @@
           <div>
             <p>还能添加<span style="color: #ff0000">{{10 - addForm.imgsBox.length}}</span>张图片或视频；</p>
             <p>* 仅支持3M以内jpg、jpeg、gif、png格式图片上传；图片建议尺寸500*500；</p>
+            <p>* 仅支持200mb以内mp4</p>
             <p>* 文件大小不能超过3MB，包括图片和视频；图片建议尺寸500*500；支持JPG、GIF、PNG格式；</p>
             <p>* 默认第一个文件为商品封面图，如果是视频则取第一帧画面作为封面图。</p>
           </div>
@@ -379,7 +380,7 @@
     <div class="self-diolog" v-if="previewDialog">
       <div class="preview-box">
         <div class="preview">
-          <div class="calrousel-box" :style="{ background: 'no-repeat url(' + goodsVo.goodsImgList[0].imgUrl + ')', backgroundSize: 'cover' }">
+          <div class="calrousel-box" :style="{ background: 'no-repeat url(' + previewUrl + ')', backgroundSize: 'cover' }">
             <div class="left-icon">
               <img :src="icons.back" alt="">
             </div>
@@ -470,7 +471,9 @@
               <span class="title-des">商品详情</span>
             </div>
             <p>{{goodsVo.detail}}</p>
-            <img v-for="(item, index) in goodsVo.goodsImgList" :key="index" :src="item.imgUrl" alt="">
+            <div v-for="(item, index) in goodsVo.goodsImgList" :key="index">
+              <img class="mb10" v-if="item.type !== 2" :src="item.imgUrl" alt="">
+            </div>
           </div>
         </div>
         <div class="product-buy">
@@ -509,7 +512,18 @@
       </div>
     </el-dialog>
     <el-dialog :visible.sync="dialogVisible">
-      <img width="100%" :src="dialogImageUrl" alt="">
+      <template v-if="dialogType === 1">
+        <div>
+          <img width="100%" :src="dialogImageUrl" alt="">
+        </div>
+      </template>
+      <template v-else-if="dialogType === 2">
+        <div>
+          <video width="100%" :src="dialogImageUrl" controls="controls">
+          您的浏览器不支持视频播放。
+          </video>
+        </div>
+      </template>
     </el-dialog>
   </div>
 </template>
@@ -574,6 +588,7 @@ let vm = {
       sellMoreData: [],
       sellSpeData: [],
       freightData: [],
+      previewUrl: '',
       placeProduct: '',
       ruuuu: {
        name: [
@@ -655,6 +670,7 @@ let vm = {
       previewDialog: false,
       diaLoading: false,
       moreLoading: false,
+      dialogType: 0,
       dialogImageUrl: '',
       dialogVisible: false,
       dialogProp: false,
@@ -811,12 +827,31 @@ let vm = {
         this.baseData = editBaseData
         let imgBox = []
         res.data.goodsImgVOList.forEach(item => {
-          imgBox.push({
-            url: item.imgUrl,
-            goodId: item.goodId,
-            type: item.type,
-            id: item.id
-          })
+          if(item.type === 1) {
+            imgBox.push({
+              url: item.imgUrl,
+              source: item.imgUrl,
+              goodId: item.goodId,
+              type: 1,
+              id: item.id,
+              sort: item.sort
+            })
+          } else if(item.type === 2) {
+            let preUrl = ''
+            res.data.goodsImgVOList.forEach(vItem => {
+              if(vItem.type === 3 && vItem.sort === item.sort) {
+                preUrl = vItem.imgUrl
+                return false
+              }
+            })
+            imgBox.push({
+              url: preUrl,
+              source: item.imgUrl,
+              goodId: item.goodId,
+              type: item.type,
+              id: item.id
+            })
+          }
         })
         this.addForm.imgsBox = imgBox
         this.showStyle.id = res.data.goods.unit
@@ -1012,7 +1047,8 @@ let vm = {
       formData.append('file', file.file)
       fileUpload(formData).then(res => {
         this.addForm.imgsBox.push({
-          url: res.data,
+          url: this.fileType === 1 ? res.data.url : res.data.zipUrl,
+          source: res.data.url,
           type: this.fileType,
           uid: file.file.uid
         })
@@ -1407,11 +1443,30 @@ let vm = {
       }
       // 商品图片信息
       goodsVO.goodsImgList = []
-      this.addForm.imgsBox.forEach(imgItem => {
-        goodsVO.goodsImgList.push({
-          imgUrl: imgItem.url,
-          type: imgItem.type
-        })
+      let imgSort = 0
+      this.addForm.imgsBox.forEach((imgItem, imgIndex) => {
+        imgSort++
+        if(imgIndex === 0) {
+          this.previewUrl = imgItem.url
+        }
+        if(imgItem.type === 1) {
+          goodsVO.goodsImgList.push({
+            imgUrl: imgItem.source,
+            type: 1,
+            sort: imgSort
+          })
+        } else if (imgItem.type === 2) {
+          goodsVO.goodsImgList.push({
+            imgUrl: imgItem.source,
+            type: 2,
+            sort: imgSort
+          })
+          goodsVO.goodsImgList.push({
+            imgUrl: imgItem.url,
+            type: 3,
+            sort: imgSort
+          })
+        }
       })
       if(type === 2) {
         this.goodsVo = goodsVO
@@ -1499,15 +1554,7 @@ let vm = {
       })
     },
     beforeImgUpload(file) {
-      if(file.type === 'video/mp4') {
-        this.fileType = 2
-        if(file.size / 1024 / 1024 < 200) {
-           return true
-        } else {
-          this.$message.error('上传视频大小不能超过 200MB!')
-          return false
-        }
-      } else if(file.type === 'image/jpeg' || file.type === 'image/jpg' || file.type === 'image/png' || file.type === 'image/gif') {
+      if(file.type === 'image/jpeg' || file.type === 'image/jpg' || file.type === 'image/png' || file.type === 'image/gif') {
         this.fileType = 1
         if(file.size / 1024 / 1024 < 3) {
            return true
@@ -1515,23 +1562,24 @@ let vm = {
           this.$message.error('上传图片大小不能超过 3MB!')
           return false
         }
+      } else if(file.type === 'video/mp4') {
+        this.fileType = 2
+        if(file.size / 1024 / 1024 < 200) {
+           return true
+        } else {
+          this.$message.error('上传视频大小不能超过 200MB!')
+          return false
+        }
       } else {
         this.$message.error('上传文件类型错误!')
         return false
       }
-      // const isJPG = file.type === 'image/jpeg' || file.type === 'image/jpg' || file.type === 'image/png' || file.type === 'image/gif'
-      // const isLt3M = file.size / 1024 / 1024 < 3;
-      // if (!isJPG) {
-      //   this.$message.error('上传图片只能是 jpg、jpeg、gif、png 格式!')
-      // }
-      // if (!isLt3M) {
-      //   this.$message.error('上传图片大小不能超过 2MB!')
-      // }
-      // return isJPG && isLt3M;
     },
     handlePictureCardPreview(file) {
       // 图片预览
-      this.dialogImageUrl = file.url;
+      console.log(file)
+      this.dialogType = file.type
+      this.dialogImageUrl = file.source;
       this.dialogVisible = true;
     },
     checkChange(value, index) {

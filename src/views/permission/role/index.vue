@@ -331,7 +331,10 @@ export default {
     },
     async getSystem() {
       this.listLoading = true
-      await getSystem().then(res => {
+      await getSystem({
+        pageIndex: 1,
+        pageSize: 500
+      }).then(res => {
         this.listLoading = false
         this.systemData = res.data.records
       }).catch(err => {

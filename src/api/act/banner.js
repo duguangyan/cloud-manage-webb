@@ -99,3 +99,13 @@ export function updateAdStatus(data) {
   })
 }
 
+// 文件上传
+export function fileUpload(data) {
+  return request({
+    url: '/act/AdImg/fileUpload',
+    method: 'post',
+    type: 'upload',
+    data
+  })
+}
+

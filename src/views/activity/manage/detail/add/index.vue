@@ -75,7 +75,7 @@
       </el-table-column>
       <el-table-column align="center" label="操作" width="300">
         <template slot-scope="scope">
-          <el-button v-if="btnsPermission.add.auth" :disabled="disable" type="primary" size="small" @click="handleAdd(1, scope.row)">{{btnsPermission.add.name}}</el-button>
+          <el-button v-if="btnsPermission.add.auth" :disabled="scope.row.isSelect || disable" type="primary" size="small" @click="handleAdd(1, scope.row)">{{btnsPermission.add.name}}</el-button>
         </template>
       </el-table-column>
     </el-table>

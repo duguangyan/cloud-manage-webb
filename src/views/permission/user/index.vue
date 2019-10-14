@@ -424,24 +424,24 @@ export default {
       this.getUserList()
     },
     async handleAddRole() {
-      // 新增角色
+      // 新增用户
       await this.getSystem()
       this.role = Object.assign({}, defaultRole)
       this.dialogType = 'new'
-      this.dialogMsg = '新增角色'
+      this.dialogMsg = '新增用户'
       this.dialogVisible = true
     },
     async msgEdit(scope) {
-      // 编辑角色
+      // 编辑用户
       await this.getSystem()
       this.dialogType = 'edit'
-      this.dialogMsg = '编辑角色'
+      this.dialogMsg = '编辑用户'
       this.dialogVisible = true
       this.checkStrictly = true
       this.role = deepClone(scope.row)
     },
     handleLock({ $index, row }) {
-      // 锁定、解锁角色
+      // 锁定、解锁用户
       this.listLoading = true
       lockUser({ id: row.id, status: row.status===0? 1: 0 }).then(res => {
         this.listLoading = false
@@ -511,7 +511,7 @@ export default {
       }
     },
     handleDelete({ row }) {
-      this.$confirm('确定要删除该角色?', '警告', {
+      this.$confirm('确定要删除该用户?', '警告', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
@@ -523,7 +523,7 @@ export default {
           this.listLoading = false
           this.$message({
             type: '成功',
-            message: '角色删除成功!'
+            message: '用户删除成功!'
           })
           if(this.userData.length === 1 && this.allPages - 1 > 0) {
             --this.listQuery.pageIndex

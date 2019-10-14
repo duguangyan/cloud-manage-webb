@@ -182,10 +182,9 @@
 
 <script>
 import waves from '@/directive/waves'
-import { addAd, deleteAd, updateAd, getAdList, getBannerList, getAdById, updateAdStatus } from '@/api/act/banner'
+import { addAd, deleteAd, updateAd, getAdList, getBannerList, getAdById, updateAdStatus, fileUpload } from '@/api/act/banner'
 import Pagination from '@/components/Pagination'
 import { deepClone } from '@/utils'
-import { fileUpload } from '@/api/goods/upload'
 import { getUserBtnByPId } from '@/api/upms/menu'
 const defaultBanner = {
   id: '',
@@ -611,22 +610,31 @@ export default {
       this.dialogVisible = true;
     },
     beforeImgUpload(file) {
-      // console.log(file)
-      const isJPG = file.type === 'image/jpeg' || file.type === 'image/jpg' || file.type === 'image/png' || file.type === 'image/gif'
-      const isLt4M = file.size / 1024 / 1024 < 4;
-
-      if (!isJPG) {
-        this.$message.error('上传头像图片只能是 jpg、jpeg、gif、png 格式!');
+      if(file.type === 'image/jpeg' || file.type === 'image/jpg' || file.type === 'image/png' || file.type === 'image/gif') {
+        this.fileType = 1
+        if(file.size / 1024 / 1024 < 3) {
+           return true
+        } else {
+          this.$message.error('上传图片大小不能超过 3MB!')
+          return false
+        }
+      } else if(file.type === 'video/mp4') {
+        this.fileType = 2
+        if(file.size / 1024 / 1024 < 200) {
+           return true
+        } else {
+          this.$message.error('上传视频大小不能超过 200MB!')
+          return false
+        }
+      } else {
+        this.$message.error('上传文件类型错误!')
+        return false
       }
-      if (!isLt4M) {
-        this.$message.error('上传头像图片大小不能超过 3MB!');
-      }
-      return isJPG && isLt4M;
     },
     handleExceed(files, fileList) {
       // 图片数量提示
       this.$message({
-        message: '图片数量不能大于1',
+        message: '上传图片或视频数量不能大于1',
         type: 'warning'
       })
     },
