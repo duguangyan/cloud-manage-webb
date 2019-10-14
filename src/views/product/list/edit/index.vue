@@ -1564,10 +1564,10 @@ let vm = {
         }
       } else if(file.type === 'video/mp4') {
         this.fileType = 2
-        if(file.size / 1024 / 1024 < 200) {
+        if(file.size / 1024 / 1024 < 10) {
            return true
         } else {
-          this.$message.error('上传视频大小不能超过 200MB!')
+          this.$message.error('上传视频大小不能超过 10MB!')
           return false
         }
       } else {

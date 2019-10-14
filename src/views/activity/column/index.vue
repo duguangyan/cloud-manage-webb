@@ -41,9 +41,11 @@
         label="图片"
         width="180">
         <template slot-scope="scope">
-          <img v-if="scope.row.path.lastIndexOf('.mp4') === -1" style="width: 120px; height: 50px;" :src="scope.row.path" />
-          <div v-else>
-            视频无预览图
+          <div v-if="scope.row.path">
+            <img v-if="scope.row.path.lastIndexOf('.mp4') === -1" style="width: 120px; height: 50px;" :src="scope.row.path" />
+            <div v-else>
+              视频无预览图
+            </div>
           </div>
         </template>
       </el-table-column>
@@ -512,10 +514,17 @@ export default {
         this.banner.dateValue[0] = res.data.createTime
         this.banner.dateValue[1] = res.data.endTime
         this.banner.pathBox = []
-        this.banner.pathBox.push({
-          url: res.data.path,
-          type: res.data.path.lastIndexOf('.mp4') === -1 ? 1 : 2,
-        })
+        if(res.data.path) {
+          this.banner.pathBox.push({
+            url: res.data.path,
+            type: res.data.path.lastIndexOf('.mp4') === -1 ? 1 : 2,
+          })
+        } else {
+          this.banner.pathBox.push({
+            url: res.data.path,
+            type: 0,
+          })
+        }
       })
       
     },
@@ -641,10 +650,10 @@ export default {
         }
       } else if(file.type === 'video/mp4') {
         this.fileType = 2
-        if(file.size / 1024 / 1024 < 200) {
+        if(file.size / 1024 / 1024 < 10) {
            return true
         } else {
-          this.$message.error('上传视频大小不能超过 200MB!')
+          this.$message.error('上传视频大小不能超过 10MB!')
           return false
         }
       } else {
