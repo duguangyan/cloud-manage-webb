@@ -1577,7 +1577,6 @@ let vm = {
     },
     handlePictureCardPreview(file) {
       // 图片预览
-      console.log(file)
       this.dialogType = file.type
       this.dialogImageUrl = file.source;
       this.dialogVisible = true;

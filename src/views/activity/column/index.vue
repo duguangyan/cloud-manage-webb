@@ -41,7 +41,10 @@
         label="图片"
         width="180">
         <template slot-scope="scope">
-          <img style="width: 120px; height: 50px;" :src="scope.row.path" />
+          <img v-if="scope.row.path.lastIndexOf('.mp4') === -1" style="width: 120px; height: 50px;" :src="scope.row.path" />
+          <div v-else>
+            视频无预览图
+          </div>
         </template>
       </el-table-column>
       <el-table-column
@@ -98,7 +101,7 @@
           <span v-if="banner.adPositionName !== null && banner.adPositionName.length > 0" class="mr10">{{banner.adPositionName}}</span>
           <el-button size="small" @click="chooseBanner">选择广告位</el-button>
         </el-form-item>
-        <el-form-item label="图片" prop="path">
+        <el-form-item label="图片或视频" prop="path">
           <el-upload
             class="self-upload"
             v-model="banner.path"
@@ -177,6 +180,20 @@
         <el-button type="primary" :disabled="diaDisable" @click="chooseBannerSure">确定</el-button>
       </div>
     </el-dialog>
+    <el-dialog :visible.sync="dialogPreview">
+      <template v-if="dialogImgType === 1">
+        <div>
+          <img width="100%" :src="dialogImageUrl" alt="">
+        </div>
+      </template>
+      <template v-else-if="dialogImgType === 2">
+        <div>
+          <video width="100%" :src="dialogImageUrl" controls="controls">
+          您的浏览器不支持视频播放。
+          </video>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -229,6 +246,7 @@ export default {
       disable: false,
       diaDisable: false,
       listLoading: false,
+       dialogPreview: false,
       bannerDataLoading: false,
       bannerRow: {},
       bannerData: [],
@@ -298,6 +316,8 @@ export default {
       total: 0,
       bannerDataTotal: 0,
       allPages: 0,
+      dialogImgType: 0,
+      dialogImageUrl: '',
       listQuery: {
         name: '',
         pageIndex: 1,
@@ -494,7 +514,7 @@ export default {
         this.banner.pathBox = []
         this.banner.pathBox.push({
           url: res.data.path,
-          type: 1
+          type: res.data.path.lastIndexOf('.mp4') === -1 ? 1 : 2,
         })
       })
       
@@ -597,7 +617,7 @@ export default {
       fileUpload(formData).then(res => {
         this.banner.pathBox.push({
           url: res.data,
-          type: 1,
+          type: res.data.lastIndexOf('.mp4') === -1 ? 1 : 2,
           uid: file.file.uid
         })
         this.banner.path = res.data
@@ -606,8 +626,9 @@ export default {
     },
     handlePictureCardPreview(file) {
       // 图片预览
-      this.dialogImageUrl = file.url;
-      this.dialogVisible = true;
+      this.dialogImgType = file.type
+      this.dialogImageUrl = file.url
+      this.dialogPreview = true
     },
     beforeImgUpload(file) {
       if(file.type === 'image/jpeg' || file.type === 'image/jpg' || file.type === 'image/png' || file.type === 'image/gif') {
@@ -644,14 +665,8 @@ export default {
     },
     dateChange(data) {
       // 日期选择
-      console.log(data)
       this.banner.beginTime = data[0]
       this.banner.endTime = data[1]
-    },
-    handlePictureCardPreview(file) {
-      // 图片预览
-      this.dialogImageUrl = file.url;
-      this.dialogVisible = true;
     },
     chooseBanner() {
       // 选择广告位
