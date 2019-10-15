@@ -34,9 +34,13 @@
           align="center">
         </el-table-column>
         <el-table-column
-          prop="payChannel"
           label="支付方式"
           align="center">
+          <template slot-scope="scope">
+            <span v-if="scope.row.payChannel === 1">微信</span>
+            <span v-else-if="scope.row.payChannel === 2">支付宝</span>
+            <span v-else-if="scope.row.payChannel === 3">银联</span>
+          </template>
         </el-table-column>
         <el-table-column
           prop="userName"

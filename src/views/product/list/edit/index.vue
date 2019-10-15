@@ -255,7 +255,7 @@
                 >
                 <template slot-scope="scope">
                   <el-input v-if="scope.$index === 0" v-model.trim="addForm.moreSpecData[0].startNum" class="table-input" size="small" maxlength="12" @keyup.native="numValid(addForm.moreSpecData[scope.$index], 'startNum', 2)" />
-                  <div :title="addForm.moreSpecData[0].startNum" style="display:inline-block;width: 120px;text-align:left;padding: 0 15px;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;" v-else>{{addForm.moreSpecData[0].startNum}}</div>
+                  <div v-else :title="addForm.moreSpecData[0].startNum" style="display:inline-block;width: 120px;text-align:left;padding: 0 15px;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;" v-else>{{addForm.moreSpecData[0].startNum}}</div>
                 </template>
               </el-table-column>
               <el-table-column

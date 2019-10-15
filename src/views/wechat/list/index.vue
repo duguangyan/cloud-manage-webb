@@ -203,7 +203,7 @@
     </el-dialog>
     
     <!-- wx -->
-    <div class="menu_setting_area js_editBox" style="display: none">
+    <div class="menu_setting_area js_editBox">
       <div class="menu_preview_area">
         <div class="mobile_menu_preview">
           <div class="mobile_hd tc">沁绿农业</div>
@@ -333,7 +333,7 @@
 
 <script>
 import { getUserBtnByPId } from '@/api/upms/menu'
-import { addWechat, deleteWechat, updateWechat, getWechatList, getWechatById } from '@/api/wechat/list'
+import { addWechat, deleteWechat, updateWechat, getWechatList, getWechatById, getMenuById, addMenu, updateMenu } from '@/api/wechat/list'
 import { getSystem } from '@/api/upms/systemList'
 import Pagination from '@/components/Pagination'
 import waves from '@/directive/waves' // waves directive

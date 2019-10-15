@@ -53,3 +53,31 @@ export function deleteWechat(data) {
     data
   })
 }
+
+// 根据父id创建自定义菜单
+export function getMenuById(query) {
+  return request({
+    url: '/wechat/menu/createMenu',
+    method: 'get',
+    params: query
+  })
+}
+
+// (后台)自定义菜单新增
+export function addMenu(data) {
+  return request({
+    url: '/wechat/menu/insert',
+    method: 'post',
+    data
+  })
+}
+
+// (后台)自定义菜单更新
+export function updateMenu(data) {
+  return request({
+    url: '/wechat/menu/update',
+    method: 'post',
+    data
+  })
+}
+
