@@ -9,3 +9,10 @@ export function getAnalyseList(query) {
   })
 }
 
+export function getAnaData(query) {
+  return request({
+    url: '/analyse/websiteStat/getByDay',
+    method: 'get',
+    params: query
+  })
+}
