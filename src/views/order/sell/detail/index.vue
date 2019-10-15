@@ -160,7 +160,7 @@
         </el-table-column>
       </el-table>
     </el-card>
-    <el-card v-if="status > 3" class="box-card mb10">
+    <el-card v-if="status > 2" class="box-card mb10">
       <div slot="header" class="clearfix">
         <span>物流信息</span>
       </div>
@@ -389,6 +389,14 @@ export default {
               this.express.time = res.data.shopOrder.sendTime
             } else if(this.status > 2) {
               this.activeStep = 3
+              if(res.data.expressDetails !==null && Array.isArray(res.data.expressDetails.traceList)) {
+                this.expressHistory = res.data.expressDetails.traceList.reverse()
+              }
+              if(res.data.orderShipping !== null) {
+                this.express.num = res.data.orderShipping.courierNum
+                this.express.name = res.data.orderShipping.courierCompany
+              }
+              this.express.time = res.data.shopOrder.sendTime
             } else if(this.status > 0) {
               this.activeStep = 2
             } else if(this.status > -1) {

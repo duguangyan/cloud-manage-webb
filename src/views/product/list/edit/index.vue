@@ -70,7 +70,7 @@
               <span v-if="item.exp !== null">{{item.exp}}</span>
             </template>
             <template v-else-if="item.inputType === 4">
-              <el-input class="long-input" v-model.trim="addForm.generate[index].list" size="medium" maxlength="64" :placeholder="item.hint" style="width: 200px" />
+              <el-input class="long-input" v-model.trim="addForm.generate[index].list" size="medium" maxlength="32" :placeholder="item.hint" style="width: 200px" />
               <span v-if="item.exp !== null" style="color: #606266">{{item.exp}}</span>
             </template>
             <template v-else>
@@ -114,7 +114,7 @@
                 required: activeName === 'first', message: '库存必填，且为数字', trigger: 'blur', pattern:/^\d+$/,
               }"
               label="库存">
-                <el-input class="short-input" v-model.trim="addForm.sku[showStyle.id].store" size="medium" maxlength="30" />
+                <el-input class="short-input" v-model.trim="addForm.sku[showStyle.id].store" size="medium"  maxlength="10" />
             </el-form-item>
             <el-form-item>  
               <div v-if="showStyle.type === '2'">
@@ -250,11 +250,12 @@
               </el-table-column>
               
               <el-table-column
-                label="起批量"
+                label="起批量(相同)"
                 align="center"
                 >
                 <template slot-scope="scope">
-                  <el-input v-model.trim="addForm.moreSpecData[scope.$index].startNum" class="table-input" size="small" maxlength="12" @keyup.native="numValid(addForm.moreSpecData[scope.$index], 'startNum', 2)" />
+                  <el-input v-if="scope.$index === 0" v-model.trim="addForm.moreSpecData[0].startNum" class="table-input" size="small" maxlength="12" @keyup.native="numValid(addForm.moreSpecData[scope.$index], 'startNum', 2)" />
+                  <div :title="addForm.moreSpecData[0].startNum" style="display:inline-block;width: 120px;text-align:left;padding: 0 15px;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;" v-else>{{addForm.moreSpecData[0].startNum}}</div>
                 </template>
               </el-table-column>
               <el-table-column
@@ -305,7 +306,7 @@
           <div>
             <p>还能添加<span style="color: #ff0000">{{10 - addForm.imgsBox.length}}</span>张图片或视频；</p>
             <p>* 仅支持3M以内jpg、jpeg、gif、png格式图片上传；图片建议尺寸500*500；</p>
-            <p>* 仅支持200mb以内mp4</p>
+            <p>* 仅支持10mb以内mp4视频上传；</p>
             <p>* 文件大小不能超过3MB，包括图片和视频；图片建议尺寸500*500；支持JPG、GIF、PNG格式；</p>
             <p>* 默认第一个文件为商品封面图，如果是视频则取第一帧画面作为封面图。</p>
           </div>
@@ -1199,7 +1200,7 @@ let vm = {
         this.moreTableShow = false
         let tableData = this.addForm.moreSpecData
         for(let i = 0; i < tableData.length; i++) {
-          if(tableData[i].price.length === 0 || tableData[i].startNum.length === 0 || tableData[i].store.length === 0) {
+          if(tableData[i].price.length === 0 || tableData[0].startNum.length === 0 || tableData[i].store.length === 0) {
             this.moreTableShow = true
             return false
           }
@@ -1384,7 +1385,9 @@ let vm = {
       } else if(this.activeName === 'second') {
         goodsVO.unit = this.addForm.unitMore
         let skuSort = 0
-          this.addForm.moreSpecData.forEach(item => {
+        // 起批量一致
+        let startNumber = 0
+          this.addForm.moreSpecData.forEach((item, index) => {
             let skuObj = {}
             if(this.addForm.freightType === 2) {
               skuObj.volume = this.addForm.freightSize
@@ -1406,13 +1409,16 @@ let vm = {
             if(this.eiditId.length > 0) {
               skuObj.id = item.skuId
             }
+            if(index === 0) {
+              startNumber = item.startNum
+            }
             skuObj.price = item.price
-            skuObj.startNum = item.startNum
+            skuObj.startNum = startNumber
             skuObj.stock = item.store
             skuObj.priceExpList = []
             skuObj.priceExpList.push({
               price: item.price,
-              startQuantity: item.startNum
+              startQuantity: startNumber
             })
             goodsVO.goodsSkuList.push(skuObj)
           })

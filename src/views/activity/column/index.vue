@@ -41,12 +41,10 @@
         label="图片"
         width="180">
         <template slot-scope="scope">
-          <div v-if="scope.row.path">
-            <img v-if="scope.row.path.lastIndexOf('.mp4') === -1" style="width: 120px; height: 50px;" :src="scope.row.path" />
-            <div v-else>
-              视频无预览图
-            </div>
+          <div v-if="scope.row.path && scope.row.path.lastIndexOf('.mp4') > -1 && scope.row.path.length - 4 === scope.row.path.lastIndexOf('.mp4')">
+            视频无预览图
           </div>
+          <img v-else style="width: 120px; height: 50px;" :src="scope.row.path" />
         </template>
       </el-table-column>
       <el-table-column
@@ -118,7 +116,7 @@
             :on-remove="handleRemove">
             <i class="el-icon-plus"></i>
           </el-upload>
-          <div>建议尺寸像素：700*400，文件大小不能超过3M，图片格式 jpg、png、gif</div>
+          <div>建议尺寸像素：700*400，图片大小不能超过3M，图片格式 jpg、png、gif，视频大小不超过10M，视频格式mp4</div>
         </el-form-item>
         <el-form-item label="事件动作" prop="type">
           <el-select v-model="banner.type" placeholder="请选择事件动作">
@@ -515,9 +513,10 @@ export default {
         this.banner.dateValue[1] = res.data.endTime
         this.banner.pathBox = []
         if(res.data.path) {
+          let mp4Index = res.data.path.lastIndexOf('.mp4')
           this.banner.pathBox.push({
             url: res.data.path,
-            type: res.data.path.lastIndexOf('.mp4') === -1 ? 1 : 2,
+            type: mp4Index > -1 && res.data.path.length - 4 === mp4Index ? 2 : 1,
           })
         } else {
           this.banner.pathBox.push({
@@ -624,9 +623,10 @@ export default {
       let formData = new FormData()
       formData.append('file', file.file)
       fileUpload(formData).then(res => {
+        let mp4Index = res.data.lastIndexOf('.mp4')
         this.banner.pathBox.push({
           url: res.data,
-          type: res.data.lastIndexOf('.mp4') === -1 ? 1 : 2,
+          type: mp4Index > -1 && res.data.length - 4 === mp4Index ? 2 : 1,
           uid: file.file.uid
         })
         this.banner.path = res.data
