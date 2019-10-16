@@ -71,7 +71,7 @@
             </template>
             <template v-else-if="item.inputType === 4">
               <el-input class="long-input" v-model.trim="addForm.generate[index].list" size="medium" maxlength="32" :placeholder="item.hint" style="width: 200px" />
-              <span v-if="item.exp !== null" style="color: #606266">{{item.exp}}</span>
+              <!-- <span v-if="item.exp !== null" style="color: #606266">{{item.exp}}</span> -->
             </template>
             <template v-else>
               <span>{{addForm.generate[index].list}}</span>
@@ -255,7 +255,7 @@
                 >
                 <template slot-scope="scope">
                   <el-input v-if="scope.$index === 0" v-model.trim="addForm.moreSpecData[0].startNum" class="table-input" size="small" maxlength="12" @keyup.native="numValid(addForm.moreSpecData[scope.$index], 'startNum', 2)" />
-                  <div v-else :title="addForm.moreSpecData[0].startNum" style="display:inline-block;width: 120px;text-align:left;padding: 0 15px;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;" v-else>{{addForm.moreSpecData[0].startNum}}</div>
+                  <div v-else :title="addForm.moreSpecData[0].startNum" style="display:inline-block;width: 120px;text-align:left;padding: 0 15px;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;">{{addForm.moreSpecData[0].startNum}}</div>
                 </template>
               </el-table-column>
               <el-table-column
