@@ -519,8 +519,8 @@
         </div>
       </template>
       <template v-else-if="dialogType === 2">
-        <div>
-          <video width="100%" :src="dialogImageUrl" controls="controls">
+        <div style="text-align: center;">
+          <video style="max-width: 100%;max-height: 800px;" :src="dialogImageUrl" controls="controls">
           您的浏览器不支持视频播放。
           </video>
         </div>

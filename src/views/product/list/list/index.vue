@@ -213,7 +213,7 @@ export default {
         keywords: '',
         pageIndex: 1,
         pageSize: 10,
-        sortColumn: 'min_price',
+        sortColumn: 'sell_time',
         sortType: 0,
         status: 3
       },
@@ -407,7 +407,7 @@ export default {
         keywords: '',
         pageIndex: 1,
         pageSize: 10,
-        sortColumn: 'min_price',
+        sortColumn: 'sell_time',
         sortType: 0,
         status: 3
       }
@@ -420,6 +420,14 @@ export default {
       // 已上架、待上架、已下架切换
       this.listQuery.pageIndex = 1
       this.listQuery.status = tab.name
+      if(tab.name === '3') {
+        this.listQuery.sortColumn = 'sell_time'
+      } else if (tab.name === '1') {
+        this.listQuery.sortColumn = 'create_time'
+      } else if(tab.name === '4') {
+        this.listQuery.sortColumn = 'create_time'
+      }
+      this.listQuery.sortType = 0
       this.listQuery.sellTimeStart = ''
       this.listQuery.sellTimeEnd = ''
       this.listQuery.createTimeStart = ''
@@ -440,7 +448,6 @@ export default {
     },
     sortChange(data) {
       // 排序
-      console.log(data)
       if(data.prop === 'minprice') {
         this.listQuery.sortColumn = 'min_price'
       } else if(data.prop === 'spuSalesNum') {
@@ -451,7 +458,20 @@ export default {
         this.listQuery.sortColumn = 'total_stock'
       }
       this.listQuery.pageIndex = 1
-      this.listQuery.sortType = data.order === 'descending' ? 0 : 1
+      if(data.order === 'descending') {
+        this.listQuery.sortType = 0
+      } else if(data.order === 'ascending') {
+        this.listQuery.sortType = 1
+      } else {
+        if(this.saleType === '3') {
+          this.listQuery.sortColumn = 'sell_time'
+        } else if(this.saleType === '1') {
+          this.listQuery.sortColumn = 'create_time'
+        } else if(this.saleType === '4') {
+          this.listQuery.sortColumn = 'sell_time'
+        }
+        this.listQuery.sortType = 0
+      }
       this.getList()
     },
     getDetail(scope) {

@@ -121,10 +121,13 @@
         align="center"
         show-overflow-tooltip>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width">
+      <el-table-column label="操作" align="center" width="260" class-name="small-padding fixed-width">
         <template slot-scope="{row}">
           <el-button v-if="btnsPermission.edit.auth" type="primary" size="mini" @click="handleUpdate(row)">
             {{btnsPermission.edit.name}}
+          </el-button>
+          <el-button v-if="btnsPermission.editMenu.auth" type="primary" size="mini" @click="editWechat(row)">
+            {{btnsPermission.editMenu.name}}
           </el-button>
           <el-button v-if="btnsPermission.delete.auth" size="mini" type="danger" @click="handleDelete(row)">
             {{btnsPermission.delete.name}}
@@ -203,137 +206,177 @@
     </el-dialog>
     
     <!-- wx -->
-    <div class="menu_setting_area js_editBox">
-      <div class="menu_preview_area">
-        <div class="mobile_menu_preview">
-          <div class="mobile_hd tc">沁绿农业</div>
-          <div class="mobile_bd">
-            <ul class="pre_menu_list grid_line ui-sortable ui-sortable-disabled" :class="{ no_menu: menu.length === 0 }">
-              <li v-for="(item, index) in menu" :key="index" class="jsMenu pre_menu_item grid_item jslevel1 ui-sortable ui-sortable-disabled" :class="{'size1of1': menu.length === 0, 'size1of2': menu.length === 1, 'size1of3': menu.length > 1, 'current': selectMenuIndex === index}" @click="selectMenu(index)">
-                <a href="javascript:void(0);" class="pre_menu_link" draggable="false">
-                  <!-- <i class="icon_menu_dot js_icon_menu_dot dn" style="display: none;"></i> -->
-                  <!-- <i class="icon20_common sort_gray"></i> -->
-                  <!-- <i class="icon_menu_dot js_icon_menu_dot dn"></i> -->
-                  <span class="js_l1Title">{{item.name}}</span>
-                </a>
-                <div v-if="selectMenuIndex === index" class="sub_pre_menu_box js_l2TitleBox">
-                  <ul class="sub_pre_menu_list">
-                      <li v-for="(cItem, cIndex) in menuChild[index]" :key="cIndex" id="1571119289645_subMenu_1571118069654_menu_0_0" class="jslevel2" :class="{ 'current': selectMenuChidIndex === cIndex }" @click.stop="selectMenuChild(cIndex)">
-                        <a href="javascript:void(0);" class="jsSubView" draggable="false">
-                          <span class="sub_pre_menu_inner js_sub_pre_menu_inner"><span class="js_l2Title">{{cItem.name}} {{cIndex}} {{selectMenuChidIndex}}</span></span>
-                        </a>
-                      </li>
-                      <li v-if="menuChild[index].length < 5" class="js_addMenuBox" @click.stop="addMenuChild(index)">
-                        <a href="javascript:void(0);" class="jsSubView js_addL2Btn" title="最多添加5个子菜单" draggable="false">
-                          <span class="sub_pre_menu_inner js_sub_pre_menu_inner"><i class="icon14_menu_add"></i></span>
-                        </a>
-                      </li>
-                  </ul>
-                  <i class="arrow arrow_out"></i>
-                  <i class="arrow arrow_in"></i>
-                </div>
-              </li>
-              <!-- <li class="jsMenu pre_menu_item grid_item jslevel1 ui-sortable ui-sortable-disabled size1of3" id="1571120101658_menu_1">
+    <el-dialog v-loading="wechatLoading" title="自定义菜单" width="80%" :closeOnClickModal="false" :visible.sync="dialogWechatVisible">
+      <div class="menu_setting_area js_editBox">
+        <div class="menu_preview_area">
+          <div class="mobile_menu_preview">
+            <div class="mobile_hd tc">沁绿农业</div>
+            <div class="mobile_bd">
+              <ul class="pre_menu_list grid_line ui-sortable ui-sortable-disabled" :class="{ no_menu: menuList.length === 0 }">
+                <li v-for="(item, index) in menuList" :key="index" class="jsMenu pre_menu_item grid_item jslevel1 ui-sortable ui-sortable-disabled" :class="{'size1of1': menuList.length === 0, 'size1of2': menuList.length === 1, 'size1of3': menuList.length > 1, 'current': selectMenuIndex === index}" @click="selectMenu(index)">
                   <a href="javascript:void(0);" class="pre_menu_link" draggable="false">
-                   
-                      <span class="js_l1Title">菜单名称</span>
+                    <!-- <i class="icon_menu_dot js_icon_menu_dot dn" style="display: none;"></i> -->
+                    <!-- <i class="icon20_common sort_gray"></i> -->
+                    <!-- <i class="icon_menu_dot js_icon_menu_dot dn"></i> -->
+                    <span class="js_l1Title">{{item.name}}</span>
                   </a>
-                  <div class="sub_pre_menu_box js_l2TitleBox" style="">
-                            <ul class="sub_pre_menu_list">
-                                
-                                <li id="1571120443883_subMenu_1571120101658_menu_1_0" class="jslevel2 selected current">
-                                  <a href="javascript:void(0);" class="jsSubView" draggable="false">
-                                    <span class="sub_pre_menu_inner js_sub_pre_menu_inner">
-                                      <span class="js_l2Title">子菜单名称</span>
-                                    </span>
-                                  </a>
-                                </li>
-                                
-                                <li class="js_addMenuBox"><a href="javascript:void(0);" class="jsSubView js_addL2Btn" title="最多添加5个子菜单" draggable="false"><span class="sub_pre_menu_inner js_sub_pre_menu_inner"><i class="icon14_menu_add"></i></span></a></li>
-                            </ul>
-                            <i class="arrow arrow_out"></i>
-                            <i class="arrow arrow_in"></i>
+                  <div v-if="selectMenuIndex === index" class="sub_pre_menu_box js_l2TitleBox">
+                    <ul class="sub_pre_menu_list">
+                        <li v-for="(cItem, cIndex) in item.menuChild" :key="cIndex" id="1571119289645_subMenu_1571118069654_menu_0_0" class="jslevel2" :class="{ 'current': selectMenuChidIndex === cIndex }" @click.stop="selectMenuChild(cIndex)">
+                          <a href="javascript:void(0);" class="jsSubView" draggable="false">
+                            <span class="sub_pre_menu_inner js_sub_pre_menu_inner"><span class="js_l2Title">{{cItem.name}} {{cIndex}} {{selectMenuChidIndex}}</span></span>
+                          </a>
+                        </li>
+                        <li v-if="menuChild[index].length < 5" class="js_addMenuBox" @click.stop="addMenuChild(index)">
+                          <a href="javascript:void(0);" class="jsSubView js_addL2Btn" title="最多添加5个子菜单" draggable="false">
+                            <span class="sub_pre_menu_inner js_sub_pre_menu_inner"><i class="icon14_menu_add"></i></span>
+                          </a>
+                        </li>
+                    </ul>
+                    <i class="arrow arrow_out"></i>
+                    <i class="arrow arrow_in"></i>
+                  </div>
+                </li>
+                <!-- <li class="jsMenu pre_menu_item grid_item jslevel1 ui-sortable ui-sortable-disabled size1of3" id="1571120101658_menu_1">
+                    <a href="javascript:void(0);" class="pre_menu_link" draggable="false">
+                    
+                        <span class="js_l1Title">菜单名称</span>
+                    </a>
+                    <div class="sub_pre_menu_box js_l2TitleBox" style="">
+                              <ul class="sub_pre_menu_list">
+                                  
+                                  <li id="1571120443883_subMenu_1571120101658_menu_1_0" class="jslevel2 selected current">
+                                    <a href="javascript:void(0);" class="jsSubView" draggable="false">
+                                      <span class="sub_pre_menu_inner js_sub_pre_menu_inner">
+                                        <span class="js_l2Title">子菜单名称</span>
+                                      </span>
+                                    </a>
+                                  </li>
+                                  
+                                  <li class="js_addMenuBox"><a href="javascript:void(0);" class="jsSubView js_addL2Btn" title="最多添加5个子菜单" draggable="false"><span class="sub_pre_menu_inner js_sub_pre_menu_inner"><i class="icon14_menu_add"></i></span></a></li>
+                              </ul>
+                              <i class="arrow arrow_out"></i>
+                              <i class="arrow arrow_in"></i>
+                          </div>
+                </li> -->
+                <li v-if="menu.length < 3" class="js_addMenuBox pre_menu_item grid_item no_extra" :class="menuClass[menu.length]" @click="addMenu">
+                  <a href="javascript:void(0);" class="pre_menu_link js_addL1Btn" title="最多添加3个一级菜单" draggable="false">
+                    <i class="icon14_menu_add"></i>
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="menu_form_area">
+          <div v-if="menuList.length === 0" id="js_none" class="menu_initial_tips tips_global">点击左侧菜单进行编辑操作</div>
+          <div v-else class="portable_editor to_left">
+            <div class="editor_inner">
+              <div class="global_mod float_layout menu_form_hd js_second_title_bar mb20">
+                <h4 v-if="isMenu" class="global_info">菜单名称</h4>
+                <h4 v-else class="global_info">子菜单名称</h4>
+                <div class="global_extra">
+                  <a v-if="isMenu" @click="deleteMenu">删除菜单</a>
+                  <a v-else @click="deleteMenuChild">删除子菜单</a>
+                </div>
+              </div>
+              <div class="menu_form_bd">
+                <div v-if="menuList[selectMenuIndex].menuChild.length > 0" class="msg_sender_tips tips_global mb20">已添加子菜单，仅可设置菜单名称。</div>
+                <el-form v-loading="wechatLoading" ref="wechatForm" :rules="wechatRules" :model="wechat" label-position="left" label-width="100px">
+                  <el-form-item prop="name" :label="isMenu?'菜单名称':'子菜单名称'">
+                    <el-input class="w300" v-model="menuList[selectMenuIndex].name" maxlength="4" @blur="(event) => updateMenu(event, selectMenuIndex, menuList[selectMenuIndex].name)" />
+                  </el-form-item>
+                  <template v-if="isMenu">
+                    <template v-if="menuList[selectMenuIndex].menuChild.length === 0">
+                      <el-form-item prop="systemId" label="菜单内容">
+                        <el-radio-group v-model="wechatType">
+                          <el-radio :label="1">发送消息</el-radio>
+                          <el-radio :label="2">跳转网页</el-radio>
+                          <el-radio :label="3">小程序</el-radio>
+                        </el-radio-group>
+                      </el-form-item>
+                      <template v-if="wechatType === 1">
+                        <div>
+                          富文本
                         </div>
-              </li> -->
-              <li v-if="menu.length < 3" class="js_addMenuBox pre_menu_item grid_item no_extra" :class="menuClass[menu.length]" @click="addMenu">
-                <a href="javascript:void(0);" class="pre_menu_link js_addL1Btn" title="最多添加3个一级菜单" draggable="false">
-                  <i class="icon14_menu_add"></i>
-                </a>
-              </li>
-            </ul>
+                      </template>
+                      <template v-else-if="wechatType === 2">
+                        <div>
+                          <p class="wechat-des">订阅者点击该子菜单会跳到以下链接</p>
+                          <el-form-item prop="name" label="页面地址">
+                            <el-input class="w300" v-model="temp.name" maxlength="64" />
+                          </el-form-item>
+                        </div>
+                      </template>
+                      <template v-else>
+                        <div>
+                          <p class="wechat-des">订阅者点击该子菜单会跳到以下小程序</p>
+                          <el-form-item prop="name" label="小程序ID">
+                            <el-input class="w300" v-model="temp.name" maxlength="64" />
+                          </el-form-item>
+                          <el-form-item prop="name" label="首页地址">
+                            <el-input class="w300" v-model="temp.name" maxlength="64" />
+                          </el-form-item>
+                        </div>
+                      </template>
+                    </template>
+                  </template>
+                  <template v-else>
+                    <el-form-item prop="systemId" label="菜单内容">
+                      <el-radio-group v-model="wechatType">
+                        <el-radio :label="1">发送消息</el-radio>
+                        <el-radio :label="2">跳转网页</el-radio>
+                        <el-radio :label="3">小程序</el-radio>
+                      </el-radio-group>
+                    </el-form-item>
+                    <template v-if="wechatType === 1">
+                      <div>
+                        富文本
+                      </div>
+                    </template>
+                    <template v-else-if="wechatType === 2">
+                      <div>
+                        <p class="wechat-des">订阅者点击该子菜单会跳到以下链接</p>
+                        <el-form-item prop="name" label="页面地址">
+                          <el-input class="w300" v-model="temp.name" maxlength="64" />
+                        </el-form-item>
+                      </div>
+                    </template>
+                    <template v-else>
+                      <div>
+                        <p class="wechat-des">订阅者点击该子菜单会跳到以下小程序</p>
+                        <el-form-item prop="name" label="小程序ID">
+                          <el-input class="w300" v-model="temp.name" maxlength="64" />
+                        </el-form-item>
+                        <el-form-item prop="name" label="首页地址">
+                          <el-input class="w300" v-model="temp.name" maxlength="64" />
+                        </el-form-item>
+                      </div>
+                    </template>
+                  </template>
+                  
+                </el-form>
+                <!-- <div slot="footer" class="dialog-footer">
+                  <el-button @click="dialogFormVisible = false">
+                    取消
+                  </el-button>
+                  <el-button type="primary" :disabled="diaDisable" @click="dialogStatus==='create'?createData():updateData()">
+                    确定
+                  </el-button>
+                </div> -->
+              </div>
+            </div>
+            <span class="editor_arrow_wrp"><i class="editor_arrow editor_arrow_out"></i><i class="editor_arrow editor_arrow_in"></i></span>
           </div>
         </div>
       </div>
-      <div class="menu_form_area">
-        <div v-if="menu.length === 0" id="js_none" class="menu_initial_tips tips_global">点击左侧菜单进行编辑操作</div>
-        <div v-else class="portable_editor to_left">
-          <div class="editor_inner">
-            <div class="global_mod float_layout menu_form_hd js_second_title_bar mb20">
-              <h4 class="global_info">菜单名称</h4>
-              <div class="global_extra">
-                <a v-if="isMenu" @click="deleteMenu">删除菜单</a>
-                <a v-else @click="deleteMenuChild">删除子菜单</a>
-              </div>
-            </div>
-            <div class="menu_form_bd">
-              <el-form v-loading="wechatLoading" ref="wechatForm" :rules="wechatRules" :model="wechat" label-position="left" label-width="120px">
-                <el-form-item prop="name" label="菜单名称">
-                  <el-input class="w300" v-model="temp.name" maxlength="64" />
-                </el-form-item>
-                <el-form-item prop="systemId" label="菜单内容">
-                  <el-radio-group v-model="wechatType">
-                    <el-radio :label="1">发送消息</el-radio>
-                    <el-radio :label="2">跳转网页</el-radio>
-                    <el-radio :label="3">小程序</el-radio>
-                  </el-radio-group>
-                </el-form-item>
-                <template v-if="wechatType === 1">
-                  <div>
-                    富文本
-                  </div>
-                </template>
-                <template v-else-if="wechatType === 2">
-                  <div>
-                    <p class="wechat-des">订阅者点击该子菜单会跳到以下链接</p>
-                    <el-form-item prop="name" label="页面地址">
-                      <el-input class="w300" v-model="temp.name" maxlength="64" />
-                    </el-form-item>
-                  </div>
-                </template>
-                <template v-else>
-                  <div>
-                    <p class="wechat-des">订阅者点击该子菜单会跳到以下小程序</p>
-                    <el-form-item prop="name" label="小程序ID">
-                      <el-input class="w300" v-model="temp.name" maxlength="64" />
-                    </el-form-item>
-                    <el-form-item prop="name" label="首页地址">
-                      <el-input class="w300" v-model="temp.name" maxlength="64" />
-                    </el-form-item>
-                  </div>
-                </template>
-              </el-form>
-              <div slot="footer" class="dialog-footer">
-                <el-button @click="dialogFormVisible = false">
-                  取消
-                </el-button>
-                <el-button type="primary" :disabled="diaDisable" @click="dialogStatus==='create'?createData():updateData()">
-                  确定
-                </el-button>
-              </div>
-            </div>
-          </div>
-          <span class="editor_arrow_wrp"><i class="editor_arrow editor_arrow_out"></i><i class="editor_arrow editor_arrow_in"></i></span>
-        </div>
-      </div>
-    </div>
-
-
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import { getUserBtnByPId } from '@/api/upms/menu'
-import { addWechat, deleteWechat, updateWechat, getWechatList, getWechatById, getMenuById, addMenu, updateMenu } from '@/api/wechat/list'
+import { addWechat, deleteWechat, updateWechat, getWechatList, getWechatById, getMenuById, addMenu, updateMenu, getMenuListById, checkMenu } from '@/api/wechat/list'
 import { getSystem } from '@/api/upms/systemList'
 import Pagination from '@/components/Pagination'
 import waves from '@/directive/waves' // waves directive
@@ -384,6 +427,10 @@ export default {
         },
         edit: {
           name: '编辑',
+          auth: false
+        },
+        editMenu: {
+          name: '编辑菜单',
           auth: false
         }
       },
@@ -470,6 +517,8 @@ export default {
       ],
       dialogStatus: '',
       dialogFormVisible: false,
+      dialogWechatVisible: false,
+      wechatLoading: false,
       textMap: {
         update: '编辑',
         create: '新增'
@@ -491,8 +540,19 @@ export default {
       menuClass: ['size1of1', 'size1of2', 'size1of3', 'size1of3'],
       wechatRules: {},
       menu: [],
+      menuList: [
+        { 
+          name: '',
+          menuChild: [
+            {
+              name: ''
+            }
+          ]
+        }
+      ],
       isMenu: true,
-      selectMenuIndex: -1,
+      selectMenuId: '',
+      selectMenuIndex: 0,
       selectMenuChidIndex: -1,
       menuChild: {
         0: [],
@@ -657,6 +717,37 @@ export default {
       // this.temp = Object.assign({}, row) // copy obj
       
     },
+    editWechat(row) {
+      // 自定义菜单
+      this.dialogWechatVisible = true
+      this.selectMenuId = row.id
+      this.getMenuListById()
+    },
+    getMenuListById() {
+      this.wechatLoading = true
+      getMenuListById({ accountId: this.selectMenuId }).then(res => {
+        this.wechatLoading = false
+        if(Array.isArray(res.data)) {
+          let resData = []
+          res.data.forEach(item => {
+            let obj = {
+              name: item.name,
+              menuChild: []
+            }
+            if(Array.isArray(item.sub_button) && item.sub_button.length > 0) {
+              item.sub_button.forEach(vItem => {
+                obj.menuChild.push({
+                  name: vItem.name
+                })
+              })
+            }
+            resData.push(obj)
+          })
+          this.menuList = resData
+        }
+        this.selectMenuIndex = this.menuList.length - 1
+      })
+    },
     handleDelete(data) {
       // 删除
       this.$confirm('此操作将永久删除该账号, 是否继续?', '提示', {
@@ -711,10 +802,24 @@ export default {
     },
     addMenu() {
       this.isMenu = true
-      this.selectMenuIndex++
-      this.menu.push({
-        // 添加主菜单
-        name: '菜单'
+      addMenu({ 
+        accoutId: this.selectMenuId,
+        name: '菜单名称',
+        type: 'click'
+      }).then(res => {
+        this.getMenuListById()
+      })
+    },
+    updateMenu(event, index, name) {
+      console.log(event)
+      console.log(index)
+      console.log(name)
+      // 菜单修改保存
+      updateMenu({
+        accoutId: this.selectMenuId,
+        name: name
+      }).then(res => {
+
       })
     },
     selectMenu(index) {
@@ -722,7 +827,6 @@ export default {
       this.isMenu = true
       this.selectMenuIndex = index
       this.selectMenuChidIndex = -1
-      this.menu[index].select = true
     },
     addMenuChild(index) {
       // 添加子菜单
@@ -740,6 +844,31 @@ export default {
     deleteMenu() {
       // 删除主菜单
       this.menu.splice(this.selectMenuIndex, 1)
+      this.$confirm(`此操作将永久删除菜单“${this.menuList[this.selectMenuIndex].name}”, 是否继续?`, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.listLoading = true
+        deleteMenu({id: data.id}).then(response => {
+          this.listLoading = false
+          this.$message({
+            type: 'success',
+            message: '删除成功!'
+          })
+          if(this.list.length === 1 && this.allPages - 1 > 0) {
+            --this.listQuery.pageIndex
+          }
+          this.fetchData()
+        }).catch(err => {
+          this.listLoading = false
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        })   
+      })
     },
     deleteMenuChild() {
       // 删除子菜单
@@ -763,7 +892,6 @@ export default {
       display: table;
       font-size: 14px;
       *zoom: 1;
-      margin: 14px 30px 0;
   }
   .menu_preview_area {
     float: left;

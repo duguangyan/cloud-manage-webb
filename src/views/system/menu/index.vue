@@ -215,9 +215,6 @@
         <el-form-item prop="name" label="名称">
           <el-input v-model="role.name" maxlength="64" placeholder="请输入名称" />
         </el-form-item>
-        <el-form-item label="排序">
-          <el-input v-model="role.sort" maxlength="11" placeholder="请输入排序" />
-        </el-form-item>
         <el-form-item prop="type" label="类型">
           <el-select v-model="role.type" placeholder="请选择">
             <el-option
@@ -268,15 +265,18 @@
             </el-option>
           </el-select>
         </el-form-item>
-         <el-form-item label="描述">
-          <el-input
-            v-model="role.remark"
-            :autosize="{ minRows: 2, maxRows: 4}"
-            type="textarea"
-            maxlength="255"
-            placeholder="请输入描述内容"
-          />
+        <el-form-item label="排序">
+          <el-input v-model="role.sort" maxlength="11" placeholder="请输入排序" />
         </el-form-item>
+        <el-form-item label="描述">
+        <el-input
+          v-model="role.remark"
+          :autosize="{ minRows: 2, maxRows: 4}"
+          type="textarea"
+          maxlength="255"
+          placeholder="请输入描述内容"
+        />
+      </el-form-item>
       </el-form>
       <div style="text-align:right;">
         <el-button type="danger" @click="dioCancle">取消</el-button>

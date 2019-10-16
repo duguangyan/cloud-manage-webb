@@ -119,6 +119,8 @@ export default {
       // 获取商品列表
       this.listLoading = true
       getManageDetailList(this.listQuery).then(res => {
+        console.log(res)
+        console.log('res', res.data.records)
         if(Array.isArray(res.data.records)) {
           this.listLoading = false
           this.total = res.data.total
@@ -135,7 +137,9 @@ export default {
               hits: item.goods.hits
             })
           })
+          console.log('data', data)
           this.detailData = data
+          console.log('this', this.detailData)
         }
       }).catch(err => {
         this.listLoading = false

@@ -81,3 +81,20 @@ export function updateMenu(data) {
   })
 }
 
+// 根据微信账号id获取菜单列表
+export function getMenuListById(query) {
+  return request({
+    url: '/wechat/menu/listByAccountId',
+    method: 'get',
+    params: query
+  })
+}
+
+// 判断菜单type是否有资源
+export function checkMenu(query) {
+  return request({
+    url: '/wechat/menu/checkById',
+    method: 'get',
+    params: query
+  })
+}
