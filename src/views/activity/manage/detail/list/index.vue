@@ -121,12 +121,15 @@ export default {
       getManageDetailList(this.listQuery).then(res => {
         console.log(res)
         console.log('res', res.data.records)
+        console.log('is array', Array.isArray(res.data.records))
         if(Array.isArray(res.data.records)) {
+          console.log('in')
           this.listLoading = false
           this.total = res.data.total
           this.allPages = res.data.pages
           let data = []
           res.data.records.forEach(item => {
+            console.log('item', item)
             data.push({
               id: item.goods.id, 
               name: item.goods.name,
