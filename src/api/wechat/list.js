@@ -98,3 +98,12 @@ export function checkMenu(query) {
     params: query
   })
 }
+
+// (后台)根据id删除菜单信息
+export function deleteMenu(data) {
+  return request({
+    url: '/wechat/menu/deleteById',
+    method: 'post',
+    data
+  })
+}

@@ -213,7 +213,7 @@
             <div class="mobile_hd tc">沁绿农业</div>
             <div class="mobile_bd">
               <ul class="pre_menu_list grid_line ui-sortable ui-sortable-disabled" :class="{ no_menu: menuList.length === 0 }">
-                <li v-for="(item, index) in menuList" :key="index" class="jsMenu pre_menu_item grid_item jslevel1 ui-sortable ui-sortable-disabled" :class="{'size1of1': menuList.length === 0, 'size1of2': menuList.length === 1, 'size1of3': menuList.length > 1, 'current': selectMenuIndex === index}" @click="selectMenu(index)">
+                <li v-for="(item, index) in menuList" :key="index" class="jsMenu pre_menu_item grid_item jslevel1 ui-sortable ui-sortable-disabled" :class="{'size1of1': menuList.length === 0, 'size1of2': menuList.length === 1, 'size1of3': menuList.length > 1, 'current': selectMenuIndex === index}" @click="selectMenu(index, item.id)">
                   <a href="javascript:void(0);" class="pre_menu_link" draggable="false">
                     <!-- <i class="icon_menu_dot js_icon_menu_dot dn" style="display: none;"></i> -->
                     <!-- <i class="icon20_common sort_gray"></i> -->
@@ -222,9 +222,9 @@
                   </a>
                   <div v-if="selectMenuIndex === index" class="sub_pre_menu_box js_l2TitleBox">
                     <ul class="sub_pre_menu_list">
-                        <li v-for="(cItem, cIndex) in item.menuChild" :key="cIndex" id="1571119289645_subMenu_1571118069654_menu_0_0" class="jslevel2" :class="{ 'current': selectMenuChidIndex === cIndex }" @click.stop="selectMenuChild(cIndex)">
+                        <li v-for="(cItem, cIndex) in item.menuChild" :key="cIndex" id="1571119289645_subMenu_1571118069654_menu_0_0" class="jslevel2" :class="{ 'current': selectMenuChildIndex === cIndex }" @click.stop="selectMenuChild(cIndex)">
                           <a href="javascript:void(0);" class="jsSubView" draggable="false">
-                            <span class="sub_pre_menu_inner js_sub_pre_menu_inner"><span class="js_l2Title">{{cItem.name}} {{cIndex}} {{selectMenuChidIndex}}</span></span>
+                            <span class="sub_pre_menu_inner js_sub_pre_menu_inner"><span class="js_l2Title">{{cItem.name}} {{cIndex}} {{selectMenuChildIndex}}</span></span>
                           </a>
                         </li>
                         <li v-if="menuChild[index].length < 5" class="js_addMenuBox" @click.stop="addMenuChild(index)">
@@ -276,52 +276,55 @@
                 <h4 v-if="isMenu" class="global_info">菜单名称</h4>
                 <h4 v-else class="global_info">子菜单名称</h4>
                 <div class="global_extra">
-                  <a v-if="isMenu" @click="deleteMenu">删除菜单</a>
+                  <a v-if="isMenu" @click="deleteMenu('xxx')">删除菜单</a>
                   <a v-else @click="deleteMenuChild">删除子菜单</a>
                 </div>
               </div>
               <div class="menu_form_bd">
                 <div v-if="menuList[selectMenuIndex].menuChild.length > 0" class="msg_sender_tips tips_global mb20">已添加子菜单，仅可设置菜单名称。</div>
                 <el-form v-loading="wechatLoading" ref="wechatForm" :rules="wechatRules" :model="wechat" label-position="left" label-width="100px">
-                  <el-form-item prop="name" :label="isMenu?'菜单名称':'子菜单名称'">
-                    <el-input class="w300" v-model="menuList[selectMenuIndex].name" maxlength="4" @blur="(event) => updateMenu(event, selectMenuIndex, menuList[selectMenuIndex].name)" />
-                  </el-form-item>
-                  <template v-if="isMenu">
-                    <template v-if="menuList[selectMenuIndex].menuChild.length === 0">
-                      <el-form-item prop="systemId" label="菜单内容">
-                        <el-radio-group v-model="wechatType">
-                          <el-radio :label="1">发送消息</el-radio>
-                          <el-radio :label="2">跳转网页</el-radio>
-                          <el-radio :label="3">小程序</el-radio>
-                        </el-radio-group>
+                    <template v-if="isMenu">
+                      <el-form-item prop="name" label="菜单名称">
+                        <el-input class="w300" v-model="menuList[selectMenuIndex].name" maxlength="4" @blur="(event) => updateMenu(event, selectMenuIndex, menuList[selectMenuIndex].name)" />
                       </el-form-item>
-                      <template v-if="wechatType === 1">
-                        <div>
-                          富文本
-                        </div>
-                      </template>
-                      <template v-else-if="wechatType === 2">
-                        <div>
-                          <p class="wechat-des">订阅者点击该子菜单会跳到以下链接</p>
-                          <el-form-item prop="name" label="页面地址">
-                            <el-input class="w300" v-model="temp.name" maxlength="64" />
-                          </el-form-item>
-                        </div>
-                      </template>
-                      <template v-else>
-                        <div>
-                          <p class="wechat-des">订阅者点击该子菜单会跳到以下小程序</p>
-                          <el-form-item prop="name" label="小程序ID">
-                            <el-input class="w300" v-model="temp.name" maxlength="64" />
-                          </el-form-item>
-                          <el-form-item prop="name" label="首页地址">
-                            <el-input class="w300" v-model="temp.name" maxlength="64" />
-                          </el-form-item>
-                        </div>
+                      <template v-if="menuList[selectMenuIndex].menuChild.length === 0">
+                        <el-form-item prop="systemId" label="菜单内容">
+                          <el-radio-group v-model="wechatType">
+                            <el-radio :label="1">发送消息</el-radio>
+                            <el-radio :label="2">跳转网页</el-radio>
+                            <el-radio :label="3">小程序</el-radio>
+                          </el-radio-group>
+                        </el-form-item>
+                        <template v-if="wechatType === 1">
+                          <div>
+                            富文本
+                          </div>
+                        </template>
+                        <template v-else-if="wechatType === 2">
+                          <div>
+                            <p class="wechat-des">订阅者点击该子菜单会跳到以下链接</p>
+                            <el-form-item prop="name" label="页面地址">
+                              <el-input class="w300" v-model="temp.name" maxlength="64" />
+                            </el-form-item>
+                          </div>
+                        </template>
+                        <template v-else>
+                          <div>
+                            <p class="wechat-des">订阅者点击该子菜单会跳到以下小程序</p>
+                            <el-form-item prop="name" label="小程序ID">
+                              <el-input class="w300" v-model="temp.name" maxlength="64" />
+                            </el-form-item>
+                            <el-form-item prop="name" label="首页地址">
+                              <el-input class="w300" v-model="temp.name" maxlength="64" />
+                            </el-form-item>
+                          </div>
+                        </template>
                       </template>
                     </template>
-                  </template>
-                  <template v-else>
+                  <template v-else-if="menuList[selectMenuIndex].length > 0">
+                    <el-form-item prop="name" label="子菜单名称">
+                          <el-input class="w300" v-model="menuList[selectMenuIndex].menuChild[selectMenuChildIndex].name" maxlength="4" @blur="(event) => updateMenu(event, selectMenuIndex, menuList[selectMenuIndex].name)" />
+                        </el-form-item>
                     <el-form-item prop="systemId" label="菜单内容">
                       <el-radio-group v-model="wechatType">
                         <el-radio :label="1">发送消息</el-radio>
@@ -376,7 +379,7 @@
 
 <script>
 import { getUserBtnByPId } from '@/api/upms/menu'
-import { addWechat, deleteWechat, updateWechat, getWechatList, getWechatById, getMenuById, addMenu, updateMenu, getMenuListById, checkMenu } from '@/api/wechat/list'
+import { addWechat, deleteWechat, updateWechat, getWechatList, getWechatById, getMenuById, addMenu, updateMenu, getMenuListById, checkMenu, deleteMenu } from '@/api/wechat/list'
 import { getSystem } from '@/api/upms/systemList'
 import Pagination from '@/components/Pagination'
 import waves from '@/directive/waves' // waves directive
@@ -551,9 +554,10 @@ export default {
         }
       ],
       isMenu: true,
+      selectWechatId: '',
       selectMenuId: '',
       selectMenuIndex: 0,
-      selectMenuChidIndex: -1,
+      selectMenuChildIndex: 0,
       menuChild: {
         0: [],
         1: [],
@@ -720,24 +724,27 @@ export default {
     editWechat(row) {
       // 自定义菜单
       this.dialogWechatVisible = true
-      this.selectMenuId = row.id
+      this.selectWechatId = row.id
       this.getMenuListById()
     },
     getMenuListById() {
       this.wechatLoading = true
-      getMenuListById({ accountId: this.selectMenuId }).then(res => {
+      getMenuListById({ accountId: this.selectWechatId }).then(res => {
         this.wechatLoading = false
         if(Array.isArray(res.data)) {
           let resData = []
           res.data.forEach(item => {
             let obj = {
+              id: item.id,
               name: item.name,
               menuChild: []
             }
             if(Array.isArray(item.sub_button) && item.sub_button.length > 0) {
+
               item.sub_button.forEach(vItem => {
                 obj.menuChild.push({
-                  name: vItem.name
+                  name: vItem.name,
+                  id: vItem.id
                 })
               })
             }
@@ -803,9 +810,9 @@ export default {
     addMenu() {
       this.isMenu = true
       addMenu({ 
-        accoutId: this.selectMenuId,
+        accoutId: this.selectWechatId,
         name: '菜单名称',
-        type: 'click'
+        type: 'view'
       }).then(res => {
         this.getMenuListById()
       })
@@ -822,46 +829,55 @@ export default {
 
       })
     },
-    selectMenu(index) {
+    selectMenu(index, id) {
       // 选择主菜单
+      console.log('id', id)
       this.isMenu = true
+      this.selectMenuId = id
       this.selectMenuIndex = index
-      this.selectMenuChidIndex = -1
+      this.selectMenuChildIndex = -1
     },
     addMenuChild(index) {
       // 添加子菜单
       this.isMenu = false
-      this.menuChild[index].unshift({
-        name: '子菜单'
+      // this.menuChild[index].unshift({
+      //   name: '子菜单'
+      // })
+      addMenu({ 
+        pid: this.selectMenuId,
+        name: '子菜单名称',
+        type: 'view'
+      }).then(res => {
+        this.getMenuListById()
       })
-      this.selectMenuChidIndex = this.menuChild[index].length - 1
+      
+      // this.selectMenuChildIndex = this.menuChild[index].length - 1
     },
     selectMenuChild(index) {
       // 选择子菜单
       this.isMenu = false
-      this.selectMenuChidIndex = index
+      this.selectMenuChildIndex = index
     },
-    deleteMenu() {
+    deleteMenu(x) {
       // 删除主菜单
-      this.menu.splice(this.selectMenuIndex, 1)
+      console.log(x)
+      console.log(this.selectMenuId)
       this.$confirm(`此操作将永久删除菜单“${this.menuList[this.selectMenuIndex].name}”, 是否继续?`, '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
         this.listLoading = true
-        deleteMenu({id: data.id}).then(response => {
+        deleteMenu({id: this.selectMenuId}).then(response => {
           this.listLoading = false
           this.$message({
             type: 'success',
             message: '删除成功!'
           })
-          if(this.list.length === 1 && this.allPages - 1 > 0) {
-            --this.listQuery.pageIndex
-          }
-          this.fetchData()
-        }).catch(err => {
-          this.listLoading = false
+          // if(this.list.length === 1 && this.allPages - 1 > 0) {
+          //   --this.listQuery.pageIndex
+          // }
+          this.getMenuListById()
         })
       }).catch(() => {
         this.$message({
