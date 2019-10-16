@@ -22,17 +22,32 @@ export default {
   },
   methods: {
     load() {
-      let day = new Date(Date.now() - 60 * 60 * 24 * 1000 * 4)
+      let day = new Date(Date.now() - 60 * 60 * 24 * 1000)
         .toLocaleString()
         .match(/([\d\W]+)\s/)[1]
         .replace(/\//g, "-");
       getAnaData({
         day
       }).then(data => {
-        this.initGraphic(data.data);
+        let d = {
+          ip: /* 访客 */[],
+          userNum: /* 成交客户 */[],
+          orderNum: /* 订单数 */[],
+          orderTotalAmount:/* 订单总额 */ []
+        }
+
+        data.data.forEach(item=>{
+          d.ip.push(item.ip)
+          d.userNum.push(item.userNum)
+          d.orderNum.push(item.orderNum)
+          d.orderTotalAmount.push(item.orderTotalAmount)
+        })
+
+        this.initGraphic(d);
       });
     },
     initGraphic(data) {
+      console.log(data);
       let clock = ($ => {
         let res = [];
         for (let i = 0; i < 24; i++) {
@@ -57,7 +72,7 @@ export default {
           {
             name: "访客",
             type: "line",
-            data: [5, 20, 36, 10, 10, 20]
+            data: data.ip
           }
         ]
       });
@@ -80,7 +95,7 @@ export default {
           {
             name: "成交客户",
             type: "line",
-            data: [5, 20, 36, 10, 10, 20]
+            data: data.userNum
           }
         ]
       });
@@ -103,7 +118,7 @@ export default {
           {
             name: "支付订单",
             type: "line",
-            data: [5, 20, 36, 10, 10, 20]
+            data: data.orderNum
           }
         ]
       });
@@ -126,7 +141,7 @@ export default {
           {
             name: "支付金额",
             type: "line",
-            data: [5, 20, 36, 10, 10, 20]
+            data: data.orderTotalAmount
           }
         ]
       });

@@ -71,10 +71,7 @@
         <li class="w80">
           <div class="specific">操作说明:</div>
           <div>
-            <el-form-item
-              :label="'首'+accText"
-              prop="defaultPost.firstVolume"
-            >
+            <el-form-item :label="'首'+accText" prop="defaultPost.firstVolume">
               <el-input
                 placeholder="请输入内容"
                 v-model="postSolution.defaultPost.firstVolume"
@@ -90,10 +87,7 @@
               &emsp;
             </el-form-item>
 
-            <el-form-item
-              :label="'续'+unitText"
-              prop="defaultPost.continueVolume"
-            >
+            <el-form-item :label="'续'+unitText" prop="defaultPost.continueVolume">
               <el-input
                 placeholder="请输入内容"
                 v-model="postSolution.defaultPost.continueVolume"
@@ -185,10 +179,11 @@
             </div>
           </el-form>
         </div>
-        <div v-if="postSolution.solutionItemList.length > 0 && postSolution.solutionItemList.length < 8">
+        <div
+          v-if="postSolution.solutionItemList.length > 0 && postSolution.solutionItemList.length < 8"
+        >
           <el-button type="primary" size="mini" @click="callAreaSel(1,-1)">添加方案</el-button>
         </div>
-
 
         <!-- 邮费方案表格 -->
         <template v-if="postSolution.solutionFreeItemList.length >=8">
@@ -231,9 +226,9 @@
             <div class="cell w80">
               <el-form-item prop="type">
                 <el-select v-model="item.type">
-                  <el-option label="数量" value="1"></el-option>
+                  <el-option :label="accText" value="1"></el-option>
                   <el-option label="金额" value="2"></el-option>
-                  <el-option label="数量+金额" value="3"></el-option>
+                  <el-option :label="`${accText}+金额`" value="3"></el-option>
                 </el-select>&emsp;
               </el-form-item>
 
@@ -260,7 +255,9 @@
             </div>
           </el-form>
         </div>
-        <div v-if="postSolution.solutionFreeItemList.length > 0 && postSolution.solutionFreeItemList.length < 8">
+        <div
+          v-if="postSolution.solutionFreeItemList.length > 0 && postSolution.solutionFreeItemList.length < 8"
+        >
           <el-button type="primary" size="mini" @click="callAreaSel(2,-1)">添加方案</el-button>
         </div>
       </template>
@@ -315,8 +312,8 @@ var vm = {
     vm = this;
     return {
       switch: /* 更改type开关 */ true,
-      accText: /* 计量文案 */ '',
-      unitText: /* 单位文案 */ '',
+      accText: /* 计量文案 */ "",
+      unitText: /* 单位文案 */ "",
       curIndex: /* 当前项邮费方案的序 */ -1,
       fullscreenLoading: false,
       itemRules: /*城市方案邮费表单规则*/ {
@@ -436,6 +433,7 @@ var vm = {
       provinceList2: /* 条件方案地区列表 */ [],
       cityList: /* 城市列表 */ [],
       regionList: /* 县城列表 */ [],
+      firstLoad: true,
       postSolution: {
         isPost: 1,
         address: "",
@@ -487,13 +485,16 @@ var vm = {
   watch: {
     "postSolution.isPost"(val) {
       if (+val === 0) {
-        vm.postSolution.type = 1;
+        vm.postSolution.type = vm.postSolution.type;
       }
     },
-    "postSolution.type"(val,oldVal){
-      vm.changeText(val)
-      vm.switch && vm.changeType(val,oldVal)
-      vm.switch = false
+    "postSolution.type"(val, oldVal) {
+      if(vm.firstLoad){
+        return
+      }
+      vm.changeText(val);
+      vm.switch && vm.changeType(val, oldVal);
+      vm.switch = false;
     }
   },
   created() {
@@ -503,8 +504,10 @@ var vm = {
         id: vm.$route.query.id
       }).then(data => {
         let d = data.data;
+        d.type = +d.type
+
         // 分离是否包邮
-        d.type === 0 ? (d.isPost = 1) : (d.isPost = 0);
+        d.isPost = d.type === 0 ? 1 : 0;
 
         // 抽离默认城市邮费方案
         d.defaultPost = Object.assign({ ...d.solutionItemList[0] });
@@ -540,16 +543,16 @@ var vm = {
           d.defaultPost[k] === null && (d.defaultPost[k] = []);
         }
 
-        // 发货地址处理
         vm.postSolution = Object.assign({}, d);
 
-        vm.changeText(d.type)
+        vm.changeText(d.type);
 
         getAd({
           parentId: "0"
         }).then(data => {
           vm.dealProvinceList(data.data);
         });
+
       });
     } else {
       getAd({
@@ -563,24 +566,24 @@ var vm = {
     //
   },
   methods: {
-    changeText(val){
-      vm.unitText = +val===1?'件':+val===2?'立方米':'千克'
-      vm.accText = +val===1?'件数:':+val===2?'体积:':'重:'
+    changeText(val) {
+      vm.unitText = +val === 1 ? "件" : +val === 2 ? "立方米" : "千克";
+      vm.accText = +val === 1 ? "件数:" : +val === 2 ? "体积:" : "重:";
     },
-    changeType(val,oldVal){
+    changeType(val, oldVal) {
       vm.$confirm("切换将删除所有邮费方案,是否继续？")
         .then(_ => {
           vm.clearModule();
-          vm.postSolution.type = val
-          setTimeout(()=>{
-            vm.switch = true
-          },0)
+          vm.postSolution.type = val;
+          setTimeout(() => {
+            vm.switch = true;
+          }, 0);
         })
         .catch(() => {
-          vm.postSolution.type = oldVal
-          setTimeout(()=>{
-            vm.switch = true
-          },0)
+          vm.postSolution.type = oldVal;
+          setTimeout(() => {
+            vm.switch = true;
+          }, 0);
         });
     },
     clearModule() {
@@ -661,7 +664,7 @@ var vm = {
         delete res.defaultPost;
 
         // 删除isPost
-        +res.isPost === 1 ? (res.type = 0) : '';
+        +res.isPost === 1 ? (res.type = 0) : "";
         delete res.isPost;
 
         // 查找省市区的ID
