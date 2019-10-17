@@ -558,8 +558,9 @@ var vm = {
       getAd({
         parentId: "0"
       }).then(data => {
-        vm.provinceList = preCopy(data.data);
-        vm.provinceList2 = preCopy(data.data);
+        // vm.provinceList = preCopy(data.data);
+        // vm.provinceList2 = preCopy(data.data);
+        vm.dealProvinceList(data.data);
       });
     }
 
