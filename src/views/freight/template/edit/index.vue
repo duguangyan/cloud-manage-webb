@@ -867,6 +867,8 @@ var vm = {
       vm[filKey] = [];
 
       // 合并当前编辑项以及源数据项
+      vm.postSolution[aimKey][vm.curIndex].price === null && (vm.postSolution[aimKey][vm.curIndex].price = '')
+      vm.postSolution[aimKey][vm.curIndex].quantity === null && (vm.postSolution[aimKey][vm.curIndex].quantity = '')
       vm[souKey] = Object.assign(
         vm[souKey],
         vm.postSolution[aimKey][vm.curIndex] || {}
