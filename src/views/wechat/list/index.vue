@@ -213,16 +213,16 @@
             <div class="mobile_hd tc">沁绿农业</div>
             <div class="mobile_bd">
               <ul class="pre_menu_list grid_line ui-sortable ui-sortable-disabled" :class="{ no_menu: menuList.length === 0 }">
-                <li v-for="(item, index) in menuList" :key="index" class="jsMenu pre_menu_item grid_item jslevel1 ui-sortable ui-sortable-disabled" :class="{'size1of1': menuList.length === 0, 'size1of2': menuList.length === 1, 'size1of3': menuList.length > 1, 'current': isSelect && selectMenuIndex === index}" @click="selectMenu(index, item.id)">
+                <li v-for="(item, index) in menuList" :key="index" class="jsMenu pre_menu_item grid_item jslevel1 ui-sortable ui-sortable-disabled" :class="{'size1of1': menuList.length === 0, 'size1of2': menuList.length === 1, 'size1of3': menuList.length > 1, 'current': isSelectMenu && selectMenuIndex === index}" @click="selectMenu(index, item.id)">
                   <a href="javascript:void(0);" class="pre_menu_link" draggable="false">
                     <!-- <i class="icon_menu_dot js_icon_menu_dot dn" style="display: none;"></i> -->
                     <!-- <i class="icon20_common sort_gray"></i> -->
                     <!-- <i class="icon_menu_dot js_icon_menu_dot dn"></i> -->
                     <span class="js_l1Title">{{item.name}}</span>
                   </a>
-                  <div v-if="isSelect && selectMenuIndex === index" class="sub_pre_menu_box js_l2TitleBox">
+                  <div v-if="isSelectMenu && selectMenuIndex === index" class="sub_pre_menu_box js_l2TitleBox">
                     <ul class="sub_pre_menu_list">
-                        <li v-for="(cItem, cIndex) in item.menuChild" :key="cIndex" id="1571119289645_subMenu_1571118069654_menu_0_0" class="jslevel2" :class="{ 'current': selectMenuChildIndex === cIndex }" @click.stop="selectMenuChild(cIndex, cItem.id)">
+                        <li v-for="(cItem, cIndex) in item.menuChild" :key="cIndex" id="1571119289645_subMenu_1571118069654_menu_0_0" class="jslevel2" :class="{ 'current': isSelectMenuChild && selectMenuChildIndex === cIndex }" @click.stop="selectMenuChild(cIndex, cItem.id)">
                           <a href="javascript:void(0);" class="jsSubView" draggable="false">
                             <span class="sub_pre_menu_inner js_sub_pre_menu_inner"><span class="js_l2Title">{{cItem.name}}</span></span>
                           </a>
@@ -269,14 +269,14 @@
           </div>
         </div>
         <div class="menu_form_area">
-          <div v-if="!isSelect || menuList.length === 0" id="js_none" class="menu_initial_tips tips_global">点击左侧菜单进行编辑操作</div>
+          <div v-if="!isSelectMenu || menuList.length === 0" id="js_none" class="menu_initial_tips tips_global">点击左侧菜单进行编辑操作</div>
           <div v-else class="portable_editor to_left">
             <div class="editor_inner">
               <div class="global_mod float_layout menu_form_hd js_second_title_bar mb20">
-                <h4 v-if="isMenu" class="global_info">菜单名称</h4>
+                <h4 v-if="isSelectMenu" class="global_info">菜单名称</h4>
                 <h4 v-else class="global_info">子菜单名称</h4>
                 <div class="global_extra">
-                  <a v-if="isMenu" @click="deleteMenu()">删除菜单</a>
+                  <a v-if="isSelectMenu" @click="deleteMenu()">删除菜单</a>
                   <a v-else @click="deleteMenuChild">删除子菜单</a>
                 </div>
               </div>
@@ -284,8 +284,9 @@
                 <div v-if="menuList[selectMenuIndex].menuChild.length > 0" class="msg_sender_tips tips_global mb20">已添加子菜单，仅可设置菜单名称。</div>
                 <el-form v-loading="wechatLoading" ref="wechatForm" :rules="wechatRules" :model="menuForm" label-position="left" label-width="100px">
                       <el-form-item prop="name" label="菜单名称">
-                        <el-input class="w300" v-model="menuForm.name" maxlength="4" @blur="(event) => updateMenu()" />
+                        <el-input class="w300" v-model="menuForm.name" maxlength="4"/>
                       </el-form-item>
+                      <template v-if="(isSelectMenu && menuList[selectMenuIndex].menuChild.length === 0) || isSelectMenuChild">
                         <el-form-item prop="type" label="菜单内容">
                           <el-radio-group v-model="menuForm.type">
                             <el-radio label="click">发送消息</el-radio>
@@ -306,19 +307,24 @@
                             </el-form-item>
                           </div>
                         </template>
-                        <template v-else>
+                        <template v-else-if="menuForm.type=== 'miniprogram'">
                           <div>
                             <p class="wechat-des">订阅者点击该子菜单会跳到以下小程序</p>
                             <el-form-item prop="appId" label="小程序ID">
-                              <el-input class="w300" v-model="menuForm.appId" maxlength="64" />
+                              <el-input class="w300" v-model="menuForm.appId" maxlength="64"/>
                             </el-form-item>
                             <el-form-item prop="url" label="首页地址">
-                              <el-input class="w300" v-model="menuForm.url" maxlength="64" />
+                              <el-input class="w300" v-model="menuForm.url" maxlength="64"/>
                             </el-form-item>
                           </div>
                         </template>
-      
+                      </template>
                 </el-form>
+                <div slot="footer" class="dialog-footer">
+                  <el-button type="primary" :disabled="diaDisable" @click="saveMenu()">
+                    确定
+                  </el-button>
+                </div>
                 <!-- <div slot="footer" class="dialog-footer">
                   <el-button @click="dialogFormVisible = false">
                     取消
@@ -520,12 +526,12 @@ export default {
           ]
         }
       ],
-      isMenu: true,
+      isSelectMenu: false,
+      isSelectMenuChild: false,
       selectWechatId: '',
       selectMenuId: '',
       selectMenuChildId: '',
       selectMenuIndex: 0,
-      isSelect: false,
       selectMenuChildIndex: 0,
       menuChild: {
         0: [],
@@ -696,11 +702,22 @@ export default {
       this.selectWechatId = row.id
       this.getMenuListById()
     },
-    getMenuListById() {
+    getMenuListById(type) {
       this.wechatLoading = true
       getMenuListById({ accountId: this.selectWechatId }).then(res => {
         this.wechatLoading = false
         if(Array.isArray(res.data)) {
+          if(type === 1) {
+            let len = res.data.length - 1
+            this.menuForm.name = res.data[len].name 
+            this.menuForm.type = res.data[len].type
+            if(res.data[len].type === 'view') {
+              this.menuForm.link = res.data[len].url
+            } else if(res.data[len].type === 'miniprogram') {
+              this.menuForm.appId = res.data[len].appId
+              this.menuForm.url = res.data[len].url
+            }
+          }
           let resData = []
           res.data.forEach(item => {
             let obj = {
@@ -726,8 +743,17 @@ export default {
           })
           this.menuList = resData
         }
-        this.selectMenuIndex = this.menuList.length - 1
-        console.log(this.menuList)
+        if(type === 1) {
+          this.isSelectMenu = true
+          this.isSelectMenuChild = false
+          this.selectMenuIndex = this.menuList.length - 1
+          this.selectMenuId = this.menuList[this.selectMenuIndex].id
+        } else if(type === 2) {
+          this.isSelectMenuChild = true
+          this.selectMenuChildIndex = this.menuList[this.selectMenuIndex].menuChild.length - 1
+          this.selectMenuChildId = this.menuList[this.selectMenuIndex].menuChild[this.selectMenuChildIndex].id
+        }
+        
       })
     },
     handleDelete(data) {
@@ -783,26 +809,36 @@ export default {
       })
     },
     addMenu() {
-      this.isMenu = true
       addMenu({ 
         accoutId: this.selectWechatId,
         name: '菜单名称'
       }).then(res => {
-        this.getMenuListById()
+        this.isSelectMenu = true
+        this.isSelectMenuChild = false
+        this.getMenuListById(1)
       })
     },
-    updateMenu(event, prop, msg, num, type) {
+    saveMenu() {
       // 菜单修改保存
       let param = {}
-      param[prop] = msg
-      if(num === 1) {
-        param.id = this.selectMenuId
-      } else {
+      if(this.isSelectMenuChild) {
         param.id = this.selectMenuChildId
-        param.type = type
+      } {
+        param.id = this.selectMenuId
+      } 
+      param.name = this.menuForm.name
+      if(this.menuForm.type) {
+        param.type = this.menuForm.type
       }
+      if(this.menuForm.type === 'miniprogram') {
+        param.appId = this.menuForm.appId
+        param.url = this.menuForm.url
+      } else if(this.menuForm.type === 'view') {
+        param.url = this.menuForm.link
+      }
+      
       updateMenu(param).then(res => {
-
+        this.getMenuListById()
       })
     },
     selectMenu(index, id) {
@@ -812,10 +848,14 @@ export default {
         this.menuForm.type = res.data.type 
         this.menuForm.url = res.data.url 
         this.menuForm.appId = res.data.appId 
-        this.menuForm.link = res.data.url
+        if(res.data.type === 'view') {
+          this.menuForm.link = res.data.url
+        } else {
+          this.menuForm.link = ''
+        }
       })
-      this.isSelect = true
-      this.isMenu = true
+      this.isSelectMenu = true
+      this.isSelectMenuChild = false
       this.selectMenuId = id
       this.selectMenuIndex = index
       this.selectMenuChildIndex = -1
@@ -825,18 +865,16 @@ export default {
       // this.menuChild[index].unshift({
       //   name: '子菜单'
       // })
-      this.isMenu = false
       addMenu({
         accoutId: this.selectWechatId,
         pId: this.selectMenuId,
         name: '子菜单名称',
         type: 'view'
       }).then(res => {
-        this.getMenuListById()
+        this.getMenuListById(2)
       })
       // console.log(index)
       // this.selectMenuIndex = index
-      this.isSelect = true
       // this.selectMenuChildIndex = this.menuChild[index].length - 1
     },
     selectMenuChild(index, id) {
@@ -844,11 +882,16 @@ export default {
       getMenuById({ id: id }).then(res => {
         this.menuForm.name = res.data.name 
         this.menuForm.type = res.data.type 
-        this.menuForm.url = res.data.url 
         this.menuForm.appId = res.data.appId 
-        this.menuForm.link = res.data.url
+        if(res.data.type === 'view') {
+          this.menuForm.link = res.data.url
+          this.menuForm.url = ''
+        } else {
+          this.menuForm.link = ''
+          this.menuForm.url = res.data.url 
+        }
       })
-      this.isMenu = false
+      this.isSelectMenuChild = true
       this.selectMenuChildId = id
       this.selectMenuChildIndex = index
     },
@@ -862,7 +905,8 @@ export default {
         this.listLoading = true
         deleteMenu({id: this.selectMenuId}).then(response => {
           this.listLoading = false
-          this.isSelect = false
+          this.isSelectMenu = false
+          this.isSelectMenuChild = false
           this.$message({
             type: 'success',
             message: '删除成功!'
@@ -889,7 +933,8 @@ export default {
         this.listLoading = true
         deleteMenu({id: this.selectMenuChildId}).then(response => {
           this.listLoading = false
-          this.isSelect = false
+          this.isSelectMenu = false
+          this.isSelectMenuChild = false
           this.$message({
             type: 'success',
             message: '删除成功!'
