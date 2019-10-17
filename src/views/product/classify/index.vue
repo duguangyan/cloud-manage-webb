@@ -270,9 +270,9 @@
           <el-form-item v-if="prop.type === 3 || prop.type === 4 || prop.type === 0" label="提示语" prop="notice">
             <el-input v-model="prop.notice" maxlength="20" placeholder="请输入提示语" />
           </el-form-item>
-          <el-form-item v-if="prop.type === 4" label="尾部语" prop="afterDes">
+          <!-- <el-form-item v-if="prop.type === 4" label="尾部语" prop="afterDes">
             <el-input v-model="prop.afterDes" maxlength="20" placeholder="请输入名称尾部语" />
-          </el-form-item>
+          </el-form-item> -->
           <el-form-item label="是否必填" prop="isRequire">
             <el-radio v-model="prop.isRequire" :label="1">是</el-radio>
             <el-radio v-model="prop.isRequire" :label="0">否</el-radio>
@@ -995,9 +995,9 @@ export default {
           status: this.prop.status,
           valueStr: valueStr
         }
-        if(this.prop.type === 4) {
-          insetParams.exp = this.prop.afterDes
-        }
+        // if(this.prop.type === 4) {
+        //   insetParams.exp = this.prop.afterDes
+        // }
         if(this.isEdit) {
           insetParams.id = this.prop.id
           succMsg = '模板属性编辑成功'
@@ -1072,7 +1072,7 @@ export default {
         this.prop.id = row.id
         this.prop.name = row.name
         this.prop.status = row.status
-        this.prop.afterDes = row.exp
+        // this.prop.afterDes = row.exp
         this.prop.notice = row.hint
         this.prop.type = row.inputType
         this.prop.list = row.valueSet

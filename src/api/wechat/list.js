@@ -55,7 +55,7 @@ export function deleteWechat(data) {
 }
 
 // 根据父id创建自定义菜单
-export function getMenuById(query) {
+export function createMenuById(query) {
   return request({
     url: '/wechat/menu/createMenu',
     method: 'get',
@@ -94,6 +94,24 @@ export function getMenuListById(query) {
 export function checkMenu(query) {
   return request({
     url: '/wechat/menu/checkById',
+    method: 'get',
+    params: query
+  })
+}
+
+// (后台)根据id删除菜单信息
+export function deleteMenu(data) {
+  return request({
+    url: '/wechat/menu/deleteById',
+    method: 'post',
+    data
+  })
+}
+
+// 根据id获取菜单信息
+export function getMenuById(query) {
+  return request({
+    url: '/wechat/menu/getById',
     method: 'get',
     params: query
   })
