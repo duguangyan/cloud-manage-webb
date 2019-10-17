@@ -106,6 +106,7 @@ var vm = {
           message: "请输入邮编"
         },
         sort: {
+          type: 'number',
           message: "请输入排序"
         }
       },
