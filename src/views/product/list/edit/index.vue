@@ -976,7 +976,7 @@ let vm = {
             this.showAble[itemId] = item.showStyle
             this.valueSuffixObj[itemId] = item.valueSuffix
           });
-          this.$set(this.addForm, 'sku', skuInitObj)
+         
           this.sellData = res.data
           if(this.eiditId.length > 0) {
             let hasChild = false
@@ -991,10 +991,31 @@ let vm = {
                 id: this.addForm.unit,
                 name: this.unitName
               })
+              if(this.addForm.unit) {
+                if(msgObj.showStyle === '1') {
+                  skuInitObj[this.addForm.unit] = {
+                  list: [{
+                      name: '',
+                      price: '',
+                      number: '',
+                      store: ''
+                    }],
+                  }
+                } else if(msgObj.showStyle === '2') {
+                  skuInitObj[this.addForm.unit] = {
+                  list: [{
+                      price: '',
+                      number: ''
+                    }],
+                    store: ''
+                  }
+                }
+              }
             }
           }
+          this.$set(this.addForm, 'sku', skuInitObj)
         }
-        if(msgObj !== undefined) {
+        if(msgObj !== undefined && this.showStyle.id && this.addForm.sku[this.showStyle.id]) {
           this.addForm.sku[this.showStyle.id].showStyle = msgObj.showStyle
           this.addForm.sku[this.showStyle.id].list = msgObj.skuArr
           this.addForm.sku[this.showStyle.id].name = msgObj.name

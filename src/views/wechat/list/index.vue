@@ -206,8 +206,8 @@
     </el-dialog>
     
     <!-- wx -->
-    <el-dialog v-loading="wechatLoading" title="自定义菜单" width="80%" :closeOnClickModal="false" :visible.sync="dialogWechatVisible">
-      <div class="menu_setting_area js_editBox">
+    <el-dialog title="自定义菜单" width="80%" :closeOnClickModal="false" :visible.sync="dialogWechatVisible">
+      <div v-loading="wechatLoading" class="menu_setting_area js_editBox">
         <div class="menu_preview_area">
           <div class="mobile_menu_preview">
             <div class="mobile_hd tc">沁绿农业</div>
@@ -282,12 +282,15 @@
               </div>
               <div class="menu_form_bd">
                 <div v-if="menuList[selectMenuIndex].menuChild.length > 0" class="msg_sender_tips tips_global mb20">已添加子菜单，仅可设置菜单名称。</div>
-                <el-form v-loading="wechatLoading" ref="wechatForm" :rules="wechatRules" :model="menuForm" label-position="left" label-width="100px">
-                      <el-form-item prop="name" label="菜单名称">
-                        <el-input class="w300" v-model="menuForm.name" maxlength="4"/>
+                <el-form v-loading="wechatLoading" ref="menuRef" :rules="menuRules" :model="menuForm" label-position="left" label-width="100px">
+                      <el-form-item v-if="isSelectMenuChild" prop="menuChildName" label="子菜单名称">
+                        <el-input class="w300" v-model="menuForm.menuChildName" maxlength="16"/>
+                      </el-form-item>
+                      <el-form-item v-else prop="menuName" label="菜单名称">
+                        <el-input class="w300" v-model="menuForm.menuName" maxlength="8"/>
                       </el-form-item>
                       <template v-if="(isSelectMenu && menuList[selectMenuIndex].menuChild.length === 0) || isSelectMenuChild">
-                        <el-form-item prop="type" label="菜单内容">
+                        <el-form-item prop="type" :label="isSelectMenuChild?'子菜单名称':'菜单名称'">
                           <el-radio-group v-model="menuForm.type">
                             <el-radio label="click">发送消息</el-radio>
                             <el-radio label="view">跳转网页</el-radio>
@@ -320,24 +323,17 @@
                         </template>
                       </template>
                 </el-form>
-                <div slot="footer" class="dialog-footer">
-                  <el-button type="primary" size="medium" :disabled="diaDisable" @click="saveMenu()">保存菜单</el-button>
+                <div class="save-button">
+                  <el-button type="primary" size="medium" :disabled="wechatAble" @click="saveMenu()">保存</el-button>
                 </div>
-                <!-- <div slot="footer" class="dialog-footer">
-                  <el-button @click="dialogFormVisible = false">
-                    取消
-                  </el-button>
-                  <el-button type="primary" :disabled="diaDisable" @click="dialogStatus==='create'?createData():updateData()">
-                    确定
-                  </el-button>
-                </div> -->
+
               </div>
             </div>
             <span class="editor_arrow_wrp"><i class="editor_arrow editor_arrow_out"></i><i class="editor_arrow editor_arrow_in"></i></span>
           </div>
         </div>
       </div>
-      <div class="create-button"><el-button type="primary" size="medium" :disabled="diaDisable" @click="createMenu()">发布</el-button></div>
+      <div class="create-button"><el-button type="primary" size="medium" :disabled="wechatAble" @click="createMenu()">发布</el-button></div>
     </el-dialog>
   </div>
 </template>
@@ -365,6 +361,40 @@ export default {
   },
   directives: { waves },
   data() {
+    const validateName = (rule, value, callback) => {
+      function getLen() {
+        let realLength = 0
+        let charCode = -1;
+        for (var i = 0; i < value.length; i++) {
+            charCode = value.charCodeAt(i);
+            if (charCode >= 0 && charCode <= 128) {
+              realLength += 1;
+            }
+            else {
+              realLength += 2;
+            }
+        }
+        return realLength
+      }
+      let reg = /^[\u4E00-\u9FA5A-Za-z0-9]+$/
+      if (!value) {
+          callback(new Error('请输入菜单名称'))
+      } else if(!reg.test(value) || getLen(value) > rule.maxLen) {
+        callback(new Error(rule.notice))
+      } else {
+          callback()
+      }
+    }
+    const validateUrl = (rule, value, callback) => {
+      let reg = /^https?:\/\/.*$/
+      if (!value) {
+          callback(new Error('请输入页面地址'))
+      } else if(!reg.test(value)) {
+        callback(new Error('请输入http://或https://开头的链接地址'))
+      } else {
+          callback()
+      }
+    }
     return {
       list: null,
       listLoading: false,
@@ -486,7 +516,6 @@ export default {
       dialogStatus: '',
       dialogFormVisible: false,
       dialogWechatVisible: false,
-      wechatLoading: false,
       textMap: {
         update: '编辑',
         create: '新增'
@@ -504,7 +533,8 @@ export default {
         type: ''
       },
       menuForm: {
-        name: '',
+        menuName: '',
+        menuChildName: '',
         appId: '',
         url: '',
         link: '',
@@ -512,6 +542,7 @@ export default {
       },
       wechatType: 1,
       wechatLoading: false,
+      wechatAble: false,
       menuClass: ['size1of1', 'size1of2', 'size1of3', 'size1of3'],
       wechatRules: {},
       menu: [],
@@ -525,6 +556,37 @@ export default {
           ]
         }
       ],
+      menuRules: {
+        menuName: [{
+            required: true,
+            trigger: 'blur',
+            validator: validateName,
+            notice: '仅支持中英文和数字，字数不超过4个汉字或8个字母',
+            maxLen: 8
+        }],
+        menuChildName: [{
+            required: true,
+            trigger: 'blur',
+            validator: validateName,
+            notice: '仅支持中英文和数字，字数不超过8个汉字或16个字母',
+            maxLen: 16
+        }],
+        link: [{
+          required: true,
+          trigger: 'blur',
+          validator: validateUrl
+        }],
+        appId: [{
+          required: true,
+          trigger: 'blur',
+          message: '请输入小程序ID'
+        }],
+        url: [{
+          required: true,
+          trigger: 'blur',
+          validator: validateUrl
+        }],
+      },
       isSelectMenu: false,
       isSelectMenuChild: false,
       selectWechatId: '',
@@ -703,8 +765,10 @@ export default {
     },
     getMenuListById(type, name) {
       this.wechatLoading = true
+      this.wechatAble = true
       getMenuListById({ accountId: this.selectWechatId }).then(res => {
         this.wechatLoading = false
+        this.wechatAble = false
         if(Array.isArray(res.data)) {
           let resData = []
           res.data.forEach(item => {
@@ -805,34 +869,39 @@ export default {
     },
     saveMenu() {
       // 菜单修改保存
-      let param = {}
-      if(this.isSelectMenuChild) {
-        param.id = this.selectMenuChildId
-      } else {
-        param.id = this.selectMenuId
-      } 
-      param.name = this.menuForm.name
-      if(this.menuForm.type) {
-        param.type = this.menuForm.type
-      }
-      if(this.menuForm.type === 'miniprogram') {
-        param.appId = this.menuForm.appId
-        param.url = this.menuForm.url
-      } else if(this.menuForm.type === 'view') {
-        param.url = this.menuForm.link
-      }
-      
-      updateMenu(param).then(res => {
-        this.$notify({
-          title: '成功',
-          message: '菜单保存成功！',
-          type: 'success',
-          duration: 2000
-        })
-        if(this.isSelectMenuChild) {
-          this.getMenuListById(2)
-        } else {
-          this.getMenuListById(1)
+       this.$refs['menuRef'].validate((valid) => {
+        if (valid) {
+          let param = {}
+          if(this.isSelectMenuChild) {
+            param.name = this.menuForm.menuChildName
+            param.id = this.selectMenuChildId
+          } else {
+            param.name = this.menuForm.menuName
+            param.id = this.selectMenuId
+          } 
+          if(this.menuForm.type) {
+            param.type = this.menuForm.type
+          }
+          if(this.menuForm.type === 'miniprogram') {
+            param.appId = this.menuForm.appId
+            param.url = this.menuForm.url
+          } else if(this.menuForm.type === 'view') {
+            param.url = this.menuForm.link
+          }
+          
+          updateMenu(param).then(res => {
+            this.$notify({
+              title: '成功',
+              message: '菜单保存成功！',
+              type: 'success',
+              duration: 2000
+            })
+            if(this.isSelectMenuChild) {
+              this.getMenuListById(2)
+            } else {
+              this.getMenuListById(1)
+            }
+          })
         }
       })
     },
@@ -851,7 +920,7 @@ export default {
     selectMenu(index, id) {
       // 选择主菜单
       getMenuById({ id: id }).then(res => {
-        this.menuForm.name = res.data.name 
+        this.menuForm.menuName = res.data.name 
         this.menuForm.type = res.data.type 
         this.menuForm.appId = res.data.appId 
         if(res.data.type === 'view') {
@@ -906,18 +975,22 @@ export default {
         param.pId = this.selectMenuId
         type = 'view'
       }
+      this.wechatLoading = true
+      this.wechatAble = true
       addMenu(param).then(res => {
+        this.wechatLoading = false
+        this.wechatAble = false
         this.menuForm.type = ''
         this.menuForm.link = '' 
         this.menuForm.url = '' 
         this.menuForm.appId = ''
         if(type === 1) {
-          this.menuForm.name = '菜单名称'
+          this.menuForm.menuName = '菜单名称'
           this.isSelectMenu = true
           this.isSelectMenuChild = false
           this.getMenuListById(1, 'add')
         } else {
-          this.menuForm.name = '子菜单名称'
+          this.menuForm.menuChildName = '子菜单名称'
           this.getMenuListById(2, 'add')
         }
       })
@@ -926,10 +999,9 @@ export default {
       // 选择子菜单
       this.isSelectMenuChild = true
       this.selectMenuChildId = id
-      console.log(this.selectMenuChildId)
       this.selectMenuChildIndex = index
       getMenuById({ id: id }).then(res => {
-        this.menuForm.name = res.data.name 
+        this.menuForm.menuChildName = res.data.name 
         this.menuForm.type = res.data.type 
         this.menuForm.appId = res.data.appId 
         if(res.data.type === 'view') {
@@ -960,9 +1032,11 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        this.listLoading = true
+        this.wechatLoading = true
+        this.wechatAble = true
         deleteMenu({id: id }).then(response => {
-          this.listLoading = false
+          this.wechatLoading = false
+          this.wechatAble = false
           this.isSelectMenu = false
           this.isSelectMenuChild = false
           this.selectMenuIndex = 0
@@ -1159,6 +1233,15 @@ export default {
     width: 100%;
   }
 
+  .save-button{
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    text-align: right;
+    padding: 0 15px 15px 0;
+  }
+
   .menu_preview_area .sub_pre_menu_list li:first-child {
     border-top: 1px solid #d0d0d0;
   }
@@ -1323,6 +1406,10 @@ export default {
     float: left;
   }
 
+  .sub_pre_menu_list li a {
+    padding: 0px 0.5em;
+  }
+  
   .global_mod .global_extra {
     text-align: right;
   }
