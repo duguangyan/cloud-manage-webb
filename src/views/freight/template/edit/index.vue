@@ -490,6 +490,7 @@ var vm = {
     },
     "postSolution.type"(val, oldVal) {
       if(vm.firstLoad){
+        vm.firstLoad = false;
         return
       }
       vm.changeText(val);
@@ -854,7 +855,7 @@ var vm = {
         item.hasChecked = false;
         if (item.isChecked) {
           item.hasChecked = true;
-          curList.push(item);
+          curList.push({id:item.id,name:item.name});
           // vm[filKey].push(item);
         }
         // 重置勾选
