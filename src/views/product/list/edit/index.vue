@@ -111,7 +111,7 @@
               v-if="showStyle.type === '2'" 
               :prop="'sku.'+showStyle.id+'.store'"
               :rules="{
-                required: activeName === 'first', message: '库存必填，且为数字', trigger: 'blur', pattern:/^\d+$/,
+                required: activeName === 'first', message: '库存必填，且为数字', trigger: 'blur',  pattern:/^\d+$/,
               }"
               label="库存">
                 <el-input class="short-input" v-model.trim="addForm.sku[showStyle.id].store" size="medium"  maxlength="10" />
@@ -953,14 +953,14 @@ let vm = {
           res.data.forEach(item => {
             let itemId = item.id 
             let obj = {}
-            if(String(item.showStyle) == '2') {
+            if(String(item.showStyle) === '2') {
               obj.list = []
               obj.list.push({
                 price: '',
                 number: ''
               })
               obj.store = ''
-            } else if(String(item.showStyle) == '1') {
+            } else if(String(item.showStyle) === '1') {
               obj.list = []
               obj.list.push({
                 name: '',
@@ -995,7 +995,6 @@ let vm = {
           }
         }
         if(msgObj !== undefined) {
-          this.addForm.sku[this.showStyle.id] = {}
           this.addForm.sku[this.showStyle.id].showStyle = msgObj.showStyle
           this.addForm.sku[this.showStyle.id].list = msgObj.skuArr
           this.addForm.sku[this.showStyle.id].name = msgObj.name
