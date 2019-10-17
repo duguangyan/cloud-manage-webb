@@ -446,7 +446,7 @@ var vm = {
         region: "",
         regionId: "",
         shopId: "1",
-        type: 1,
+        type: -1,
         solutionFreeItemList: /* 包邮条件 */ [],
         solutionItemList: /* 邮费方案 */ [],
         defaultPost: /* 默认城市邮费方案 */ {
@@ -485,11 +485,11 @@ var vm = {
   watch: {
     "postSolution.isPost"(val) {
       if (+val === 0) {
-        vm.postSolution.type = vm.postSolution.type;
+        vm.postSolution.type = vm.$route.query.id?vm.postSolution.type:1;
       }
     },
     "postSolution.type"(val, oldVal) {
-      if(vm.firstLoad){
+      if(vm.firstLoad && vm.$route.query.id){
         vm.firstLoad = false;
         return
       }
