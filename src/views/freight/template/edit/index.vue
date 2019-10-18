@@ -485,13 +485,13 @@ var vm = {
   watch: {
     "postSolution.isPost"(val) {
       if (+val === 0) {
-        vm.postSolution.type = vm.$route.query.id?vm.postSolution.type:1;
+        vm.postSolution.type = vm.$route.query.id ? vm.postSolution.type : 1;
       }
     },
     "postSolution.type"(val, oldVal) {
-      if(vm.firstLoad && vm.$route.query.id){
+      if (vm.firstLoad && vm.$route.query.id) {
         vm.firstLoad = false;
-        return
+        return;
       }
       vm.changeText(val);
       vm.switch && vm.changeType(val, oldVal);
@@ -505,7 +505,7 @@ var vm = {
         id: vm.$route.query.id
       }).then(data => {
         let d = data.data;
-        d.type = +d.type
+        d.type = +d.type;
 
         // 分离是否包邮
         d.isPost = d.type === 0 ? 1 : 0;
@@ -553,7 +553,6 @@ var vm = {
         }).then(data => {
           vm.dealProvinceList(data.data);
         });
-
       });
     } else {
       getAd({
@@ -855,7 +854,7 @@ var vm = {
         item.hasChecked = false;
         if (item.isChecked) {
           item.hasChecked = true;
-          curList.push({id:item.id,name:item.name});
+          curList.push({ id: item.id, name: item.name });
           // vm[filKey].push(item);
         }
         // 重置勾选
@@ -867,8 +866,12 @@ var vm = {
       vm[filKey] = [];
 
       // 合并当前编辑项以及源数据项
-      vm.postSolution[aimKey][vm.curIndex].price === null && (vm.postSolution[aimKey][vm.curIndex].price = '')
-      vm.postSolution[aimKey][vm.curIndex].quantity === null && (vm.postSolution[aimKey][vm.curIndex].quantity = '')
+      if (vm.postSolution[aimKey][vm.curIndex]) {
+        vm.postSolution[aimKey][vm.curIndex].price === null &&
+          (vm.postSolution[aimKey][vm.curIndex].price = "");
+        vm.postSolution[aimKey][vm.curIndex].quantity === null &&
+          (vm.postSolution[aimKey][vm.curIndex].quantity = "");
+      }
       vm[souKey] = Object.assign(
         vm[souKey],
         vm.postSolution[aimKey][vm.curIndex] || {}
