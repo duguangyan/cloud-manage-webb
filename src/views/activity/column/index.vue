@@ -128,8 +128,11 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item v-if="banner.type === 1 || banner.type === 2 || banner.type === 3 || banner.type === 4" label="跳转链接" prop="url">
-          <el-input v-model.trim="banner.url" maxlength="64" placeholder="请输入跳转链接" />
+        <el-form-item v-if="banner.type === 1" label="跳转链接" prop="webUrl">
+          <el-input v-model.trim="banner.webUrl" maxlength="128" placeholder="请输入跳转链接" />
+        </el-form-item>
+        <el-form-item v-else-if="banner.type === 5" label="商品ID" prop="selfUrl">
+          <el-input v-model.trim="banner.selfUrl" maxlength="128" placeholder="请输入商品ID" />
         </el-form-item>
         <el-form-item label="开始和结束时间" prop="dateValue">
           <el-date-picker
@@ -215,31 +218,34 @@ const defaultBanner = {
   sort: '',
   pid: '',
   dateValue: [],
-  url: ''
+  url: '',
+  webUrl: '',
+  selfUrl: ''
 }
 
 export default {
   name: 'activityColumn',
   directives: { waves },
   data() {
-    const validateNum = (rule, value, callback) => {
-      let numReg = /^(0|[1-9][0-9]*)$/
-      if(rule.required) {
-        if(value.length === 0) {
-          callback(new Error(rule.des))
-        } else if (!numReg.test(value)) {
-            callback(new Error('请输入大于等于0整数'))
-        } else {
-            callback()
-        }
+    const validateUrl = (rule, value, callback) => {
+      let reg = /^https?:\/\/.*$/
+      if (!value) {
+          callback(new Error('请输入跳转链接'))
+      } else if(!reg.test(value)) {
+        callback(new Error('请输入http://或https://开头的链接地址'))
       } else {
-        if (value.length > 0 && !numReg.test(value)) {
-            callback(new Error('请输入大于等于0整数'))
-        } else {
-            callback()
-        }
+          callback()
       }
-      
+    }
+    const validateId = (rule, value, callback) => {
+      let reg = /^[A-Za-z0-9]+$/
+      if (!value) {
+          callback(new Error('请输入商品ID'))
+      } else if(!reg.test(value)) {
+        callback(new Error('请输入正确的商品ID，商品ID为字母和数字的组合'))
+      } else {
+          callback()
+      }
     }
     return {
       banner: Object.assign({}, defaultBanner),
@@ -282,21 +288,25 @@ export default {
           value: 0,
           label: '无任何动作'
         },
+         {
+          value: 5,
+          label: '跳转商品详情'
+        },
         {
           value: 1,
-          label: '打开网站'
+          label: '跳转链接(打开网站)'
         },
         {
           value: 2,
-          label: '打开应用'
+          label: '打开应用(敬请期待)'
         },
         {
           value: 3,
-          label: '下载'
+          label: '下载应用(敬请期待)'
         },
         {
           value: 4,
-          label: '打开功能'
+          label: '打开功能(敬请期待)'
         },
       ],
       statusData: [
@@ -346,10 +356,15 @@ export default {
           trigger: 'blur',
           message: '请上传图片'        
         }],
-        url: [{
+        webUrl: [{
           required: true,
           trigger: 'blur',
-          message: '请输入跳转链接'        
+          validator: validateUrl    
+        }],
+        selfUrl: [{
+          required: true,
+          trigger: 'blur',
+          validator: validateId
         }],
         dateValue: [{
             required: true,
@@ -506,7 +521,17 @@ export default {
         this.banner.adPositionName = res.data.adPositionName
         this.banner.path = res.data.path
         this.banner.type = res.data.type
-        this.banner.url = res.data.url
+        if(res.data.type === 1) {
+          this.banner.webUrl = res.data.url
+          this.banner.selfUrl = ''
+        } else if(res.data.type === 5) {
+          this.banner.webUrl = ''
+          this.banner.selfUrl = res.data.url
+        } else {
+          this.banner.webUrl = ''
+          this.banner.selfUrl = ''
+        }
+        
         this.banner.sort = res.data.sort
         this.banner.dateValue = []
         this.banner.dateValue[0] = res.data.createTime
@@ -569,7 +594,7 @@ export default {
         succMsg = '编辑广告成功'
         this.diaDisable = true
         this.diaLoading = true
-        await updateAd({
+        let param = {
           id: this.banner.id,
           name: this.banner.name,
           beginTime: this.banner.beginTime,
@@ -577,9 +602,14 @@ export default {
           type: this.banner.type,
           pId: this.banner.pid,
           path: this.banner.path,
-          sort: this.banner.sort,
-          url: this.banner.url
-        }).catch(err => {
+          sort: this.banner.sort
+        }
+        if(this.banner.type === 1) {
+          param.url = this.banner.webUrl
+        } else if(this.banner.type === 5) {
+          param.url = this.banner.selfUrl
+        }
+        await updateAd(param).catch(err => {
           isError = true
         })
         this.diaDisable = false
@@ -592,16 +622,21 @@ export default {
         succMsg = '新增广告成功'
         this.diaDisable = true
         this.diaLoading = true
-        await addAd({
+        let param = {
           name: this.banner.name,
           beginTime: this.banner.beginTime,
           endTime: this.banner.endTime,
           type: this.banner.type,
           pId: this.banner.pid,
           path: this.banner.path,
-          sort: this.banner.sort,
-          url: this.banner.url
-        }).catch(err => {
+          sort: this.banner.sort
+        }
+        if(this.banner.type === 1) {
+          param.url = this.banner.webUrl
+        } else if(this.banner.type === 5) {
+          param.url = this.banner.selfUrl
+        }
+        await addAd(param).catch(err => {
           isError = true
           return false
         })
