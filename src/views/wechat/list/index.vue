@@ -206,14 +206,14 @@
     </el-dialog>
     
     <!-- wx -->
-    <el-dialog v-loading="wechatLoading" title="自定义菜单" width="80%" :closeOnClickModal="false" :visible.sync="dialogWechatVisible">
-      <div class="menu_setting_area js_editBox">
+    <el-dialog title="自定义菜单" width="80%" :closeOnClickModal="false" :visible.sync="dialogWechatVisible">
+      <div v-loading="wechatLoading" class="menu_setting_area js_editBox">
         <div class="menu_preview_area">
           <div class="mobile_menu_preview">
             <div class="mobile_hd tc">沁绿农业</div>
             <div class="mobile_bd">
               <ul class="pre_menu_list grid_line ui-sortable ui-sortable-disabled" :class="{ no_menu: menuList.length === 0 }">
-                <li v-for="(item, index) in menuList" :key="index" class="jsMenu pre_menu_item grid_item jslevel1 ui-sortable ui-sortable-disabled" :class="{'size1of1': menuList.length === 0, 'size1of2': menuList.length === 1, 'size1of3': menuList.length > 1, 'current': isSelectMenu && selectMenuIndex === index}" @click="selectMenu(index, item.id)">
+                <li v-for="(item, index) in menuList" :key="index" class="jsMenu pre_menu_item grid_item jslevel1 ui-sortable ui-sortable-disabled" :class="{'size1of1': menuList.length === 0, 'size1of2': menuList.length === 1, 'size1of3': menuList.length > 1, 'current': isSelectMenu && !isSelectMenuChild && selectMenuIndex === index}" @click="selectMenu(index, item.id)">
                   <a href="javascript:void(0);" class="pre_menu_link" draggable="false">
                     <!-- <i class="icon_menu_dot js_icon_menu_dot dn" style="display: none;"></i> -->
                     <!-- <i class="icon20_common sort_gray"></i> -->
@@ -276,18 +276,21 @@
                 <h4 v-if="isSelectMenu" class="global_info">菜单名称</h4>
                 <h4 v-else class="global_info">子菜单名称</h4>
                 <div class="global_extra">
-                  <a v-if="isSelectMenu" @click="deleteMenu()">删除菜单</a>
-                  <a v-else @click="deleteMenuChild">删除子菜单</a>
+                  <a v-if="isSelectMenuChild" @click="deleteMenu(2)">删除子菜单</a>
+                  <a v-else-if="isSelectMenu" @click="deleteMenu(1)">删除菜单</a>
                 </div>
               </div>
               <div class="menu_form_bd">
                 <div v-if="menuList[selectMenuIndex].menuChild.length > 0" class="msg_sender_tips tips_global mb20">已添加子菜单，仅可设置菜单名称。</div>
-                <el-form v-loading="wechatLoading" ref="wechatForm" :rules="wechatRules" :model="menuForm" label-position="left" label-width="100px">
-                      <el-form-item prop="name" label="菜单名称">
-                        <el-input class="w300" v-model="menuForm.name" maxlength="4"/>
+                <el-form v-loading="wechatLoading" ref="menuRef" :rules="menuRules" :model="menuForm" label-position="left" label-width="100px">
+                      <el-form-item v-if="isSelectMenuChild" prop="menuChildName" label="子菜单名称">
+                        <el-input class="w300" v-model="menuForm.menuChildName" maxlength="16"/>
+                      </el-form-item>
+                      <el-form-item v-else prop="menuName" label="菜单名称">
+                        <el-input class="w300" v-model="menuForm.menuName" maxlength="8"/>
                       </el-form-item>
                       <template v-if="(isSelectMenu && menuList[selectMenuIndex].menuChild.length === 0) || isSelectMenuChild">
-                        <el-form-item prop="type" label="菜单内容">
+                        <el-form-item prop="type" :label="isSelectMenuChild?'子菜单名称':'菜单名称'">
                           <el-radio-group v-model="menuForm.type">
                             <el-radio label="click">发送消息</el-radio>
                             <el-radio label="view">跳转网页</el-radio>
@@ -320,32 +323,24 @@
                         </template>
                       </template>
                 </el-form>
-                <div slot="footer" class="dialog-footer">
-                  <el-button type="primary" :disabled="diaDisable" @click="saveMenu()">
-                    确定
-                  </el-button>
+                <div class="save-button">
+                  <el-button type="primary" size="medium" :disabled="wechatAble" @click="saveMenu()">保存</el-button>
                 </div>
-                <!-- <div slot="footer" class="dialog-footer">
-                  <el-button @click="dialogFormVisible = false">
-                    取消
-                  </el-button>
-                  <el-button type="primary" :disabled="diaDisable" @click="dialogStatus==='create'?createData():updateData()">
-                    确定
-                  </el-button>
-                </div> -->
+
               </div>
             </div>
             <span class="editor_arrow_wrp"><i class="editor_arrow editor_arrow_out"></i><i class="editor_arrow editor_arrow_in"></i></span>
           </div>
         </div>
       </div>
+      <div class="create-button"><el-button type="primary" size="medium" :disabled="wechatAble" @click="createMenu()">发布</el-button></div>
     </el-dialog>
   </div>
 </template>
 
 <script>
 import { getUserBtnByPId } from '@/api/upms/menu'
-import { addWechat, deleteWechat, updateWechat, getWechatList, getWechatById, getMenuById, addMenu, updateMenu, getMenuListById, checkMenu, deleteMenu } from '@/api/wechat/list'
+import { addWechat, deleteWechat, updateWechat, getWechatList, getWechatById, getMenuById, addMenu, updateMenu, getMenuListById, checkMenu, clearMenu, deleteMenu, createMenuById } from '@/api/wechat/list'
 import { getSystem } from '@/api/upms/systemList'
 import Pagination from '@/components/Pagination'
 import waves from '@/directive/waves' // waves directive
@@ -366,6 +361,40 @@ export default {
   },
   directives: { waves },
   data() {
+    const validateName = (rule, value, callback) => {
+      function getLen() {
+        let realLength = 0
+        let charCode = -1;
+        for (var i = 0; i < value.length; i++) {
+            charCode = value.charCodeAt(i);
+            if (charCode >= 0 && charCode <= 128) {
+              realLength += 1;
+            }
+            else {
+              realLength += 2;
+            }
+        }
+        return realLength
+      }
+      let reg = /^[\u4E00-\u9FA5A-Za-z0-9]+$/
+      if (!value) {
+          callback(new Error('请输入菜单名称'))
+      } else if(!reg.test(value) || getLen(value) > rule.maxLen) {
+        callback(new Error(rule.notice))
+      } else {
+          callback()
+      }
+    }
+    const validateUrl = (rule, value, callback) => {
+      let reg = /^https?:\/\/.*$/
+      if (!value) {
+          callback(new Error('请输入页面地址'))
+      } else if(!reg.test(value)) {
+        callback(new Error('请输入http://或https://开头的链接地址'))
+      } else {
+          callback()
+      }
+    }
     return {
       list: null,
       listLoading: false,
@@ -487,7 +516,6 @@ export default {
       dialogStatus: '',
       dialogFormVisible: false,
       dialogWechatVisible: false,
-      wechatLoading: false,
       textMap: {
         update: '编辑',
         create: '新增'
@@ -505,7 +533,8 @@ export default {
         type: ''
       },
       menuForm: {
-        name: '',
+        menuName: '',
+        menuChildName: '',
         appId: '',
         url: '',
         link: '',
@@ -513,6 +542,7 @@ export default {
       },
       wechatType: 1,
       wechatLoading: false,
+      wechatAble: false,
       menuClass: ['size1of1', 'size1of2', 'size1of3', 'size1of3'],
       wechatRules: {},
       menu: [],
@@ -526,6 +556,37 @@ export default {
           ]
         }
       ],
+      menuRules: {
+        menuName: [{
+            required: true,
+            trigger: 'blur',
+            validator: validateName,
+            notice: '仅支持中英文和数字，字数不超过4个汉字或8个字母',
+            maxLen: 8
+        }],
+        menuChildName: [{
+            required: true,
+            trigger: 'blur',
+            validator: validateName,
+            notice: '仅支持中英文和数字，字数不超过8个汉字或16个字母',
+            maxLen: 16
+        }],
+        link: [{
+          required: true,
+          trigger: 'blur',
+          validator: validateUrl
+        }],
+        appId: [{
+          required: true,
+          trigger: 'blur',
+          message: '请输入小程序ID'
+        }],
+        url: [{
+          required: true,
+          trigger: 'blur',
+          validator: validateUrl
+        }],
+      },
       isSelectMenu: false,
       isSelectMenuChild: false,
       selectWechatId: '',
@@ -702,22 +763,13 @@ export default {
       this.selectWechatId = row.id
       this.getMenuListById()
     },
-    getMenuListById(type) {
+    getMenuListById(type, name) {
       this.wechatLoading = true
+      this.wechatAble = true
       getMenuListById({ accountId: this.selectWechatId }).then(res => {
         this.wechatLoading = false
+        this.wechatAble = false
         if(Array.isArray(res.data)) {
-          if(type === 1) {
-            let len = res.data.length - 1
-            this.menuForm.name = res.data[len].name 
-            this.menuForm.type = res.data[len].type
-            if(res.data[len].type === 'view') {
-              this.menuForm.link = res.data[len].url
-            } else if(res.data[len].type === 'miniprogram') {
-              this.menuForm.appId = res.data[len].appId
-              this.menuForm.url = res.data[len].url
-            }
-          }
           let resData = []
           res.data.forEach(item => {
             let obj = {
@@ -746,11 +798,15 @@ export default {
         if(type === 1) {
           this.isSelectMenu = true
           this.isSelectMenuChild = false
-          this.selectMenuIndex = this.menuList.length - 1
+          if(name === 'add') {
+            this.selectMenuIndex = this.menuList.length - 1
+          }
           this.selectMenuId = this.menuList[this.selectMenuIndex].id
         } else if(type === 2) {
           this.isSelectMenuChild = true
-          this.selectMenuChildIndex = this.menuList[this.selectMenuIndex].menuChild.length - 1
+          if(name === 'add') {
+            this.selectMenuChildIndex = this.menuList[this.selectMenuIndex].menuChild.length - 1
+          }
           this.selectMenuChildId = this.menuList[this.selectMenuIndex].menuChild[this.selectMenuChildIndex].id
         }
         
@@ -809,49 +865,70 @@ export default {
       })
     },
     addMenu() {
-      addMenu({ 
-        accoutId: this.selectWechatId,
-        name: '菜单名称'
-      }).then(res => {
-        this.isSelectMenu = true
-        this.isSelectMenuChild = false
-        this.getMenuListById(1)
-      })
+      this.addMenuPost(1)
     },
     saveMenu() {
       // 菜单修改保存
-      let param = {}
-      if(this.isSelectMenuChild) {
-        param.id = this.selectMenuChildId
-      } {
-        param.id = this.selectMenuId
-      } 
-      param.name = this.menuForm.name
-      if(this.menuForm.type) {
-        param.type = this.menuForm.type
-      }
-      if(this.menuForm.type === 'miniprogram') {
-        param.appId = this.menuForm.appId
-        param.url = this.menuForm.url
-      } else if(this.menuForm.type === 'view') {
-        param.url = this.menuForm.link
-      }
-      
-      updateMenu(param).then(res => {
-        this.getMenuListById()
+       this.$refs['menuRef'].validate((valid) => {
+        if (valid) {
+          let param = {}
+          if(this.isSelectMenuChild) {
+            param.name = this.menuForm.menuChildName
+            param.id = this.selectMenuChildId
+          } else {
+            param.name = this.menuForm.menuName
+            param.id = this.selectMenuId
+          } 
+          if(this.menuForm.type) {
+            param.type = this.menuForm.type
+          }
+          if(this.menuForm.type === 'miniprogram') {
+            param.appId = this.menuForm.appId
+            param.url = this.menuForm.url
+          } else if(this.menuForm.type === 'view') {
+            param.url = this.menuForm.link
+          }
+          
+          updateMenu(param).then(res => {
+            this.$notify({
+              title: '成功',
+              message: '菜单保存成功！',
+              type: 'success',
+              duration: 2000
+            })
+            if(this.isSelectMenuChild) {
+              this.getMenuListById(2)
+            } else {
+              this.getMenuListById(1)
+            }
+          })
+        }
+      })
+    },
+    createMenu() {
+    // 发布菜单
+      createMenuById({ accountId: this.selectWechatId }).then(res => {
+        this.$notify({
+          title: '成功',
+          message: '发布成功！',
+          type: 'success',
+          duration: 2000
+        })
+        this.dialogWechatVisible = false
       })
     },
     selectMenu(index, id) {
       // 选择主菜单
       getMenuById({ id: id }).then(res => {
-        this.menuForm.name = res.data.name 
+        this.menuForm.menuName = res.data.name 
         this.menuForm.type = res.data.type 
-        this.menuForm.url = res.data.url 
         this.menuForm.appId = res.data.appId 
         if(res.data.type === 'view') {
           this.menuForm.link = res.data.url
-        } else {
+          this.menuForm.url = ''
+        } else if(res.data.type === 'miniprogram') {
           this.menuForm.link = ''
+          this.menuForm.url = res.data.url
         }
       })
       this.isSelectMenu = true
@@ -862,25 +939,69 @@ export default {
     },
     addMenuChild(index) {
       // 添加子菜单
-      // this.menuChild[index].unshift({
-      //   name: '子菜单'
-      // })
-      addMenu({
-        accoutId: this.selectWechatId,
-        pId: this.selectMenuId,
-        name: '子菜单名称',
-        type: 'view'
-      }).then(res => {
-        this.getMenuListById(2)
+      if(this.menuList[index].menuChild.length > 0) {
+        this.addMenuPost(2)
+      } else {
+        checkMenu({ id: this.selectMenuId }).then(res => {
+          if(res.data) {
+            this.$confirm('添加子菜单后，一级菜单的内容将被清除, 是否继续?', '提示', {
+              confirmButtonText: '确定',
+              cancelButtonText: '取消',
+              type: 'warning'
+            }).then(() => {
+              clearMenu({ id: this.selectMenuId }).then(res => {
+                this.addMenuPost(2)
+              })
+            }).catch(() => {
+              this.$message({
+                type: 'info',
+                message: '已取消'
+              })      
+            })
+          } else {
+            this.addMenuPost(2)
+          }
+        })
+      }
+      
+    },
+    addMenuPost(type) {
+      let param = {}
+      param.accoutId = this.selectWechatId
+      if(type === 1) {
+        param.name = '菜单名称'
+      } else {
+        param.name = '子菜单名称'
+        param.pId = this.selectMenuId
+        type = 'view'
+      }
+      this.wechatLoading = true
+      this.wechatAble = true
+      addMenu(param).then(res => {
+        this.wechatLoading = false
+        this.wechatAble = false
+        this.menuForm.type = ''
+        this.menuForm.link = '' 
+        this.menuForm.url = '' 
+        this.menuForm.appId = ''
+        if(type === 1) {
+          this.menuForm.menuName = '菜单名称'
+          this.isSelectMenu = true
+          this.isSelectMenuChild = false
+          this.getMenuListById(1, 'add')
+        } else {
+          this.menuForm.menuChildName = '子菜单名称'
+          this.getMenuListById(2, 'add')
+        }
       })
-      // console.log(index)
-      // this.selectMenuIndex = index
-      // this.selectMenuChildIndex = this.menuChild[index].length - 1
     },
     selectMenuChild(index, id) {
       // 选择子菜单
+      this.isSelectMenuChild = true
+      this.selectMenuChildId = id
+      this.selectMenuChildIndex = index
       getMenuById({ id: id }).then(res => {
-        this.menuForm.name = res.data.name 
+        this.menuForm.menuChildName = res.data.name 
         this.menuForm.type = res.data.type 
         this.menuForm.appId = res.data.appId 
         if(res.data.type === 'view') {
@@ -891,57 +1012,39 @@ export default {
           this.menuForm.url = res.data.url 
         }
       })
-      this.isSelectMenuChild = true
-      this.selectMenuChildId = id
-      this.selectMenuChildIndex = index
     },
-    deleteMenu() {
-      // 删除主菜单
-      this.$confirm(`此操作将永久删除菜单“${this.menuList[this.selectMenuIndex].name}”, 是否继续?`, '提示', {
+    deleteMenu(type) {
+      // 删除菜单
+      let dMsg = ''
+      let id = ''
+      let succcMsg = ''
+      if(type === 1) {
+        dMsg = `此操作将永久删除“${this.menuList[this.selectMenuIndex].name}”, 是否继续?`
+        id = this.selectMenuId
+        succcMsg = '菜单删除成功'
+      } else {
+        dMsg = `此操作将永久删除“${this.menuList[this.selectMenuIndex].menuChild[this.selectMenuChildIndex].name}”, 是否继续?`
+        id = this.selectMenuChildId
+        succcMsg = '子菜单删除成功'
+      }
+      this.$confirm(dMsg, '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        this.listLoading = true
-        deleteMenu({id: this.selectMenuId}).then(response => {
-          this.listLoading = false
+        this.wechatLoading = true
+        this.wechatAble = true
+        deleteMenu({id: id }).then(response => {
+          this.wechatLoading = false
+          this.wechatAble = false
           this.isSelectMenu = false
           this.isSelectMenuChild = false
+          this.selectMenuIndex = 0
+          this.selectMenuChildIndex = 0
           this.$message({
             type: 'success',
-            message: '删除成功!'
+            message: succcMsg
           })
-          // if(this.list.length === 1 && this.allPages - 1 > 0) {
-          //   --this.listQuery.pageIndex
-          // }
-          this.getMenuListById()
-        })
-      }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: '已取消删除'
-        })   
-      })
-    },
-    deleteMenuChild() {
-      // 删除子菜单
-      this.$confirm(`此操作将永久删除子菜单“${this.menuList[this.selectMenuIndex].menuChild[this.selectMenuChildIndex].name}”, 是否继续?`, '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        this.listLoading = true
-        deleteMenu({id: this.selectMenuChildId}).then(response => {
-          this.listLoading = false
-          this.isSelectMenu = false
-          this.isSelectMenuChild = false
-          this.$message({
-            type: 'success',
-            message: '删除成功!'
-          })
-          // if(this.list.length === 1 && this.allPages - 1 > 0) {
-          //   --this.listQuery.pageIndex
-          // }
           this.getMenuListById()
         })
       }).catch(() => {
@@ -1124,6 +1227,21 @@ export default {
     width: 300px;
   }
 
+  .create-button{
+    padding-top: 15px;
+    text-align: right;
+    width: 100%;
+  }
+
+  .save-button{
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    text-align: right;
+    padding: 0 15px 15px 0;
+  }
+
   .menu_preview_area .sub_pre_menu_list li:first-child {
     border-top: 1px solid #d0d0d0;
   }
@@ -1288,6 +1406,10 @@ export default {
     float: left;
   }
 
+  .sub_pre_menu_list li a {
+    padding: 0px 0.5em;
+  }
+  
   .global_mod .global_extra {
     text-align: right;
   }

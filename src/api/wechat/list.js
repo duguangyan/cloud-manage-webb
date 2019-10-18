@@ -116,3 +116,12 @@ export function getMenuById(query) {
     params: query
   })
 }
+
+// 根据id清空数据
+export function clearMenu(query) {
+  return request({
+    url: '/wechat/menu/clearById',
+    method: 'get',
+    params: query
+  })
+}

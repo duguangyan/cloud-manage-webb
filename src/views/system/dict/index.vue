@@ -23,6 +23,13 @@
         >
       </el-table-column>
       <el-table-column
+        prop="id"
+        width="300"
+        align="center"
+        label="编码"
+        >
+      </el-table-column>
+      <el-table-column
         prop="status"
         label="状态"
         align="center"
@@ -58,6 +65,9 @@
       <el-form ref="dictForm" v-loading="diaLoading" :model="role" label-width="80px" label-position="left" :rules="rules">
         <el-form-item prop="name" label="字典名">
           <el-input v-model.trim="role.name" maxlength="64" placeholder="请输入字典名" />
+        </el-form-item>
+        <el-form-item prop="id" label="编码">
+          <el-input v-model.trim="role.id" maxlength="64" placeholder="请输入字典名" />
         </el-form-item>
         <el-form-item label="状态" v-if="dialogType==='edit'">
           <el-select v-model="role.status" placeholder="请选择">
@@ -99,6 +109,7 @@ import { deepClone } from '@/utils'
 import treeTable from '@/components/TreeTable'
 const defaultRole = {
   name: '',
+  id: '',
   status: '',
   remark: ''
 }
@@ -135,6 +146,11 @@ export default {
         create: 'Create'
       },
       rules: {
+        id: [{
+          required: true,
+          trigger: 'blur',
+          message: '请填写编码'
+        }],
         name: [{
           required: true,
           trigger: 'blur',

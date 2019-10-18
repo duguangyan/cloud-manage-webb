@@ -138,7 +138,7 @@
           label="商品合计"
           align="center">
           <template slot-scope="scope">
-            {{scope.row.totalMoney | money}}
+            {{scope.row.orderMoney | money}}
           </template>
         </el-table-column>
         <el-table-column
@@ -149,10 +149,10 @@
           </template>
         </el-table-column>
         <el-table-column
-          label="订单金额"
+          label="订单总金额"
           align="center">
           <template slot-scope="scope">
-            {{scope.row.orderMoney | money}}
+            {{scope.row.totalMoney | money}}
           </template>
         </el-table-column>
         <el-table-column
