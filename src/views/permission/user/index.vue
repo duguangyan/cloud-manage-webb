@@ -176,7 +176,7 @@ const defaultRole = {
 }
 
 export default {
-  name: 'user',
+  name: 'permissionUser',
   directives: { waves },
   data() {
     const validateTelphone = (rule, value, callback) => {

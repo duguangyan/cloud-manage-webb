@@ -23,10 +23,9 @@
         >
       </el-table-column>
       <el-table-column
-        prop="id"
-        width="300"
+        prop="code"
         align="center"
-        label="编码"
+        label="编号"
         >
       </el-table-column>
       <el-table-column
@@ -34,6 +33,10 @@
         label="状态"
         align="center"
         width="180">
+        <template slot-scope="scope">
+          <span v-if="scope.row.status === 1">启用</span>
+          <span v-else-if="scope.row.status === 0">禁用</span>
+        </template>
       </el-table-column>
       <el-table-column
         prop="value"
@@ -66,8 +69,8 @@
         <el-form-item prop="name" label="字典名">
           <el-input v-model.trim="role.name" maxlength="64" placeholder="请输入字典名" />
         </el-form-item>
-        <el-form-item prop="id" label="编码">
-          <el-input v-model.trim="role.id" maxlength="64" placeholder="请输入字典名" />
+        <el-form-item prop="code" label="编号">
+          <el-input v-model.trim="role.code" maxlength="128" placeholder="请输入字典名" />
         </el-form-item>
         <el-form-item label="状态" v-if="dialogType==='edit'">
           <el-select v-model="role.status" placeholder="请选择">
@@ -108,14 +111,15 @@ import { parseTime } from '@/utils'
 import { deepClone } from '@/utils'
 import treeTable from '@/components/TreeTable'
 const defaultRole = {
-  name: '',
   id: '',
+  name: '',
+  code: '',
   status: '',
   remark: ''
 }
 
 export default {
-  name: 'dict',
+  name: 'systemDict',
   directives: { waves },
   components: { treeTable },
   data() {
@@ -146,10 +150,10 @@ export default {
         create: 'Create'
       },
       rules: {
-        id: [{
+        code: [{
           required: true,
           trigger: 'blur',
-          message: '请填写编码'
+          message: '请填写编号'
         }],
         name: [{
           required: true,
@@ -211,20 +215,7 @@ export default {
       getDictById().then(res => {
         this.listLoading = false
         if(Array.isArray(res.data)) {
-          for(let i = 0; i < res.data.length; i++) {
-            let obj = {
-              name: res.data[i].name,
-              id: res.data[i].id,
-              pid: res.data[i].pid,
-              value: res.data[i].value === null? '': res.data[i].value,
-              status: this.statusDes[res.data[i].status],
-              remark: res.data[i].remark === null? '': res.data[i].remark,
-              hasChildren: res.data[i].haveChild === 1? true: false,
-              children: []
-            }
-            this.dictData.push(obj)
-          }
-         
+          this.dictData = res.data
         }
       })
     },
@@ -261,6 +252,7 @@ export default {
       this.dialogVisible = true
     },
     msgEdit(scope) {
+      console.log(scope)
       this.dialogType = 'edit'
       this.dialogVisible = true
       this.checkStrictly = true
@@ -327,6 +319,7 @@ export default {
         await updateDict({
         id: this.role.id,
         name: this.role.name,
+        code: this.role.code,
         status: (this.role.status === '启用'? 1: 0),
         value: this.role.value,
         remark: this.role.remark
@@ -334,30 +327,16 @@ export default {
           this.diaDisable = false
           this.diaLoading = false
         })
-        // this.$set(this.$refs.treeTable.store.states.lazyTreeNodeMap, this.role.id, {
-        //   id: this.role.id,
-        //   name: this.role.name,
-        //   status: this.role.status,
-        //   value: this.role.value,
-        //   remark: this.role.remark
-        // })
         this.diaDisable = false
         this.diaLoading = false
         this.getDictById()
       } else {
-        // console.log('id:', this.changeId)
-        // console.log(this.maps)
-        // console.log(this.maps.get(this.changeId))
-        // const {tree, treeNode, resolve} = this.maps.get(this.changeId)
-        // console.log('tree')
-        // console.log(tree)
-        // console.log(treeNode)
-        // return
         this.diaDisable = true
         this.diaLoading = true
         const { data } = await addDict({
           parentId: this.changeId,
           name: this.role.name,
+          code: this.role.code,
           value: this.role.value,
           // status: this.role.status,
           remark: this.role.remark

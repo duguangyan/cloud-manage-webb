@@ -170,7 +170,7 @@ import { getProductTree } from '@/api/goods/product'
 
 
 export default {
-  name: 'list',
+  name: 'productList',
   directives: { waves },
   data() {
     return {

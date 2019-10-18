@@ -29,7 +29,7 @@
 import { getList,copyModule,doDelete } from "@/api/goods/freight";
 
 var vm = {
-  name: "freight-list",
+  name: "freightTemplateList",
   data() {
     vm = this;
     return {

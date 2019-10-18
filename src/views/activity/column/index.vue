@@ -219,7 +219,7 @@ const defaultBanner = {
 }
 
 export default {
-  name: 'Column',
+  name: 'activityColumn',
   directives: { waves },
   data() {
     const validateNum = (rule, value, callback) => {

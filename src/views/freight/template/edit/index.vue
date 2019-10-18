@@ -307,7 +307,7 @@ import { getDetail, doInsert, doUpdate, doDeletfe } from "@/api/goods/freight";
 import { getAd } from "@/api/upms/strict";
 import { preCopy } from "@/api/deep-copy";
 var vm = {
-  name: "freight-edit",
+  name: "freightTemplateEdit",
   data() {
     vm = this;
     return {

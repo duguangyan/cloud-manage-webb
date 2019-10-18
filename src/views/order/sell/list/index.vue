@@ -71,7 +71,7 @@
           </el-table-column>
           <el-table-column
             prop="payMoney"
-            label="实付金额"
+            label="交易金额"
             align="center"
             width="180"
             show-overflow-tooltip>
@@ -117,7 +117,7 @@ import Pagination from '@/components/Pagination'
 import { getUserBtnByPId } from '@/api/upms/menu'
 
 export default {
-  name: 'orderList',
+  name: 'orderSellList',
   directives: { waves },
   data() {
     return {

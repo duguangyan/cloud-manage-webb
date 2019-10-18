@@ -7,7 +7,7 @@
 <script>
 
 export default {
-  name: 'unit',
+  name: 'productUnit',
   data() {
     return {
         

@@ -93,7 +93,7 @@ import { getAnalyseList } from '@/api/analyse/analyse'
 import Pagination from '@/components/Pagination'
 
 export default {
-  name: 'Analyze',
+  name: 'statAnalyze',
   data() {
     return {
       checkList: ['pv', 'uv', 'starNum', 'rebuyPersonNum', 'payPersonNum', 'payNum'],

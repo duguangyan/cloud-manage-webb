@@ -11,7 +11,7 @@
 <script>
 import { getAnaData } from "@/api/analyse/analyse";
 export default {
-  name: "General",
+  name: "statGeneral",
   data() {
     return {};
   },

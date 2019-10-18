@@ -15,7 +15,7 @@ import list from './list'
 import Pagination from '@/components/Pagination'
 
 export default {
-  name: 'listPatent',
+  name: 'productListPatent',
   directives: { waves },
   data() {
     return {

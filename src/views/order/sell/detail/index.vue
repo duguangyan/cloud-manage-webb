@@ -227,7 +227,7 @@ import { validTelphone } from '@/utils/validate'
 import { getUserBtnByPId } from '@/api/upms/menu'
 
 export default {
-  name: 'OrderDetail',
+  name: 'orderDetail',
   directives: { waves },
   data() {
     const validateTelphone = (rule, value, callback) => {

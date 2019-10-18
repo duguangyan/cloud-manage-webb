@@ -363,7 +363,7 @@ const defaultSpec = {
 }
 
 export default {
-  name: 'classify',
+  name: 'productClassify',
   directives: { waves },
   data() {
     const validateName = (rule, value, callback) => {

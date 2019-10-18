@@ -16,7 +16,7 @@ import waves from '@/directive/waves'
 import { getProductTree } from '@/api/goods/product'
 let id = 0;
 export default {
-  name: 'release',
+  name: 'productRelease',
   directives: { waves },
   data() {
     return {

@@ -14,7 +14,7 @@ import waves from '@/directive/waves'
 import list from './list'
 
 export default {
-  name: 'expressPatent',
+  name: 'freightTemplateParent',
   directives: { waves },
   data() {
     return {

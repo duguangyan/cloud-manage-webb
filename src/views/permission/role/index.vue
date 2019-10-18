@@ -176,7 +176,7 @@ const defaultRole = {
 }
 
 export default {
-  name: 'Roles',
+  name: 'permissionRole',
   directives: { waves },
   data() {
     return {

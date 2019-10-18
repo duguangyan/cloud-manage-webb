@@ -96,7 +96,7 @@ import waves from '@/directive/waves' // waves directive
 
 
 export default {
-  name: 'System',
+  name: 'systemConfig',
   filters: {
     statusFilter(status) {
       const statusMap = {

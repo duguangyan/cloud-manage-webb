@@ -92,7 +92,7 @@ import { getProductTree } from '@/api/goods/product'
 import { addManageDetail } from '@/api/act/manage'
 
 export default {
-  name: 'detailAdd',
+  name: 'activityAdd',
   directives: { waves },
   data() {
     return {

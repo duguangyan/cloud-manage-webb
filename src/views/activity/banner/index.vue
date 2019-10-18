@@ -136,7 +136,7 @@ const defaultBanner = {
 }
 
 export default {
-  name: 'Banner',
+  name: 'activityBanner',
   directives: { waves },
   data() {
     const validateNum = (rule, value, callback) => {

@@ -70,7 +70,7 @@ import { getUserBtnByPId } from '@/api/upms/menu'
 import Pagination from '@/components/Pagination'
 
 export default {
-  name: 'manageDetail',
+  name: 'activityDetailList',
   directives: { waves },
   data() {
     return {

@@ -259,7 +259,7 @@
                               <i class="arrow arrow_in"></i>
                           </div>
                 </li> -->
-                <li v-if="menu.length < 3" class="js_addMenuBox pre_menu_item grid_item no_extra" :class="menuClass[menu.length]" @click="addMenu">
+                <li v-if="menuList.length < 3" class="js_addMenuBox pre_menu_item grid_item no_extra" :class="menuClass[menuList.length]" @click="addMenu">
                   <a href="javascript:void(0);" class="pre_menu_link js_addL1Btn" title="最多添加3个一级菜单" draggable="false">
                     <i class="icon14_menu_add"></i>
                   </a>
@@ -348,7 +348,7 @@ import waves from '@/directive/waves' // waves directive
 
 
 export default {
-  name: 'Wechat',
+  name: 'wechatList',
   filters: {
     statusFilter(status) {
       const statusMap = {
@@ -545,17 +545,7 @@ export default {
       wechatAble: false,
       menuClass: ['size1of1', 'size1of2', 'size1of3', 'size1of3'],
       wechatRules: {},
-      menu: [],
-      menuList: [
-        { 
-          name: '',
-          menuChild: [
-            {
-              name: ''
-            }
-          ]
-        }
-      ],
+      menuList: [],
       menuRules: {
         menuName: [{
             required: true,
@@ -593,12 +583,7 @@ export default {
       selectMenuId: '',
       selectMenuChildId: '',
       selectMenuIndex: 0,
-      selectMenuChildIndex: 0,
-      menuChild: {
-        0: [],
-        1: [],
-        2: []
-      },
+      selectMenuChildIndex: 0
     }
   },
   components: { Pagination },
@@ -761,6 +746,12 @@ export default {
       // 自定义菜单
       this.dialogWechatVisible = true
       this.selectWechatId = row.id
+      this.isSelectMenu = false
+      this.isSelectMenuChild = false
+      this.selectMenuId = ''
+      this.selectMenuChildId = ''
+      this.selectMenuIndex = 0
+      this.selectMenuChildIndex = 0
       this.getMenuListById()
     },
     getMenuListById(type, name) {

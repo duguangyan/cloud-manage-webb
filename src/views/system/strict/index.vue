@@ -50,7 +50,7 @@ import { getUserBtnByPId } from '@/api/upms/menu'
 import { debuglog } from "util";
 
 var vm = {
-  name: "strict",
+  name: "systemStrict",
   data() {
     vm = this;
     return {

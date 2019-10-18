@@ -110,11 +110,11 @@ service.interceptors.response.use(
     }
   },
   error => {
-    // Message({
-    //   message: error.response.data.message,
-    //   type: 'error',
-    //   duration: 5 * 1000
-    // })
+    Message({
+      message: error.response.data.message,
+      type: 'error',
+      duration: 5 * 1000
+    })
     return Promise.reject(error)
   }
 )

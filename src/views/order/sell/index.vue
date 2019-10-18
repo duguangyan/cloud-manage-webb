@@ -14,7 +14,7 @@ import waves from '@/directive/waves'
 import list from './list'
 
 export default {
-  name: 'orderPatent',
+  name: 'orderSellParent',
   directives: { waves },
   data() {
     return {

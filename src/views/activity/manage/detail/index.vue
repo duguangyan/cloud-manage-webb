@@ -12,7 +12,7 @@
 <script>
 import list from './list'
 export default {
-  name: 'detailPatent',
+  name: 'activityDetailParent',
   data() {
     return {
       showList: false,

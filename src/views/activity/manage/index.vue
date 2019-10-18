@@ -13,7 +13,7 @@
 import list from './list'
 
 export default {
-  name: 'managePatent',
+  name: 'activityManageParent',
   data() {
     return {
       showList: false,

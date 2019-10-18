@@ -541,7 +541,7 @@ import orderImg from '@/assets/img/order.png'
 import shareImg from '@/assets/img/share.png'
 let id = 0;
 let vm = {
-  name: 'addProduct',
+  name: 'productEdit',
   directives: { waves },
   data() {
     vm = this;

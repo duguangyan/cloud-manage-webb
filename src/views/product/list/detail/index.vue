@@ -204,7 +204,7 @@ import { getUserBtnByPId } from '@/api/upms/menu'
 import { getFreight } from '@/api/goods/logistics'
 let id = 0;
 let vm = {
-  name: 'detailProduct',
+  name: 'productDetail',
   directives: { waves },
   data() {
     vm = this;

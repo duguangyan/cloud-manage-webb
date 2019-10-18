@@ -344,7 +344,7 @@ const defaultRole = {
 }
 
 export default {
-  name: 'User',
+  name: 'systemMenu',
   directives: { waves },
   data() {
     return {
