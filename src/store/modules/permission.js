@@ -18,7 +18,8 @@ const routeModule = [
     compare: 'product/classify/index',
     source: 'product/classify/index',
     isSource: true,
-    hidden: false
+    hidden: false,
+    noCache: false
   },
   {
     name: 'productUnit',
@@ -26,15 +27,17 @@ const routeModule = [
     compare: 'product/unit/index',
     source: 'product/unit/index',
     isSource: true,
-    hidden: false
+    hidden: false,
+    noCache: false
   },
   {
-    name: 'productListPatent',
+    name: 'productListParent',
     path: 'list',
     compare: 'product/list/index',
     source: 'product/list/index',
     isSource: true,
-    hidden: false
+    hidden: false,
+    noCache: true
   },
   {
     name: 'productEdit',
@@ -42,7 +45,8 @@ const routeModule = [
     compare: 'product/list/edit/index',
     source: 'product/list/edit/index',
     isSource: true,
-    hidden: true
+    hidden: true,
+    noCache: true
   },
   {
     name: 'productEdit',
@@ -50,7 +54,8 @@ const routeModule = [
     compare: 'product/list/add/index',
     source: 'product/list/edit/index',
     isSource: true,
-    hidden: true
+    hidden: true,
+    noCache: true
   },
   {
     name: 'productRelease',
@@ -58,7 +63,8 @@ const routeModule = [
     compare: 'product/list/release/index',
     source: 'product/list/release/index',
     isSource: true,
-    hidden: true
+    hidden: true,
+    noCache: false
   },
   {
     name: 'productDetail',
@@ -66,7 +72,8 @@ const routeModule = [
     compare: 'product/list/detail/index',
     source: 'product/list/detail/index',
     isSource: true,
-    hidden: true
+    hidden: true,
+    noCache: true
   },
   {
     name: 'stat',
@@ -82,7 +89,8 @@ const routeModule = [
     compare: 'stat/general/index',
     source: 'stat/general/index',
     isSource: true,
-    hidden: false
+    hidden: false,
+    noCache: false
   },
   {
     name: 'statAnalyze',
@@ -90,7 +98,8 @@ const routeModule = [
     compare: 'stat/analyze/index',
     source: 'stat/analyze/index',
     isSource: true,
-    hidden: false
+    hidden: false,
+    noCache: false
   },
   {
     name: 'order',
@@ -106,7 +115,8 @@ const routeModule = [
     compare: 'order/sell/index',
     source: 'order/sell/index',
     isSource: true,
-    hidden: false
+    hidden: false,
+    noCache: true
   },
   {
     name: 'orderDetail',
@@ -114,7 +124,8 @@ const routeModule = [
     compare: 'order/sell/detail/index',
     source: 'order/sell/detail/index',
     isSource: true,
-    hidden: true
+    hidden: true,
+    noCache: true
   },
   {
     name: 'activity',
@@ -130,7 +141,8 @@ const routeModule = [
     compare: 'activity/banner/index',
     source: 'activity/banner/index',
     isSource: true,
-    hidden: false
+    hidden: false,
+    noCache: false
   },
   {
     name: 'activityColumn',
@@ -138,7 +150,8 @@ const routeModule = [
     compare: 'activity/column/index',
     source: 'activity/column/index',
     isSource: true,
-    hidden: false
+    hidden: false,
+    noCache: false
   },
   {
     name: 'activityManageParent',
@@ -146,7 +159,8 @@ const routeModule = [
     compare: 'activity/manage/index',
     source: 'activity/manage/index',
     isSource: true,
-    hidden: false
+    hidden: false,
+    noCache: true
   },
   {
     name: 'activityDetailParent',
@@ -154,7 +168,8 @@ const routeModule = [
     compare: 'activity/manage/detail/index',
     source: 'activity/manage/detail/index',
     isSource: true,
-    hidden: true
+    hidden: true,
+    noCache: true
   },
   {
     name: 'activityAdd',
@@ -162,7 +177,8 @@ const routeModule = [
     compare: 'activity/manage/detail/add/index',
     source: 'activity/manage/detail/add/index',
     isSource: true,
-    hidden: true
+    hidden: true,
+    noCache: true
   },
   {
     name: 'permissionUser',
@@ -170,7 +186,8 @@ const routeModule = [
     compare: 'permission/user/index',
     source: 'permission/user/index',
     isSource: true,
-    hidden: false
+    hidden: false,
+    noCache: false
   },
   {
     name: 'permissionRole',
@@ -178,7 +195,8 @@ const routeModule = [
     compare: 'permission/role/index',
     source: 'permission/role/index',
     isSource: true,
-    hidden: false
+    hidden: false,
+    noCache: false
   },
   {
     name: 'system',
@@ -194,7 +212,8 @@ const routeModule = [
     compare: 'system/menu/index',
     source: 'system/menu/index',
     isSource: true,
-    hidden: false
+    hidden: false,
+    noCache: false
   },
   {
     name: 'systemDict',
@@ -202,7 +221,8 @@ const routeModule = [
     compare: 'system/dict/index',
     source: 'system/dict/index',
     isSource: true,
-    hidden: false
+    hidden: false,
+    noCache: false
   },
   {
     name: 'systemConfig',
@@ -210,7 +230,8 @@ const routeModule = [
     compare: 'system/config/index',
     source: 'system/config/index',
     isSource: true,
-    hidden: false
+    hidden: false,
+    noCache: false
   },
   {
     name: 'systemStrict',
@@ -218,7 +239,8 @@ const routeModule = [
     compare: 'system/strict/index',
     source: 'system/strict/index',
     isSource: true,
-    hidden: false
+    hidden: false,
+    noCache: false
   },
   {
     name: 'freight',
@@ -234,7 +256,8 @@ const routeModule = [
     compare: 'freight/template/index',
     source: 'freight/template/index',
     isSource: true,
-    hidden: false
+    hidden: false,
+    noCache: true
   },
   {
     name: 'freightTemplateList',
@@ -242,7 +265,8 @@ const routeModule = [
     compare: 'freight/template/list/index',
     source: 'freight/template/list/index',
     isSource: true,
-    hidden: true
+    hidden: true,
+    noCache: true
   },
   {
     name: 'freightTemplateEdit',
@@ -250,7 +274,8 @@ const routeModule = [
     compare: 'freight/template/edit/index',
     source: 'freight/template/edit/index',
     isSource: true,
-    hidden: true
+    hidden: true,
+    noCache: true
   },
   {
     name: 'wechat',
@@ -266,7 +291,8 @@ const routeModule = [
     compare: 'wechat/list/index',
     source: 'wechat/list/index',
     isSource: true,
-    hidden: false
+    hidden: false,
+    noCache: false
   }
 ]
 
@@ -281,7 +307,8 @@ function getRouteSource(r) {
     source: '',
     path: '',
     isSource: false,
-    hidden: false
+    hidden: false,
+    noCache: false
   }
   routeModule.forEach(item => {
     if (item.compare === r) {
@@ -291,6 +318,7 @@ function getRouteSource(r) {
       result.path = item.path
       result.isSource = item.isSource
       result.hidden = item.hidden
+      result.noCache = item.noCache
       return false
     }
   })
@@ -309,12 +337,14 @@ function filterAsyncRouter(asyncRouterMap, index) {
           title: route.name,
           icon: route.icon,
           id: route.id,
-          url: route.url
+          url: route.url,
+          noCache: true
         }
         route.hidden = routeObj.hidden
         route.name = routeObj.name
         route.target = route.operation === 2 ? '_blank' : ''
         if (routeObj.isSource) {
+          route.meta.noCache = routeObj.noCache
           route.component = _import(routeObj.source)
           route.path = routeObj.path
         } else {
@@ -326,6 +356,12 @@ function filterAsyncRouter(asyncRouterMap, index) {
           }
         }
       } else if (httpReg.test(route.url)) {
+        route.meta = {
+          title: route.name,
+          icon: route.icon,
+          id: route.id,
+          url: route.url
+        }
         // route.component = Layout
         if (route.operation === 1) {
           if (index === 0) {

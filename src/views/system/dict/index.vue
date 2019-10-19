@@ -15,8 +15,7 @@
       border
       :header-cell-style="{background: '#f3f3f3'}"
       lazy
-      :load="load"
-      :tree-props="{children: 'children', hasChildren: 'hasChildren'}">
+      :load="load">
       <el-table-column
         prop="name"
         label="字典名"
@@ -111,6 +110,7 @@ import { parseTime } from '@/utils'
 import { deepClone } from '@/utils'
 import treeTable from '@/components/TreeTable'
 const defaultRole = {
+  parentId: '',
   id: '',
   name: '',
   code: '',
@@ -179,7 +179,6 @@ export default {
         pageIndex: 1,
         pageSize: 10
       },
-      listLoading: true,
       query: {
         id: ''
       },
@@ -189,8 +188,7 @@ export default {
       dialogFormVisible: false,
       dialogStatus: '',
       dialogPvVisible: false,
-      downloadLoading: false,
-      maps:new Map()
+      downloadLoading: false
     }
   },
   created() {
@@ -215,32 +213,51 @@ export default {
       getDictById().then(res => {
         this.listLoading = false
         if(Array.isArray(res.data)) {
-          this.dictData = res.data
+          let resData = []
+          res.data.forEach(item => {
+            let v = {
+              name: item.name,
+              code: item.colde,
+              hasChildren: item.haveChild === 1 ? true : false,
+              id: item.id,
+              parentId: item.parentId,
+              remark: item.remark,
+              sort: item.sort,
+              status: item.status,
+              value: item.value,
+              createTime: item.createTime
+            }
+            resData.push(v)
+          })
+          this.dictData = resData
         }
       })
     },
     load(tree, treeNode, resolve) {
-      const pid = tree.id;
-      this.maps.set(pid, {tree, treeNode, resolve})
+      const pid = tree.id
       getDictByPid({
         pid: tree.id
       }).then(res => {
-        let data = []
+        let resData = []
         if(Array.isArray(res.data)) {
-          for(let i = 0; i < res.data.length; i++) {
-            let obj = {
-              name: res.data[i].name,
-              id: res.data[i].id,
-              pid: res.data[i].pid,
-              value: res.data[i].value === null? '': res.data[i].value,
-              status: this.statusDes[res.data[i].status],
-              remark: res.data[i].remark === null? '': res.data[i].remark,
-              hasChildren: res.data[i].haveChild === 1? true: false
+          res.data.forEach(item => {
+            let v = {
+              name: item.name,
+              code: item.colde,
+              hasChildren: item.haveChild === 1 ? true : false,
+              id: item.id,
+              parentId: item.parentId,
+              remark: item.remark,
+              sort: item.sort,
+              status: item.status,
+              value: item.value,
+              createTime: item.createTime
             }
-            data.push(obj)
-          }
+            resData.push(v)
+          })
         }
-        resolve(data)
+        console.log(resData)
+        resolve(resData)
       })
     },
     handleFilter() {
@@ -248,7 +265,7 @@ export default {
     },
     handAddTop() {
       this.role = Object.assign({}, defaultRole)
-      this.dialogType = 'new'
+      this.dialogType = 'top'
       this.dialogVisible = true
     },
     msgEdit(scope) {
@@ -260,10 +277,9 @@ export default {
     },
     msgAdd(scope) {
       this.role = Object.assign({}, defaultRole)
+      this.role.id = scope.id
       this.dialogType = 'new'
       this.dialogVisible = true
-      this.changeId = scope.id
-      this.changePid = scope.pid
     },
     handleUpdate(row) {
       // 编辑事件
@@ -281,15 +297,14 @@ export default {
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
+          this.listLoading = true
           deleteDict({id: data.id}).then(response => {
+            this.listLoading = false
             this.$message({
               type: 'success',
               message: '删除成功!'
             })
             this.getDictById()
-            // const {tree, treeNode, resolve} = this.maps.get(data.pid)
-            // this.$set(this.$refs.treeTable.store.states.lazyTreeNodeMap, data.id, [])
-            // this.load(tree,treeNode,resolve);
           })
         }).catch(() => {
           this.$message({
@@ -297,11 +312,6 @@ export default {
             message: '已取消删除'
           });          
         });
-     this.$message({
-        message: '操作成功',
-        type: 'success'
-      })
-
     },
     regFun() {
       // 输入校验
@@ -312,10 +322,9 @@ export default {
       });
     },
     async confirmRole() {
-      const isEdit = this.dialogType === 'edit'
-      if (isEdit) {
-        this.diaDisable = true
-        this.diaLoading = true
+      this.listLoading = true
+      this.dialogVisible = false
+      if (this.dialogType === 'edit') {
         await updateDict({
         id: this.role.id,
         name: this.role.name,
@@ -323,39 +332,32 @@ export default {
         status: (this.role.status === '启用'? 1: 0),
         value: this.role.value,
         remark: this.role.remark
-        }).catch(err => {
-          this.diaDisable = false
-          this.diaLoading = false
         })
-        this.diaDisable = false
-        this.diaLoading = false
+        this.listLoading = false
         this.getDictById()
-      } else {
-        this.diaDisable = true
-        this.diaLoading = true
+      } else if(this.dialogType === 'new') {
         const { data } = await addDict({
-          parentId: this.changeId,
+          parentId: this.role.id,
           name: this.role.name,
           code: this.role.code,
           value: this.role.value,
-          // status: this.role.status,
           remark: this.role.remark
-        }).catch(err => {
-          this.diaDisable = false
-          this.diaLoading = false
         })
-        this.diaDisable = false
-        this.diaLoading = false
-        // console.log('pid:', this.changeId)
-        // console.log(this.maps)
-        // console.log(this.maps.get(this.changeId))
-        // const {tree, treeNode, resolve} = this.maps.get(this.changeId)
-        // this.load(tree, treeNode, resolve);
+        this.listLoading = false
+        this.getDictById()
+      } else if(this.dialogType === 'top') {
+        this.diaDisable = true
+        this.diaLoading = true
+        const { data } = await addDict({
+          name: this.role.name,
+          code: this.role.code,
+          value: this.role.value,
+          remark: this.role.remark
+        })
+        this.listLoading = false
         this.getDictById()
       }
-
       const { name, remark } = this.role
-      this.dialogVisible = false
       this.$notify({
         title: 'Success',
         dangerouslyUseHTMLString: true,

@@ -482,7 +482,6 @@ export default {
        this.bannerDataQuery.pageIndex = data.page
        this.getBannerList()
      }
-      
     },
     handleDelete(row) {
       this.$confirm('确定要删除该广告?', 'Warning', {
