@@ -56,7 +56,7 @@
           <el-button type="primary" size="mini" @click="msgAdd(row)">
             添加
           </el-button>
-          <el-button v-if="row.status!='deleted'" size="mini" type="danger" @click="handleDelete(row, $event)">
+          <el-button v-if="row.status!='deleted'" size="mini" type="danger" @click="handleDelete(row)">
             删除
           </el-button>
         </template>
@@ -188,7 +188,8 @@ export default {
       dialogFormVisible: false,
       dialogStatus: '',
       dialogPvVisible: false,
-      downloadLoading: false
+      downloadLoading: false,
+      loadNodeMap: new Map()
     }
   },
   created() {
@@ -217,7 +218,7 @@ export default {
           res.data.forEach(item => {
             let v = {
               name: item.name,
-              code: item.colde,
+              code: item.code,
               hasChildren: item.haveChild === 1 ? true : false,
               id: item.id,
               parentId: item.parentId,
@@ -235,6 +236,7 @@ export default {
     },
     load(tree, treeNode, resolve) {
       const pid = tree.id
+      this.loadNodeMap.set(pid, { tree, treeNode, resolve })
       getDictByPid({
         pid: tree.id
       }).then(res => {
@@ -243,7 +245,7 @@ export default {
           res.data.forEach(item => {
             let v = {
               name: item.name,
-              code: item.colde,
+              code: item.code,
               hasChildren: item.haveChild === 1 ? true : false,
               id: item.id,
               parentId: item.parentId,
@@ -256,9 +258,37 @@ export default {
             resData.push(v)
           })
         }
-        console.log(resData)
         resolve(resData)
       })
+    },
+    handleLoad(id, pid, type) {
+      // type 1:新增 2:更新 3:删除
+      if(type === 1) {
+        if (this.loadNodeMap.has(id)) {
+          const { tree, treeNode, resolve } = this.loadNodeMap.get(id);
+          this.load(tree, treeNode, resolve, id)
+        } else if(this.loadNodeMap.has(pid)) {
+          const { tree, treeNode, resolve } = this.loadNodeMap.get(pid);
+          this.load(tree, treeNode, resolve, pid)
+        } else {
+          this.getDictById()
+        }
+      } else if(type === 2) {
+        if (this.loadNodeMap.has(pid)) {
+          const { tree, treeNode, resolve } = this.loadNodeMap.get(pid);
+          this.load(tree, treeNode, resolve, pid)
+        } else {
+          this.getDictById()
+        }
+      } else if(type === 3) {
+        if (this.loadNodeMap.has(pid)) {
+          const { tree, treeNode, resolve } = this.loadNodeMap.get(pid);
+          this.load(tree, treeNode, resolve, pid)
+        } else {
+          this.getDictById()
+        }
+      }
+      
     },
     handleFilter() {
 
@@ -269,7 +299,6 @@ export default {
       this.dialogVisible = true
     },
     msgEdit(scope) {
-      console.log(scope)
       this.dialogType = 'edit'
       this.dialogVisible = true
       this.checkStrictly = true
@@ -278,6 +307,7 @@ export default {
     msgAdd(scope) {
       this.role = Object.assign({}, defaultRole)
       this.role.id = scope.id
+      this.role.parentId = scope.parentId
       this.dialogType = 'new'
       this.dialogVisible = true
     },
@@ -290,7 +320,7 @@ export default {
         this.$refs['dataForm'].clearValidate()
       })
     },
-    handleDelete(data, e) {
+    handleDelete(data) {
       // 删除
       this.$confirm('此操作将永久删除该系统, 是否继续?', '提示', {
           confirmButtonText: '确定',
@@ -304,7 +334,11 @@ export default {
               type: 'success',
               message: '删除成功!'
             })
-            this.getDictById()
+            if(data.parentId) {
+              this.handleLoad(data.id, data.parentId, 3)
+            } else {
+              this.getDictById()
+            }
           })
         }).catch(() => {
           this.$message({
@@ -334,7 +368,7 @@ export default {
         remark: this.role.remark
         })
         this.listLoading = false
-        this.getDictById()
+        this.handleLoad(this.role.id, this.role.parentId, 2)
       } else if(this.dialogType === 'new') {
         const { data } = await addDict({
           parentId: this.role.id,
@@ -344,10 +378,8 @@ export default {
           remark: this.role.remark
         })
         this.listLoading = false
-        this.getDictById()
+        this.handleLoad(this.role.id, this.role.parentId, 1)
       } else if(this.dialogType === 'top') {
-        this.diaDisable = true
-        this.diaLoading = true
         const { data } = await addDict({
           name: this.role.name,
           code: this.role.code,
