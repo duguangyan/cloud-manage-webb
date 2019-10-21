@@ -41,6 +41,7 @@ service.interceptors.request.use(
         }
       }
     }
+
     if (+config.debug === 1) {
       config.baseURL = debugUrl
     }
@@ -50,6 +51,7 @@ service.interceptors.request.use(
     } else {
       config.headers['Authorization'] = 'Basic Y21hbmFnZXI6eHg='
     }
+    console.log(config);
     config.headers['user_id'] = store.getters.userId
     config.headers['client_id'] = 'cmanager'
     config.headers['device_id'] = store.getters.deviceId

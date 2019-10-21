@@ -1,4 +1,4 @@
-import { login, logout, getInfo } from '@/api/upms/user'
+import { login, logout, getInfo, refreshToken } from '@/api/upms/user'
 import {
   getToken,
   setToken,
@@ -7,7 +7,6 @@ import {
   setUuid,
   removeUuid
 } from '@/utils/auth'
-import { refreshToken } from '@/utils/request'
 import router, { resetRouter } from '@/router'
 import { getStore, setStore } from '@/store/store'
 
@@ -47,7 +46,7 @@ const user = {
       state.expires_in = expires_in
       setStore({
         name: 'expires_in',
-        content: state.expires_in,
+        content: expires_in,
         type: 'session'
       })
     },
@@ -98,20 +97,15 @@ const user = {
   actions: {
     // 刷新token
     RefreshToken({ commit, state }) {
-      return new Promise((resolve, reject) => {
-        refreshToken(state.refresh_token)
-          .then(response => {
-            const data = response.data
-            commit('SET_ACCESS_TOKEN', data.access_token)
-            commit('SET_REFRESH_TOKEN', data.refresh_token)
-            commit('SET_EXPIRES_IN', data.expires_in)
-            commit('CLEAR_LOCK')
-            resolve()
-          })
-          .catch(error => {
-            reject(error)
-          })
-      })
+      refreshToken(state.refresh_token)
+        .then(response => {
+          debugger
+          const data = response.data
+          commit('SET_ACCESS_TOKEN', data.access_token)
+          commit('SET_REFRESH_TOKEN', data.refresh_token)
+          commit('SET_EXPIRES_IN', data.expires_in)
+          commit('CLEAR_LOCK')
+        })
     },
     // user login
     login({ commit }, userInfo) {
@@ -134,6 +128,7 @@ const user = {
             const data = response.data
             commit('SET_ACCESS_TOKEN', data.access_token)
             commit('SET_REFRESH_TOKEN', data.refresh_token)
+            commit('SET_EXPIRES_IN', data.expires_in)
             // setToken(data.access_token);
             resolve()
           })

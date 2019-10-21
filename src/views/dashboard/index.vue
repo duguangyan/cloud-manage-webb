@@ -44,9 +44,9 @@ export default {
     // 实时检测刷新token
 
     refreshToken() {
+
       let self = this;
       self.refreshTime = setInterval(() => {
-        const token = token;
 
         if (self.expires_in <= 10 && !self.refreshLock) {
           self.refreshLock = true;
@@ -55,9 +55,8 @@ export default {
           });
           self.refreshLock = false;
         }
-
         self.$store.commit("user/SET_EXPIRES_IN", --self.expires_in);
-      }, 10000);
+      }, 1000);
     }
 
   }

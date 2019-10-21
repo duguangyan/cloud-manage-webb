@@ -31,7 +31,7 @@
         <el-form-item label="邮编" prop="zipCode">
           <el-input v-model="strict.zipCode"></el-input>
         </el-form-item>
-        <el-form-item label="排序" prop="sort">
+        <el-form-item label="排序">
           <el-input v-model="strict.sort"></el-input>
         </el-form-item>
         <el-form-item>
@@ -106,7 +106,6 @@ var vm = {
           message: "请输入邮编"
         },
         sort: {
-          type: 'number',
           message: "请输入排序"
         }
       },

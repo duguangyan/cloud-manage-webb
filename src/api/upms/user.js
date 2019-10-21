@@ -8,16 +8,21 @@ export function login(data) {
   })
 }
 
-export const refreshToken = refresh_token => {
-  const grant_type = 'refresh_token'
+export const refreshToken = reToken => {
   return request({
-    url: '/auth/oauth/token',
+    url: '/oauth/oauth/token',
     headers: {
       isToken: false,
       Authorization: 'Basic cGlnOnBpZw=='
     },
     method: 'post',
-    params: { refresh_token, grant_type, scope }
+    data: {
+      refresh_token: reToken,
+      grant_type: 'refresh_token',
+      scope: 1,
+      client_id: 'cmanager',
+      client_secret: 'xx'
+    }
   })
 }
 
