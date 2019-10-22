@@ -31,7 +31,7 @@
         show-overflow-tooltip>
       </el-table-column>
       <el-table-column
-        prop="id"
+        prop="code"
         label="编码"
         align="center"
         width="180"
@@ -74,8 +74,8 @@
         <el-form-item label="名称" prop="name">
           <el-input v-model.trim="banner.name" maxlength="30" placeholder="请输入名称" />
         </el-form-item>
-        <el-form-item label="编码" prop="id">
-          <el-input v-model.trim="banner.id" maxlength="32" placeholder="请输入编码" />
+        <el-form-item label="编码" prop="code">
+          <el-input v-model.trim="banner.code" maxlength="32" placeholder="请输入编码" />
         </el-form-item>
         <el-form-item label="数量" prop="quantity">
           <el-input v-model.trim="banner.quantity" maxlength="11" placeholder="请输入数量" />
@@ -127,6 +127,7 @@ import { getUserBtnByPId } from '@/api/upms/menu'
 const defaultBanner = {
   name: '',
   id: '',
+  code: '',
   quantity: '',
   spaceTime: '',
   pushType: '',
@@ -354,6 +355,7 @@ export default {
         this.diaLoading = true
         await updateBanner({
           id: this.banner.id,
+          code: this.banner.code,
           name: this.banner.name,
           pushType: this.banner.pushType,
           quantity: this.banner.quantity,
@@ -375,7 +377,7 @@ export default {
         this.diaDisable = true
         this.diaLoading = true
         await addBanner({
-          id: this.banner.id,
+          code: this.banner.code,
           name: this.banner.name,
           pushType: this.banner.pushType,
           quantity: this.banner.quantity,

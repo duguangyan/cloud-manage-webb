@@ -16,7 +16,13 @@ export default {
       return this.$store.state.tagsView.cachedViews
     },
     key() {
-      return this.$route.path
+      let marker = window.sessionStorage.getItem(this.$route.fullPath)
+      if (!marker) {
+        window.sessionStorage.setItem(this.$route.fullPath, new Date())
+        marker = window.sessionStorage.getItem(this.$route.fullPath)
+      }
+      return this.$route.fullPath + marker
+      // return this.$route.path
     }
   }
 }

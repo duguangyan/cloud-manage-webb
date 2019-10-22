@@ -6,11 +6,12 @@ import Layout from '@/layout'
 const routeModule = [
   {
     name: 'product',
-    path: 'product',
+    path: '/product',
     compare: 'product',
     source: 'product',
     isSource: false,
-    hidden: false
+    hidden: false,
+    redirect: '/product/classify'
   },
   {
     name: 'productClassify',
@@ -31,17 +32,17 @@ const routeModule = [
     noCache: false
   },
   {
-    name: 'productListParent',
+    name: 'productList',
     path: '/product/list',
-    compare: 'product/list/index',
-    source: 'product/list/index',
+    compare: 'product/list/list/index',
+    source: 'product/list/list/index',
     isSource: true,
     hidden: false,
     noCache: false
   },
   {
     name: 'productEdit',
-    path: 'edit',
+    path: '/product/list/edit',
     compare: 'product/list/edit/index',
     source: 'product/list/edit/index',
     isSource: true,
@@ -50,12 +51,12 @@ const routeModule = [
   },
   {
     name: 'productEdit',
-    path: 'add',
+    path: '/product/list/add',
     compare: 'product/list/add/index',
     source: 'product/list/edit/index',
     isSource: true,
     hidden: true,
-    noCache: false
+    noCache: true
   },
   {
     name: 'productRelease',
@@ -77,11 +78,12 @@ const routeModule = [
   },
   {
     name: 'stat',
-    path: 'stat',
+    path: '/stat',
     compare: 'stat',
     source: 'stat',
     isSource: false,
-    hidden: false
+    hidden: false,
+    redirect: '/stat/general'
   },
   {
     name: 'statGeneral',
@@ -103,46 +105,39 @@ const routeModule = [
   },
   {
     name: 'order',
-    path: 'order',
+    path: '/order',
     compare: 'order',
     source: 'order',
     isSource: false,
-    hidden: false
+    hidden: false,
+    redirect: '/order/sell/list'
   },
-  // {
-  //   name: 'orderSellList',
-  //   path: '/order/sell',
-  //   compare: 'order/sell/index',
-  //   source: 'order/sell/index',
-  //   isSource: true,
-  //   hidden: false,
-  //   noCache: true
-  // },
-  // {
-  //   name: 'orderDetailParent',
-  //   path: '/order/sell',
-  //   compare: 'order/sell/detail/index',
-  //   source: 'order/sell/detail/index',
-  //   isSource: true,
-  //   hidden: false,
-  //   noCache: true
-  // },
-  // {
-  //   name: 'orderDetailList',
-  //   path: '/order/sell/detail/list',
-  //   compare: 'order/sell/detail/list/index',
-  //   source: 'order/sell/detail/list/index',
-  //   isSource: true,
-  //   hidden: false,
-  //   noCache: true
-  // },
+  {
+    name: 'orderSellList',
+    path: '/order/sell/list',
+    compare: 'order/sell/list/index',
+    source: 'order/sell/list/index',
+    isSource: true,
+    hidden: false,
+    noCache: false
+  },
+  {
+    name: 'orderDetailList',
+    path: '/order/sell/detail',
+    compare: 'order/sell/detail/index',
+    source: 'order/sell/detail/index',
+    isSource: true,
+    hidden: true,
+    noCache: false
+  },
   {
     name: 'activity',
-    path: 'activity',
+    path: '/activity',
     compare: 'activity',
     source: 'activity',
     isSource: false,
-    hidden: false
+    hidden: false,
+    redirect: '/activity/banner'
   },
   {
     name: 'activityBanner',
@@ -163,31 +158,31 @@ const routeModule = [
     noCache: false
   },
   {
-    name: 'activityManageParent',
+    name: 'activityManageList',
     path: '/activity/manage',
-    compare: 'activity/manage/index',
-    source: 'activity/manage/index',
+    compare: 'activity/manage/list/index',
+    source: 'activity/manage/list/index',
     isSource: true,
     hidden: false,
-    noCache: true
+    noCache: false
   },
   {
-    name: 'activityDetailParent',
+    name: 'activityManageDetailList',
     path: '/activity/manage/detail',
-    compare: 'activity/manage/detail/index',
-    source: 'activity/manage/detail/index',
+    compare: 'activity/manage/detail/list/index',
+    source: 'activity/manage/detail/list/index',
     isSource: true,
     hidden: true,
-    noCache: true
+    noCache: false
   },
   {
     name: 'activityAdd',
-    path: 'activity/manage/detail/add',
+    path: '/activity/manage/detail/add',
     compare: 'activity/manage/detail/add/index',
     source: 'activity/manage/detail/add/index',
     isSource: true,
     hidden: true,
-    noCache: true
+    noCache: false
   },
   {
     name: 'permissionUser',
@@ -209,11 +204,12 @@ const routeModule = [
   },
   {
     name: 'system',
-    path: 'system',
+    path: '/system',
     compare: 'system',
     source: 'system',
     isSource: false,
-    hidden: false
+    hidden: false,
+    redirect: '/system/menu'
   },
   {
     name: 'systemMenu',
@@ -253,20 +249,12 @@ const routeModule = [
   },
   {
     name: 'freight',
-    path: 'freight',
+    path: '/freight',
     compare: 'freight',
     source: 'freight',
     isSource: false,
-    hidden: false
-  },
-  {
-    name: 'freightTemplateParent',
-    path: '/freight/template',
-    compare: 'freight/template/index',
-    source: 'freight/template/index',
-    isSource: true,
     hidden: false,
-    noCache: true
+    redirect: '/freight/list'
   },
   {
     name: 'freightTemplateList',
@@ -274,8 +262,17 @@ const routeModule = [
     compare: 'freight/template/list/index',
     source: 'freight/template/list/index',
     isSource: true,
+    hidden: false,
+    noCache: false
+  },
+  {
+    name: 'freightTemplateEdit',
+    path: '/freight/template/add',
+    compare: 'freight/template/add/index',
+    source: 'freight/template/edit/index',
+    isSource: true,
     hidden: true,
-    noCache: true
+    noCache: false
   },
   {
     name: 'freightTemplateEdit',
@@ -288,11 +285,12 @@ const routeModule = [
   },
   {
     name: 'wechat',
-    path: 'wechat',
+    path: '/wechat',
     compare: 'wechat',
     source: 'wechat',
     isSource: false,
-    hidden: false
+    hidden: false,
+    redirect: '/wechat/list'
   },
   {
     name: 'wechatList',
@@ -328,6 +326,9 @@ function getRouteSource(r) {
       result.isSource = item.isSource
       result.hidden = item.hidden
       result.noCache = item.noCache
+      if (item.redirect) {
+        result.redirect = item.redirect
+      }
       return false
     }
   })
@@ -359,6 +360,7 @@ function filterAsyncRouter(asyncRouterMap, index) {
         } else {
           route.component = Layout
           route.path = routeObj.path
+          route.redirect = routeObj.redirect
         }
       } else if (httpReg.test(route.url)) {
         route.meta = {

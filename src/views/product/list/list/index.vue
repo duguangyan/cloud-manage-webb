@@ -281,7 +281,7 @@ export default {
   methods: {
     jump() {
       // 新增商品
-      this.$router.push({path: 'list/release'})
+      this.$router.push({path: '/product/list/release'})
     },
     getList() {
       // 获取商品列表
@@ -300,8 +300,7 @@ export default {
       })
     },
     msgEdit(scope) {
-      // 编辑商品
-      this.$router.push({path: 'list/edit', query:{ 
+      this.$router.push({path: '/product/list/edit', query:{ 
         id: scope.row.categoryId,
         eid: scope.row.id
       }})

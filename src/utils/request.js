@@ -51,7 +51,6 @@ service.interceptors.request.use(
     } else {
       config.headers['Authorization'] = 'Basic Y21hbmFnZXI6eHg='
     }
-    console.log(config);
     config.headers['user_id'] = store.getters.userId
     config.headers['client_id'] = 'cmanager'
     config.headers['device_id'] = store.getters.deviceId
@@ -60,7 +59,6 @@ service.interceptors.request.use(
   },
   error => {
     // do something with request error
-    console.log(error) // for debug
     return Promise.reject(error)
   }
 )

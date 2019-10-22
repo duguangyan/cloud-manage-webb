@@ -70,7 +70,7 @@ import { getUserBtnByPId } from '@/api/upms/menu'
 import Pagination from '@/components/Pagination'
 
 export default {
-  name: 'activityDetailList',
+  name: 'activityManageDetailList',
   directives: { waves },
   data() {
     return {
@@ -196,7 +196,7 @@ export default {
     add() {
       // 添加商品
       this.$router.push({
-        path: 'detail/add',
+        path: '/activity/manage/detail/add',
         query: {
           cId: this.listQuery.goodListId
         }

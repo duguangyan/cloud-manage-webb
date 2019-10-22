@@ -272,7 +272,7 @@ export default {
     nextJump() {
       // 下一步
       if(this.chooseId.length > 0) {
-        this.$router.push({path: 'add', query: {
+        this.$router.push({path: '/product/list/add', query: {
           id: this.chooseId,
           des: this.treeDes
         }})

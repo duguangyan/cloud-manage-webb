@@ -40,7 +40,7 @@ import { getManageList } from '@/api/act/manage'
 import { getUserBtnByPId } from '@/api/upms/menu'
 
 export default {
-  name: 'manageList',
+  name: 'activityManageList',
   directives: { waves },
   data() {
     return {
