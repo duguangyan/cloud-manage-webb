@@ -4,7 +4,7 @@
     <div class="filter-container">
       <template v-if="btnsPermission.search.auth">
         名称：
-        <el-input v-model="listQuery.name" maxlength="64" placeholder="请输入用户姓名" style="width: 200px;" class="filter-item mr10" @keyup.enter.native="handleFilter" />
+        <el-input v-model.trim="listQuery.name" maxlength="64" placeholder="请输入用户姓名" style="width: 200px;" class="filter-item mr10" @keyup.enter.native="handleFilter" />
         状态：
         <el-select v-model="listQuery.status" class="mr10" placeholder="请选择">
           <el-option
@@ -112,7 +112,7 @@
           <el-button v-if="btnsPermission.edit.auth" type="primary" size="mini" @click="msgEdit(row)">
             {{btnsPermission.edit.name}}
           </el-button>
-          <el-button v-if="btnsPermission.delete.auth && row.status!='deleted'" size="mini" type="danger" @click="handleDelete(row, $event)">
+          <el-button v-if="btnsPermission.delete.auth && row.status!='deleted'" size="mini" type="danger" @click="handleDelete(row)">
             {{btnsPermission.delete.name}}
           </el-button>
         </template>
@@ -197,7 +197,7 @@
           <el-button type="primary" size="mini" @click="msgEdit(row)">
             编辑
           </el-button>
-          <el-button v-if="row.status!='deleted'" size="mini" type="danger" @click="handleDelete(row, $event)">
+          <el-button v-if="row.status!='deleted'" size="mini" type="danger" @click="handleDelete(row)">
             删除
           </el-button>
         </template>
@@ -328,7 +328,7 @@
 import path from 'path'
 import { deepClone } from '@/utils'
 import waves from '@/directive/waves' // waves directive
-import { getMeanFirstRec, getMeanByPid, resourceDelete, updateUser, addResource, updateResource, getUserBtnByPId, resourceSearch } from '@/api/upms/menu'
+import { getMeanFirstRec, getMeanByPid, resourceDelete, updateUser, addResource, updateResource, getUserBtnByPId, resourceSearch, getResourceById } from '@/api/upms/menu'
 import { getRoutes } from '@/api/upms/manageRole'
 import { getSystem } from '@/api/upms/systemList'
 import Pagination from '@/components/Pagination'
@@ -468,11 +468,17 @@ export default {
         status: '',
         type: ''
       },
+      searchQuery: {
+
+      },
       checkParentId: '',
       checkParentName: '',
       iconShow: '',
       parentShowId: '',
-      multipleSelection: []
+      multipleSelection: [],
+      loadNodeMap: new Map(),
+      isSearch: false,
+      isFindSearch: false
     }
   },
   components: { Pagination },
@@ -504,10 +510,11 @@ export default {
       // 多选事件
     },
     getMeanFirstRec() {
-      this.listLoading = true
       this.meanData = []
+      this.listLoading = true
       getMeanFirstRec().then(res => {
         this.listLoading = false
+        let resData = []
         if(Array.isArray(res.data)) {
           for(let i = 0; i < res.data.length; i++) {
             let obj = {
@@ -526,14 +533,15 @@ export default {
               remark: res.data[i].remark === null? '': res.data[i].remark,
               hasChildren: res.data[i].haveChild === 1? true: false
             }
-            this.meanData.push(obj)
+            resData.push(obj)
           }
         }
+        this.meanData = resData
       })
     },
     load(tree, treeNode, resolve) {
-      // const pid = tree.id;
-      // this.maps.set(pid, {tree, treeNode, resolve})
+      console.log('tree id: ', tree.id)
+      this.loadNodeMap.set(tree.id, { tree, treeNode, resolve })
       getMeanByPid({
         parentId: tree.id
       }).then(res => {
@@ -561,6 +569,71 @@ export default {
         }
         resolve(data)
       })
+    },
+    handleLoad(id, pid, type) {
+      // type 1:新增 2:更新 3:删除
+      if(type === 1) {
+        if (this.loadNodeMap.has(id)) {
+          const { tree, treeNode, resolve } = this.loadNodeMap.get(id);
+          this.load(tree, treeNode, resolve, id)
+        } else if(this.loadNodeMap.has(pid)) {
+          const { tree, treeNode, resolve } = this.loadNodeMap.get(pid);
+          this.load(tree, treeNode, resolve, pid)
+        } else {
+          this.getMeanFirstRec()
+        }
+      } else if(type === 2) {
+        if (this.loadNodeMap.has(pid)) {
+          const { tree, treeNode, resolve } = this.loadNodeMap.get(pid);
+          this.load(tree, treeNode, resolve, pid)
+        } else {
+          this.getMeanFirstRec()
+        }
+      } else if(type === 3) {
+        if (this.loadNodeMap.has(pid)) {
+          const { tree, treeNode, resolve } = this.loadNodeMap.get(pid);
+          this.load(tree, treeNode, resolve, pid)
+        } else {
+          this.getMeanFirstRec()
+        }
+      }
+    },
+    filterData(arr, obj, type) {
+      for(let i = 0; i < arr.length; i++) {
+        if(arr[i].id === obj.parentId) {
+          console.log(type)
+          if(type === 1) {
+            if(arr[i].children) {
+              arr[i].children.push(obj)
+            } else {
+              arr[i].children = []
+              arr[i].children.push(obj)
+            }
+          } else if(type === 2) {
+            arr[i].name = obj.name
+            arr[i].sort = obj.sort
+            arr[i].icon = obj.icon 
+            arr[i].code = obj.code 
+            arr[i].status = obj.status
+            arr[i].url = obj.url 
+            arr[i].type = obj.type
+            arr[i].operation = obj.operation
+            arr[i].auth = obj.auth
+            arr[i].remark = obj.remark
+            console.log(arr[i])
+          } else if(type === 3) {
+            arr.splice(i, 1)
+          }
+          this.isFindSearch = true
+        }
+        if(this.isFindSearch) {
+          return
+        } else {
+          if(arr[i].children && arr[i].children.length > 0) {
+            this.filterData(arr[i].children, obj, type)
+          }
+        }
+      }
     },
     dioCancle() {
       // 取消编辑
@@ -626,12 +699,20 @@ export default {
       return res
     },
     handleFilter() {
+      if(this.listQuery.status === '' && this.listQuery.type === '' && this.listQuery.name.length === 0) {
+        this.$message({
+          type: 'warning',
+          message: '请输入搜索内容或选择搜索状态！'
+        })
+      } else {
+        this.searchQuery = deepClone(this.listQuery)
+        this.resourceSearch(this.listQuery)
+      }
+    },
+    resourceSearch(obj) {
       this.searchLoading = true
-      resourceSearch({
-        name: this.listQuery.name,
-        type: this.listQuery.type,
-        status: this.listQuery.status
-      }).then(res => {
+      resourceSearch(obj).then(res => {
+        this.isSearch = true
         this.searchLoading = false
         this.meanData = []
         this.isLazy = false
@@ -644,6 +725,7 @@ export default {
     },
     resetResource() {
       // 重置事件
+      this.isSearch = false
       this.isLazy = true
       this.listQuery = {
         name: ''
@@ -682,7 +764,8 @@ export default {
       const pId = row.id
       this.role = Object.assign({}, defaultRole)
       this.role.parentName = pName
-      this.role.parentId = pId
+      this.role.parentId = row.parentId
+      this.role.id = row.id
       this.checkParentId = pId
       this.dialogType = 'new'
       this.dialogVisible = true
@@ -710,7 +793,8 @@ export default {
         this.checkParentName = data.title
       }
     },
-    handleDelete( row, e ) {
+    handleDelete(row) {
+      console.log(row)
       this.$confirm('确定要删除该资源?', 'Warning', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -723,7 +807,12 @@ export default {
             type: 'success',
             message: '删除成功!'
           })
-          this.getMeanFirstRec()
+          if(this.isSearch) {
+            this.isFindSearch = false
+            this.filterData(this.searchData, {parentId: row.id}, 3)
+          } else {
+            this.handleLoad(row.id, row.parentId, 3)
+          }
         }).catch(err => {
             this.listLoading = false
       })
@@ -760,7 +849,7 @@ export default {
         succMsg = '编辑成功'
         this.diaDisable = true
         this.diaLoading = true
-         await updateResource({
+        let parem = {
            id: this.role.id,
            name: this.role.name,
            sort: this.role.sort,
@@ -773,13 +862,24 @@ export default {
            operation: this.role.operation,
            auth: this.role.auth,
            remark: this.role.remark
-         }).catch(err => {
+         }
+         await updateResource(parem).catch(err => {
            this.diaDisable = false
           this.diaLoading = false
          })
          this.diaDisable = false
          this.diaLoading = false
-        this.getMeanFirstRec()
+         if(this.isSearch) {
+           this.isFindSearch = false
+            // this.resourceSearch(this.searchQuery)
+            if(parem.parentId) {
+              this.filterData(this.searchData, parem, 2)
+            } else {
+              this.getMeanFirstRec()
+            }
+         } else {
+           this.handleLoad(this.role.id, this.role.parentId, 2)
+         }
       } else {
         succMsg = '新增成功'
         this.diaDisable = true
@@ -801,7 +901,17 @@ export default {
         })
         this.diaDisable = false
         this.diaLoading = false
-        this.getMeanFirstRec()
+        if(this.isSearch) {
+          this.isFindSearch = false
+          // this.resourceSearch(this.searchQuery)
+          if(data.parentId) {
+            this.filterData(this.searchData, data, 1)
+          } else {
+            this.getMeanFirstRec()
+          }
+        } else {
+          this.handleLoad(this.role.id, this.role.parentId, 1)
+        }
       }
       this.checkParentName = ''
       this.checkParentId = ''

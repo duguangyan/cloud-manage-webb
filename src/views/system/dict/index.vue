@@ -1,12 +1,14 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-if="btnsPermission.search.auth" v-model="listQuery.name"  placeholder="请输入搜索内容" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-if="btnsPermission.search.auth" v-model.trim="listQuery.name"  placeholder="请输入搜索关键字" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
       <el-button v-if="btnsPermission.search.auth" v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">{{btnsPermission.search.name}}</el-button>
+      <el-button v-if="btnsPermission.search.auth" v-waves class="filter-item" @click="resetResource">重置</el-button>
       <el-button v-if="btnsPermission.add.auth" v-waves class="filter-item" @click="handAddTop">{{btnsPermission.add.name}}</el-button>
     </div>
 
     <el-table
+      v-if="!isSearch"
       ref="treeTable"
       v-loading="listLoading"
       :data="dictData"
@@ -15,7 +17,65 @@
       border
       :header-cell-style="{background: '#f3f3f3'}"
       lazy
-      :load="load">
+      :expand-row-keys="expandArr"
+      :load="load"
+      @expand-change="expandChange">
+      <el-table-column
+        prop="name"
+        label="字典名"
+        >
+      </el-table-column>
+      <el-table-column
+        prop="code"
+        align="center"
+        label="编号"
+        >
+      </el-table-column>
+      <el-table-column
+        prop="status"
+        label="状态"
+        align="center"
+        width="180">
+        <template slot-scope="scope">
+          <span v-if="scope.row.status === 1">启用</span>
+          <span v-else-if="scope.row.status === 0">禁用</span>
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="value"
+        label="字典值"
+        align="center"
+        width="400">
+      </el-table-column>
+      <el-table-column
+        prop="remark"
+        label="备注"
+        align="center">
+      </el-table-column>
+      <el-table-column label="操作" align="center" width="300" class-name="small-padding fixed-width">
+        <template slot-scope="{ row }">
+          <el-button type="primary" size="mini" @click="msgEdit(row)">
+            编辑
+          </el-button>
+          <el-button type="primary" size="mini" @click="msgAdd(row)">
+            添加
+          </el-button>
+          <el-button v-if="row.status!='deleted'" size="mini" type="danger" @click="handleDelete(row)">
+            删除
+          </el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+    <el-table
+      v-show="isSearch"
+      ref="treeTableSearch"
+      v-loading="listLoading"
+      :data="searchData"
+      style="width: 100%"
+      row-key="id"
+      border
+      default-expand-all
+      :header-cell-style="{background: '#f3f3f3'}">
       <el-table-column
         prop="name"
         label="字典名"
@@ -104,7 +164,7 @@
 
 <script>
 import { getUserBtnByPId } from '@/api/upms/menu'
-import { addDict, getDictById, getDictByPid, updateDict, deleteDict } from '@/api/upms/dict'
+import { addDict, getDictById, getDictByPid, updateDict, deleteDict, searchDictByPid } from '@/api/upms/dict'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import { deepClone } from '@/utils'
@@ -130,6 +190,7 @@ export default {
       diaDisable: false,
       dictData: [],
       tableData: [],
+      searchData: [],
       btnsPermission: {
         search: {
           name: '搜索',
@@ -166,6 +227,8 @@ export default {
             message: '请填写字典值'
         }]
       },
+      expandArr: [],
+      isSearch: false,
       changeId: '',
       changePid: '',
       dialogType: 'new',
@@ -175,9 +238,10 @@ export default {
         remark: ''
       },
       listQuery: {
-        name: '',
-        pageIndex: 1,
-        pageSize: 10
+        name: ''
+      },
+      searchQuery: {
+
       },
       query: {
         id: ''
@@ -210,7 +274,6 @@ export default {
   methods: {
     getDictById() {
       this.listLoading = true
-      this.dictData = []
       getDictById().then(res => {
         this.listLoading = false
         if(Array.isArray(res.data)) {
@@ -261,6 +324,11 @@ export default {
         resolve(resData)
       })
     },
+    expandChange(row, expanded) {
+      console.log('expand')
+      console.log(row)
+      console.log(expanded)
+    },
     handleLoad(id, pid, type) {
       // type 1:新增 2:更新 3:删除
       if(type === 1) {
@@ -291,7 +359,32 @@ export default {
       
     },
     handleFilter() {
-
+      if(this.listQuery.name.length === 0) {
+        this.$message({
+          type: 'warning',
+          message: '请输入搜索内容！'
+        })
+      } else {
+        this.searchQuery = deepClone(this.listQuery)
+        this.searchDictByPid(this.listQuery)
+      }
+    },
+    searchDictByPid(obj) {
+      searchDictByPid(obj).then(res => {
+        this.isSearch = true
+        if(Array.isArray(res.data)) {
+          this.searchData = res.data
+        }
+      })
+    },
+    resetResource() {
+      // 重置事件
+      this.isSearch = false
+      this.listQuery = {
+        name: ''
+      }
+      this.searchData = []
+      this.getDictById()
     },
     handAddTop() {
       this.role = Object.assign({}, defaultRole)
@@ -334,10 +427,10 @@ export default {
               type: 'success',
               message: '删除成功!'
             })
-            if(data.parentId) {
-              this.handleLoad(data.id, data.parentId, 3)
+            if(this.isSearch) {
+              this.searchDictByPid(this.searchQuery)
             } else {
-              this.getDictById()
+              this.handleLoad(data.id, data.parentId, 3)
             }
           })
         }).catch(() => {
@@ -368,7 +461,11 @@ export default {
         remark: this.role.remark
         })
         this.listLoading = false
-        this.handleLoad(this.role.id, this.role.parentId, 2)
+        if(this.isSearch) {
+          this.searchDictByPid(this.searchQuery)
+        } else {
+          this.handleLoad(this.role.id, this.role.parentId, 2)
+        }
       } else if(this.dialogType === 'new') {
         const { data } = await addDict({
           parentId: this.role.id,
@@ -378,7 +475,11 @@ export default {
           remark: this.role.remark
         })
         this.listLoading = false
-        this.handleLoad(this.role.id, this.role.parentId, 1)
+        if(this.isSearch) {
+          this.searchDictByPid(this.searchQuery)
+        } else {
+          this.handleLoad(this.role.id, this.role.parentId, 1)
+        }
       } else if(this.dialogType === 'top') {
         const { data } = await addDict({
           name: this.role.name,

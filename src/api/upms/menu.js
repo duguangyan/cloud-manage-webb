@@ -72,3 +72,11 @@ export function getUserBtnByPId(query) {
   })
 }
 
+// 根据资源ID获取资源
+export function getResourceById(query) {
+  return request({
+    url: '/upms/resource/getById',
+    method: 'get',
+    params: query
+  })
+}

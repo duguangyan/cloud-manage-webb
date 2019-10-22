@@ -698,6 +698,14 @@ let vm = {
     }
   },
   methods: {
+    closeSelectedTag(view) {
+      console.log(view)
+      this.$store.dispatch('tagsView/delView', view).then(({ visitedViews }) => {
+        if (this.isActive(view)) {
+          this.toLastView(visitedViews, view)
+        }
+      })
+    },
     getByCategoryId() {
       // 通过ID获取规格模板
       let CateParam = {
@@ -1508,6 +1516,8 @@ let vm = {
         this.saveLoading = true
         if(this.eiditId.length === 0) {
           saveGoods(goodsVO).then(res => {
+            console.log(this.$route)
+            this.closeSelectedTag(this.$route)
             this.saveLoading = false
             this.$message({
               type: 'success',
@@ -1525,6 +1535,8 @@ let vm = {
         } else {
           goodsVO.goodsId = this.eiditId
           editGoods(goodsVO).then(res => {
+            console.log(this.$route)
+            this.closeSelectedTag(this.$route)
             this.saveLoading = false
             this.$message({
               type: 'success',

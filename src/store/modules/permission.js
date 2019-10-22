@@ -14,7 +14,7 @@ const routeModule = [
   },
   {
     name: 'productClassify',
-    path: 'classify',
+    path: '/product/classify',
     compare: 'product/classify/index',
     source: 'product/classify/index',
     isSource: true,
@@ -23,7 +23,7 @@ const routeModule = [
   },
   {
     name: 'productUnit',
-    path: 'unit',
+    path: '/product/unit',
     compare: 'product/unit/index',
     source: 'product/unit/index',
     isSource: true,
@@ -32,12 +32,12 @@ const routeModule = [
   },
   {
     name: 'productListParent',
-    path: 'list',
+    path: '/product/list',
     compare: 'product/list/index',
     source: 'product/list/index',
     isSource: true,
     hidden: false,
-    noCache: true
+    noCache: false
   },
   {
     name: 'productEdit',
@@ -46,7 +46,7 @@ const routeModule = [
     source: 'product/list/edit/index',
     isSource: true,
     hidden: true,
-    noCache: true
+    noCache: false
   },
   {
     name: 'productEdit',
@@ -55,11 +55,11 @@ const routeModule = [
     source: 'product/list/edit/index',
     isSource: true,
     hidden: true,
-    noCache: true
+    noCache: false
   },
   {
     name: 'productRelease',
-    path: 'release',
+    path: '/product/list/release',
     compare: 'product/list/release/index',
     source: 'product/list/release/index',
     isSource: true,
@@ -68,7 +68,7 @@ const routeModule = [
   },
   {
     name: 'productDetail',
-    path: 'detail',
+    path: '/product/list/detail',
     compare: 'product/list/detail/index',
     source: 'product/list/detail/index',
     isSource: true,
@@ -85,7 +85,7 @@ const routeModule = [
   },
   {
     name: 'statGeneral',
-    path: 'general',
+    path: '/stat/general',
     compare: 'stat/general/index',
     source: 'stat/general/index',
     isSource: true,
@@ -94,7 +94,7 @@ const routeModule = [
   },
   {
     name: 'statAnalyze',
-    path: 'analyze',
+    path: '/stat/analyze',
     compare: 'stat/analyze/index',
     source: 'stat/analyze/index',
     isSource: true,
@@ -109,24 +109,33 @@ const routeModule = [
     isSource: false,
     hidden: false
   },
-  {
-    name: 'orderSellParent',
-    path: 'sell',
-    compare: 'order/sell/index',
-    source: 'order/sell/index',
-    isSource: true,
-    hidden: false,
-    noCache: true
-  },
-  {
-    name: 'orderDetail',
-    path: 'detail',
-    compare: 'order/sell/detail/index',
-    source: 'order/sell/detail/index',
-    isSource: true,
-    hidden: true,
-    noCache: true
-  },
+  // {
+  //   name: 'orderSellList',
+  //   path: '/order/sell',
+  //   compare: 'order/sell/index',
+  //   source: 'order/sell/index',
+  //   isSource: true,
+  //   hidden: false,
+  //   noCache: true
+  // },
+  // {
+  //   name: 'orderDetailParent',
+  //   path: '/order/sell',
+  //   compare: 'order/sell/detail/index',
+  //   source: 'order/sell/detail/index',
+  //   isSource: true,
+  //   hidden: false,
+  //   noCache: true
+  // },
+  // {
+  //   name: 'orderDetailList',
+  //   path: '/order/sell/detail/list',
+  //   compare: 'order/sell/detail/list/index',
+  //   source: 'order/sell/detail/list/index',
+  //   isSource: true,
+  //   hidden: false,
+  //   noCache: true
+  // },
   {
     name: 'activity',
     path: 'activity',
@@ -137,7 +146,7 @@ const routeModule = [
   },
   {
     name: 'activityBanner',
-    path: 'banner',
+    path: '/activity/banner',
     compare: 'activity/banner/index',
     source: 'activity/banner/index',
     isSource: true,
@@ -146,7 +155,7 @@ const routeModule = [
   },
   {
     name: 'activityColumn',
-    path: 'column',
+    path: '/activity/column',
     compare: 'activity/column/index',
     source: 'activity/column/index',
     isSource: true,
@@ -155,7 +164,7 @@ const routeModule = [
   },
   {
     name: 'activityManageParent',
-    path: 'manage',
+    path: '/activity/manage',
     compare: 'activity/manage/index',
     source: 'activity/manage/index',
     isSource: true,
@@ -164,7 +173,7 @@ const routeModule = [
   },
   {
     name: 'activityDetailParent',
-    path: 'detail',
+    path: '/activity/manage/detail',
     compare: 'activity/manage/detail/index',
     source: 'activity/manage/detail/index',
     isSource: true,
@@ -173,7 +182,7 @@ const routeModule = [
   },
   {
     name: 'activityAdd',
-    path: 'add',
+    path: 'activity/manage/detail/add',
     compare: 'activity/manage/detail/add/index',
     source: 'activity/manage/detail/add/index',
     isSource: true,
@@ -182,7 +191,7 @@ const routeModule = [
   },
   {
     name: 'permissionUser',
-    path: 'user',
+    path: '/permission/user',
     compare: 'permission/user/index',
     source: 'permission/user/index',
     isSource: true,
@@ -191,7 +200,7 @@ const routeModule = [
   },
   {
     name: 'permissionRole',
-    path: 'role',
+    path: '/permission/role',
     compare: 'permission/role/index',
     source: 'permission/role/index',
     isSource: true,
@@ -208,7 +217,7 @@ const routeModule = [
   },
   {
     name: 'systemMenu',
-    path: 'menu',
+    path: '/system/menu',
     compare: 'system/menu/index',
     source: 'system/menu/index',
     isSource: true,
@@ -217,7 +226,7 @@ const routeModule = [
   },
   {
     name: 'systemDict',
-    path: 'dict',
+    path: '/system/dict',
     compare: 'system/dict/index',
     source: 'system/dict/index',
     isSource: true,
@@ -226,7 +235,7 @@ const routeModule = [
   },
   {
     name: 'systemConfig',
-    path: 'config',
+    path: '/system/config',
     compare: 'system/config/index',
     source: 'system/config/index',
     isSource: true,
@@ -235,7 +244,7 @@ const routeModule = [
   },
   {
     name: 'systemStrict',
-    path: 'strict',
+    path: '/system/strict',
     compare: 'system/strict/index',
     source: 'system/strict/index',
     isSource: true,
@@ -252,7 +261,7 @@ const routeModule = [
   },
   {
     name: 'freightTemplateParent',
-    path: 'template',
+    path: '/freight/template',
     compare: 'freight/template/index',
     source: 'freight/template/index',
     isSource: true,
@@ -261,7 +270,7 @@ const routeModule = [
   },
   {
     name: 'freightTemplateList',
-    path: 'list',
+    path: '/freight/list',
     compare: 'freight/template/list/index',
     source: 'freight/template/list/index',
     isSource: true,
@@ -270,7 +279,7 @@ const routeModule = [
   },
   {
     name: 'freightTemplateEdit',
-    path: 'edit',
+    path: '/freight/template/edit',
     compare: 'freight/template/edit/index',
     source: 'freight/template/edit/index',
     isSource: true,
@@ -287,7 +296,7 @@ const routeModule = [
   },
   {
     name: 'wechatList',
-    path: 'list',
+    path: '/wechat/list',
     compare: 'wechat/list/index',
     source: 'wechat/list/index',
     isSource: true,
@@ -349,11 +358,7 @@ function filterAsyncRouter(asyncRouterMap, index) {
           route.path = routeObj.path
         } else {
           route.component = Layout
-          if (index === 0) {
-            route.path = '/' + routeObj.path
-          } else {
-            route.path = routeObj.path
-          }
+          route.path = routeObj.path
         }
       } else if (httpReg.test(route.url)) {
         route.meta = {

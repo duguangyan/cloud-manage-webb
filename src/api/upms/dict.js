@@ -27,6 +27,15 @@ export function getDictByPid(query) {
   })
 }
 
+// 查询一级字典
+export function searchDictByPid(query) {
+  return request({
+    url: '/upms/dic/search',
+    method: 'get',
+    params: query
+  })
+}
+
 // 修改字典
 export function updateDict(data) {
   return request({
