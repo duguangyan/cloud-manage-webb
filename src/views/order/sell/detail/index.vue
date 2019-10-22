@@ -491,7 +491,6 @@ export default {
           return false
         }
       })
-      console.log(this.rule)
       this.$refs.expressForm.validate(valid => {
         if(valid) {
           this.confirm()

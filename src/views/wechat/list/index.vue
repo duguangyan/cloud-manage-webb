@@ -90,7 +90,8 @@
        <el-table-column 
         prop="accessToken"
         label="凭证"
-        align="center">
+        align="center"
+        show-overflow-tooltip>
       </el-table-column>
       <el-table-column 
         prop="expiresIn"

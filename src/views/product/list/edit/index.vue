@@ -686,7 +686,6 @@ let vm = {
 
   },
   created() {
-    console.log(this.$route)
     this.categoryId = this.$route.query.id
     if(this.$route.query.eid) {
       this.eiditId = this.$route.query.eid
@@ -1509,7 +1508,6 @@ let vm = {
         this.saveLoading = true
         if(this.eiditId.length === 0) {
           saveGoods(goodsVO).then(res => {
-            console.log(this.$route)
             this.saveLoading = false
             this.$message({
               type: 'success',
@@ -1527,7 +1525,6 @@ let vm = {
         } else {
           goodsVO.goodsId = this.eiditId
           editGoods(goodsVO).then(res => {
-            console.log(this.$route)
             this.saveLoading = false
             this.$message({
               type: 'success',

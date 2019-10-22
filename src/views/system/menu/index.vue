@@ -540,7 +540,6 @@ export default {
       })
     },
     load(tree, treeNode, resolve) {
-      console.log('tree id: ', tree.id)
       this.loadNodeMap.set(tree.id, { tree, treeNode, resolve })
       getMeanByPid({
         parentId: tree.id
@@ -601,7 +600,6 @@ export default {
     filterData(arr, obj, type) {
       for(let i = 0; i < arr.length; i++) {
         if(arr[i].id === obj.parentId) {
-          console.log(type)
           if(type === 1) {
             if(arr[i].children) {
               arr[i].children.push(obj)
@@ -620,7 +618,6 @@ export default {
             arr[i].operation = obj.operation
             arr[i].auth = obj.auth
             arr[i].remark = obj.remark
-            console.log(arr[i])
           } else if(type === 3) {
             arr.splice(i, 1)
           }
@@ -794,7 +791,6 @@ export default {
       }
     },
     handleDelete(row) {
-      console.log(row)
       this.$confirm('确定要删除该资源?', 'Warning', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',

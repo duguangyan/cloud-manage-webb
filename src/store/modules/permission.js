@@ -56,7 +56,7 @@ const routeModule = [
     source: 'product/list/edit/index',
     isSource: true,
     hidden: true,
-    noCache: true
+    noCache: false
   },
   {
     name: 'productRelease',

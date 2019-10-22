@@ -124,7 +124,6 @@ export default {
     refreshSelectedTag(view) {
       this.$store.dispatch('tagsView/delCachedView', view).then(() => {
         const { fullPath } = view
-        console.log(view)
         this.$nextTick(() => {
           this.$router.replace({
             path: fullPath
@@ -133,7 +132,6 @@ export default {
       })
     },
     closeSelectedTag(view) {
-      console.log(view)
       this.$store.dispatch('tagsView/delView', view).then(({ visitedViews }) => {
         if (this.isActive(view)) {
           this.toLastView(visitedViews, view)

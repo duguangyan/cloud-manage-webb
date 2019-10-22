@@ -325,9 +325,6 @@ export default {
       })
     },
     expandChange(row, expanded) {
-      console.log('expand')
-      console.log(row)
-      console.log(expanded)
     },
     handleLoad(id, pid, type) {
       // type 1:新增 2:更新 3:删除
