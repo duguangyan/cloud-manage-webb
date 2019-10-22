@@ -226,15 +226,15 @@
             <div class="cell w80">
               <el-form-item prop="type">
                 <el-select v-model="item.type">
-                  <el-option :label="accText" value="1"></el-option>
+                  <el-option :label="specText" value="1"></el-option>
                   <el-option label="金额" value="2"></el-option>
-                  <el-option :label="`${accText}+金额`" value="3"></el-option>
+                  <el-option :label="`${specText}+金额`" value="3"></el-option>
                 </el-select>&emsp;
               </el-form-item>
 
               <el-form-item v-if="+item.type === 1" prop="quantity">
                 满
-                <el-input v-model="item.quantity" type="number" placeholder="请输入件数" />件包邮
+                <el-input v-model="item.quantity" type="number" placeholder="请输入件数" />{{unitText}}包邮
               </el-form-item>
 
               <el-form-item v-else-if="+item.type === 2" prop="price">
@@ -244,7 +244,7 @@
 
               <el-form-item v-else-if="+item.type === 3" prop="price">
                 满
-                <el-input v-model="item.quantity" type="number" placeholder="请输入件数" />件且满
+                <el-input v-model="item.quantity" type="number" placeholder="请输入件数" />{{unitText}}且满
                 <el-input v-model="item.price" type="number" placeholder="请输入金额" />元包邮
               </el-form-item>
             </div>
@@ -570,6 +570,7 @@ var vm = {
     changeText(val) {
       vm.unitText = +val === 1 ? "件" : +val === 2 ? "立方米" : "千克";
       vm.accText = +val === 1 ? "件数:" : +val === 2 ? "体积:" : "重:";
+      vm.specText = +val === 1 ? "件数" : +val === 2 ? "体积" : "重量";
     },
     changeType(val, oldVal) {
       vm.$confirm("切换将删除所有邮费方案,是否继续？")

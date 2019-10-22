@@ -50,7 +50,9 @@ export default {
 
         if (self.expires_in <= 10 && !self.refreshLock) {
           self.refreshLock = true;
-          self.$store.dispatch("user/RefreshToken").catch(() => {
+          self.$store.dispatch("user/RefreshToken").then(data=>{
+            self.expires_in = data
+          }).catch(() => {
             clearInterval(self.refreshTime);
           });
           self.refreshLock = false;

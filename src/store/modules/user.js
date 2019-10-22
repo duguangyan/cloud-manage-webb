@@ -97,15 +97,20 @@ const user = {
   actions: {
     // 刷新token
     RefreshToken({ commit, state }) {
-      refreshToken(state.refresh_token)
-        .then(response => {
-          debugger
-          const data = response.data
-          commit('SET_ACCESS_TOKEN', data.access_token)
-          commit('SET_REFRESH_TOKEN', data.refresh_token)
-          commit('SET_EXPIRES_IN', data.expires_in)
-          commit('CLEAR_LOCK')
-        })
+      return new Promise((res, rej) => {
+        refreshToken(state.refresh_token)
+          .then(response => {
+            const data = response.data
+            commit('SET_ACCESS_TOKEN', data.access_token)
+            commit('SET_REFRESH_TOKEN', data.refresh_token)
+            commit('SET_EXPIRES_IN', data.expires_in)
+            commit('CLEAR_LOCK')
+            res(data.expires_in)
+          })
+          .catch(e => {
+            rej(e)
+          })
+      })
     },
     // user login
     login({ commit }, userInfo) {
