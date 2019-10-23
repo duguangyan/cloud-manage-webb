@@ -477,8 +477,7 @@ export default {
       parentShowId: '',
       multipleSelection: [],
       loadNodeMap: new Map(),
-      isSearch: false,
-      isFindSearch: false
+      isSearch: false
     }
   },
   components: { Pagination },
@@ -566,6 +565,9 @@ export default {
             data.push(obj)
           }
         }
+        if(data.length === 0) {
+          this.$set(this.$refs.treeTable.store.states.lazyTreeNodeMap,tree.id,[])
+        }
         resolve(data)
       })
     },
@@ -598,39 +600,44 @@ export default {
       }
     },
     filterData(arr, obj, type) {
-      for(let i = 0; i < arr.length; i++) {
-        if(arr[i].id === obj.parentId) {
-          if(type === 1) {
-            if(arr[i].children) {
-              arr[i].children.push(obj)
+      const sData = arr.filter((item, index, array) => {
+        let r = true
+        if(type === 1) {
+          if(item.id === obj.parentId) {
+            if(Array.isArray(item.children)) {
+              item.children.push(obj)
             } else {
-              arr[i].children = []
-              arr[i].children.push(obj)
+              item.children = []
+              item.children.push(obj)
             }
-          } else if(type === 2) {
-            arr[i].name = obj.name
-            arr[i].sort = obj.sort
-            arr[i].icon = obj.icon 
-            arr[i].code = obj.code 
-            arr[i].status = obj.status
-            arr[i].url = obj.url 
-            arr[i].type = obj.type
-            arr[i].operation = obj.operation
-            arr[i].auth = obj.auth
-            arr[i].remark = obj.remark
-          } else if(type === 3) {
-            arr.splice(i, 1)
           }
-          this.isFindSearch = true
-        }
-        if(this.isFindSearch) {
-          return
+        } else if (type === 2) {
+          if(item.id === obj.id) {
+            item.name = obj.name
+            item.sort = obj.sort
+            item.icon = obj.icon 
+            item.code = obj.code 
+            item.status = obj.status
+            item.url = obj.url 
+            item.type = obj.type
+            item.operation = obj.operation
+            item.auth = obj.auth
+            item.remark = obj.remark
+          }
         } else {
-          if(arr[i].children && arr[i].children.length > 0) {
-            this.filterData(arr[i].children, obj, type)
+          if(item.id === obj.id) {
+            array.splice(index, 1)
+            r = false
           }
         }
-      }
+        if(Array.isArray(item.children)) {
+          this.filterData(item.children, obj, type)
+        }
+        if(r) {
+          return item
+        }
+      })
+      return sData
     },
     dioCancle() {
       // 取消编辑
@@ -699,7 +706,7 @@ export default {
       if(this.listQuery.status === '' && this.listQuery.type === '' && this.listQuery.name.length === 0) {
         this.$message({
           type: 'warning',
-          message: '请输入搜索内容或选择搜索状态！'
+          message: '请输入搜索内容或选择搜索状态、类型！'
         })
       } else {
         this.searchQuery = deepClone(this.listQuery)
@@ -804,8 +811,7 @@ export default {
             message: '删除成功!'
           })
           if(this.isSearch) {
-            this.isFindSearch = false
-            this.filterData(this.searchData, {parentId: row.id}, 3)
+            this.searchData = this.filterData(this.searchData, {id: row.id}, 3)
           } else {
             this.handleLoad(row.id, row.parentId, 3)
           }
@@ -866,13 +872,8 @@ export default {
          this.diaDisable = false
          this.diaLoading = false
          if(this.isSearch) {
-           this.isFindSearch = false
-            // this.resourceSearch(this.searchQuery)
-            if(parem.parentId) {
-              this.filterData(this.searchData, parem, 2)
-            } else {
-              this.getMeanFirstRec()
-            }
+          // this.resourceSearch(this.searchQuery)
+          this.searchData = this.filterData(this.searchData, parem, 2)
          } else {
            this.handleLoad(this.role.id, this.role.parentId, 2)
          }
@@ -898,10 +899,9 @@ export default {
         this.diaDisable = false
         this.diaLoading = false
         if(this.isSearch) {
-          this.isFindSearch = false
           // this.resourceSearch(this.searchQuery)
           if(data.parentId) {
-            this.filterData(this.searchData, data, 1)
+            this.searchData = this.filterData(this.searchData, data, 1)
           } else {
             this.getMeanFirstRec()
           }

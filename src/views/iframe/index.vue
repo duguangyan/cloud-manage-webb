@@ -16,10 +16,15 @@ export default {
     };
   },
   created() {
-    this.url = this.$route.meta.url
+    // console.log('create')
+    // this.url = this.$route.meta.url
+    // console.log(this.url)
   },
   
   mounted() {
+     console.log('mounted')
+    this.url = this.$route.meta.url
+    console.log(this.url)
     this.fullscreenLoading = true
     this.iframeInit()
     window.onresize = () => {

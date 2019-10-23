@@ -308,7 +308,7 @@ export default {
         type: 'warning'
       }).then(async() => {
           this.listLoading = true
-          await deleteBanner({id: row.id})
+          await deleteBanner({ id: row.id, code: row.code })
           this.listLoading = false
           this.$message({
             type: 'success',

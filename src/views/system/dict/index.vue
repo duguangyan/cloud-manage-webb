@@ -321,6 +321,9 @@ export default {
             resData.push(v)
           })
         }
+        if(resData.length === 0) {
+          this.$set(this.$refs.treeTable.store.states.lazyTreeNodeMap,tree.id,[])
+        }
         resolve(resData)
       })
     },
@@ -425,7 +428,8 @@ export default {
               message: '删除成功!'
             })
             if(this.isSearch) {
-              this.searchDictByPid(this.searchQuery)
+              // this.searchDictByPid(this.searchQuery)
+              this.getDictById()
             } else {
               this.handleLoad(data.id, data.parentId, 3)
             }
@@ -459,7 +463,8 @@ export default {
         })
         this.listLoading = false
         if(this.isSearch) {
-          this.searchDictByPid(this.searchQuery)
+          // this.searchDictByPid(this.searchQuery)
+          this.getDictById()
         } else {
           this.handleLoad(this.role.id, this.role.parentId, 2)
         }
@@ -473,7 +478,8 @@ export default {
         })
         this.listLoading = false
         if(this.isSearch) {
-          this.searchDictByPid(this.searchQuery)
+          // this.searchDictByPid(this.searchQuery)
+          this.getDictById()
         } else {
           this.handleLoad(this.role.id, this.role.parentId, 1)
         }

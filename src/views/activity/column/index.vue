@@ -164,7 +164,7 @@
         style="width: 100%;margin-bottom: 20px;">
         <el-table-column label="选择" width="55">
             <template slot-scope="scope">
-                <el-radio  v-model="bannerRow" :label="scope.row"><i></i></el-radio>
+                <el-radio  v-model="selectPid" :label="scope.row.code"><i></i></el-radio>
             </template>
         </el-table-column>
         <el-table-column
@@ -255,6 +255,7 @@ export default {
        dialogPreview: false,
       bannerDataLoading: false,
       bannerRow: {},
+      selectPid: '',
       bannerData: [],
       dialogVisibleBanner: false,
       btnsPermission: {
@@ -511,6 +512,7 @@ export default {
       this.checkStrictly = true
       this.diaLoading = true
       getAdById({ id: row.id }).then(res => {
+        this.selectPid = res.data.pid
         this.diaLoading = false
         this.banner.id = res.data.id
         this.banner.pid = res.data.pid
@@ -717,11 +719,15 @@ export default {
       this.getBannerList()
     },
     chooseBannerSure() {
-      if(this.bannerRow.id !== undefined) {
-        this.banner.pid = this.bannerRow.id
-        this.banner.adPositionName = this.bannerRow.name
-        this.dialogVisibleBanner = false
-      }
+      this.banner.pid = this.selectPid
+      this.bannerData.forEach(item => {
+        if(item.code === this.selectPid) {
+          this.banner.adPositionName = item.name
+          return false
+        }
+      })
+      this.dialogVisibleBanner = false
+      
     }
   }
 }

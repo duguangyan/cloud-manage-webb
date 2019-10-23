@@ -120,31 +120,34 @@
          </el-form>
       </template>
       <template v-else>
-        <el-form ref="editForm" :model="role" label-width="80px" label-position="left" :rules="editRules">
-        <el-form-item label="昵称" prop="nickName">
-          <el-input v-model.trim="role.nickName" maxlength="20" placeholder="请输入昵称" />
-        </el-form-item>
-         <el-form-item label="真实姓名">
-          <el-input v-model.trim="role.realName" maxlength="20" placeholder="请输入真实姓名" />
-        </el-form-item>
-         <el-form-item label="手机号码" prop="phone">
-          <el-input v-model.trim="role.phone" maxlength="20" placeholder="请输入手机号码" />
-        </el-form-item>
-        <el-form-item label="账号" prop="username">
-          <el-input v-model.trim="role.username" maxlength="32" placeholder="请输入账号" />
-        </el-form-item>
-        <el-form-item label="密码" prop="password">
-          <el-input v-model.trim="role.password" minlength="6" maxlength="64" placeholder="请输入密码" />
-        </el-form-item>
-        <el-form-item label="系统" prop="systemId">
-          <el-select v-model.trim="role.systemId" placeholder="请选择">
-            <el-option
-              v-for="item in systemData"
-              :key="item.id"
-              :label="item.name"
-              :value="item.id">
-            </el-option>
-          </el-select>
+        <el-form ref="editForm" :model="role" label-width="80px" label-position="left" :rules="dialogType === 'new' ? newRules : editRules">
+          <el-form-item v-if="dialogType === 'new'" label="账号" prop="username">
+            <el-input v-model.trim="role.username" maxlength="32" placeholder="请输入账号" />
+          </el-form-item>
+          <el-form-item v-else label="账号">
+            <span>{{role.username}}</span>
+          </el-form-item>
+          <el-form-item label="密码" prop="password">
+            <el-input v-model.trim="role.password" minlength="6" maxlength="64" placeholder="请输入密码" />
+          </el-form-item>
+          <el-form-item label="昵称" prop="nickName">
+            <el-input v-model.trim="role.nickName" maxlength="20" placeholder="请输入昵称" />
+          </el-form-item>
+          <el-form-item label="真实姓名">
+            <el-input v-model.trim="role.realName" maxlength="20" placeholder="请输入真实姓名" />
+          </el-form-item>
+          <el-form-item label="手机号码" prop="phone">
+            <el-input v-model.trim="role.phone" maxlength="20" placeholder="请输入手机号码" />
+          </el-form-item>
+          <el-form-item label="系统" prop="systemId">
+            <el-select v-model.trim="role.systemId" placeholder="请选择">
+              <el-option
+                v-for="item in systemData"
+                :key="item.id"
+                :label="item.name"
+                :value="item.id">
+              </el-option>
+            </el-select>
           </el-form-item>
         </el-form>
       </template>
@@ -159,7 +162,6 @@
 </template>
 
 <script>
-import path from 'path'
 import { deepClone } from '@/utils'
 import waves from '@/directive/waves' // waves directive
 import { getUserBtnByPId } from '@/api/upms/menu'
@@ -181,22 +183,37 @@ export default {
   data() {
     const validateTelphone = (rule, value, callback) => {
       if (!validTelphone(value)) {
-          callback(new Error('请输入正确的手机号码'))
+        callback(new Error('请输入正确的手机号码'))
+      } else {
+          callback()
+      }
+      if (value && !validTelphone(value)) {
+        callback(new Error('请输入正确的手机号码'))
       } else {
           callback()
       }
     }
     const validateLen = (rule, value, callback) => {
-      if (!value) {
-        callback(new Error(rule.des))
-      } else if (value.length < 5 || value.length > 64) {
-        callback(new Error(rule.lenDes))
+      if(rule.required) {
+          if (!value) {
+          callback(new Error(rule.des))
+        } else if (value.length < 5 || value.length > 64) {
+          callback(new Error(rule.lenDes))
+        } else {
+            callback()
+        }
       } else {
-          callback()
+        if (value && (value.length < 5 || value.length > 64)) {
+          callback(new Error(rule.lenDes))
+        } else {
+            callback()
+        }
       }
+      
     }
     return {
       role: Object.assign({}, defaultRole),
+      roleClose: {},
       roleTable: [],
       listLoading: false,
       roleListLoading: false,
@@ -230,6 +247,30 @@ export default {
         }
       },
       editRules: {
+        phone: [{
+            required: true,
+            trigger: 'blur',
+            validator: validateTelphone
+        }],
+        nickName: [{
+            required: false,
+            trigger: 'blur',
+            message: '请填写昵称'
+        }],
+        password: [{
+            required: false,
+            trigger: 'blur',
+            validator: validateLen,
+            lenDes: '密码长度下限为5，上限为64',
+            des: '请填写密码'
+        }],
+        systemId: [{
+            required: true,
+            trigger: 'blur',
+            message: '请选择系统'
+        }]
+      },
+      newRules: {
         phone: [{
             required: true,
             trigger: 'blur',
@@ -430,6 +471,9 @@ export default {
       this.dialogType = 'new'
       this.dialogMsg = '新增用户'
       this.dialogVisible = true
+      this.$nextTick(() => {
+        this.$refs.editForm.clearValidate()
+      })
     },
     async msgEdit(scope) {
       // 编辑用户
@@ -438,6 +482,10 @@ export default {
       this.dialogMsg = '编辑用户'
       this.dialogVisible = true
       this.checkStrictly = true
+      this.$nextTick(() => {
+        this.$refs.editForm.clearValidate()
+      })
+      this.roleClone = deepClone(scope.row)
       this.role = deepClone(scope.row)
     },
     handleLock({ $index, row }) {
@@ -544,28 +592,32 @@ export default {
       
     },
     async confirmRole() {
+      let noErr = true
+      this.diaDisable = true
       if ( this.dialogType === 'edit') {
-        this.diaDisable = true
         this.roleListLoading = true
-         await updateUser({
+        let param = {
            systemId: this.role.systemId,
-           id: this.role.id,
-           nickName: this.role.nickName,
            username: this.role.username,
-           realName: this.role.realName,
-           password: this.role.password,
-           phone: this.role.phone
-         }).catch(err => { 
-           this.diaDisable = false
-          this.listLoading = false
+           id: this.role.id,
+           phone: this.role.phone,
+           nickName: this.roleClone.nickName
+         }
+         if(this.role.realName && this.role.realName !== this.roleClone.realName) {
+           param.realName = this.role.realName
+         }
+         if(this.role.password && this.role.password !== this.roleClone.password) {
+           param.password = this.role.password
+         }
+         await updateUser(param).catch(err => { 
+          noErr = false
         })
         this.diaDisable = false
         this.roleListLoading = false
         this.getUserList()
-      } else if (this.dialogType === 'new'){
-        this.diaDisable = true
+      } else if (this.dialogType === 'new') {
         this.roleListLoading = true
-        const { data } = await addUser({
+        await addUser({
           systemId: this.role.systemId,
           nickName: this.role.nickName,
           username: this.role.username,
@@ -573,8 +625,7 @@ export default {
           phone: this.role.phone,
           password: this.role.password
         }).catch(err => { 
-          this.diaDisable = false
-          this.roleListLoading = false
+          noErr = false
         })
         this.diaDisable = false
         this.roleListLoading = false
@@ -595,49 +646,28 @@ export default {
           })
           return false
         }
-        this.diaDisable = true
         this.roleListLoading = true
-        const { data } = await processUserRoleBatch({
+        await processUserRoleBatch({
           userId: this.role.id,
           roleIds: addIds,
           delRoleIds: deleteIds
         }).catch(err => { 
-          this.diaDisable = false
-          this.roleListLoading = false
+          noErr = false
         })
         this.diaDisable = false
         this.roleListLoading = false
         this.roleListQuery.pageIndex = 1
         this.getRoleList()
       }
-
-      const { description, key, name } = this.role
-      this.dialogVisible = false
-      this.$notify({
-        title: '成功',
-        dangerouslyUseHTMLString: true,
-        type: 'success'
-      })
-    },
-    // reference: src/view/layout/components/Sidebar/SidebarItem.vue
-    onlyOneShowingChild(children = [], parent) {
-      let onlyOneChild = null
-      const showingChildren = children.filter(item => !item.hidden)
-
-      // When there is only one child route, the child route is displayed by default
-      if (showingChildren.length === 1) {
-        onlyOneChild = showingChildren[0]
-        onlyOneChild.path = path.resolve(parent.path, onlyOneChild.path)
-        return onlyOneChild
+      if(noErr) {
+        const { description, key, name } = this.role
+        this.dialogVisible = false
+        this.$notify({
+          title: '成功',
+          dangerouslyUseHTMLString: true,
+          type: 'success'
+        })
       }
-
-      // Show parent if there are no child route to display
-      if (showingChildren.length === 0) {
-        onlyOneChild = { ... parent, path: '', noShowingChildren: true }
-        return onlyOneChild
-      }
-
-      return false
     }
   }
 }

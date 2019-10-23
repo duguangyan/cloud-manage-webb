@@ -465,7 +465,7 @@ export default {
     },
     back() {
       // 返回事件
-      this.$router.push({path: '/order/sell', query:{ 
+      this.$router.push({path: '/order/sell/list', query:{ 
         pageIndex: this.order.pageIndex,
         createTimeBegin: this.order.createTimeBegin,
         createTimeEnd: this.order.createTimeEnd,
