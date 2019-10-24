@@ -473,6 +473,9 @@ export default {
       this.banner.dateValue = []
       this.dialogType = 'new'
       this.dialogVisible = true
+      this.$nextTick(() => {
+        this.$refs['bannerForm'].clearValidate()
+      })
     },
     getPage(data, type) {
      // 分页事件
@@ -511,6 +514,9 @@ export default {
       this.dialogVisible = true
       this.checkStrictly = true
       this.diaLoading = true
+      this.$nextTick(() => {
+        this.$refs['bannerForm'].clearValidate()
+      })
       getAdById({ id: row.id }).then(res => {
         this.selectPid = res.data.pid
         this.diaLoading = false

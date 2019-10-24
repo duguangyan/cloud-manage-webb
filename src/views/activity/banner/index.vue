@@ -294,6 +294,9 @@ export default {
       this.banner = Object.assign({}, defaultBanner)
       this.dialogType = 'new'
       this.dialogVisible = true
+      this.$nextTick(() => {
+        this.$refs['bannerForm'].clearValidate()
+      })
     },
     getPage(data) {
      // 分页事件
@@ -330,6 +333,9 @@ export default {
       this.checkStrictly = true
       this.dialogType = 'edit'
       this.diaLoading = true
+      this.$nextTick(() => {
+        this.$refs['bannerForm'].clearValidate()
+      })
       getBannerById({ id: row.id }).then(res => {
         this.diaLoading = false
         this.banner = res.data

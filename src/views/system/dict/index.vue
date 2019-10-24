@@ -390,12 +390,18 @@ export default {
       this.role = Object.assign({}, defaultRole)
       this.dialogType = 'top'
       this.dialogVisible = true
+      this.$nextTick(() => {
+        this.$refs['dataForm'].clearValidate()
+      })
     },
     msgEdit(scope) {
       this.dialogType = 'edit'
       this.dialogVisible = true
       this.checkStrictly = true
       this.role = deepClone(scope)
+      this.$nextTick(() => {
+        this.$refs['dataForm'].clearValidate()
+      })
     },
     msgAdd(scope) {
       this.role = Object.assign({}, defaultRole)
@@ -403,6 +409,9 @@ export default {
       this.role.parentId = scope.parentId
       this.dialogType = 'new'
       this.dialogVisible = true
+      this.$nextTick(() => {
+        this.$refs['dataForm'].clearValidate()
+      })
     },
     handleUpdate(row) {
       // 编辑事件

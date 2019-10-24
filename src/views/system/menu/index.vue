@@ -755,12 +755,18 @@ export default {
       this.dialogType = 'new'
       this.checkStrictly = true
       this.dialogVisible = true
+      this.$nextTick(() => {
+        this.$refs['meanForm'].clearValidate()
+      })
     },
     msgEdit(row) {
       this.dialogVisible = true
       this.checkStrictly = true
       this.dialogType = 'edit'
       this.role = deepClone(row)
+      this.$nextTick(() => {
+        this.$refs['meanForm'].clearValidate()
+      })
     },
     msgAdd(row) {
       this.dialogType = 'new'
@@ -774,6 +780,9 @@ export default {
       this.dialogType = 'new'
       this.dialogVisible = true
       this.checkStrictly = true
+      this.$nextTick(() => {
+        this.$refs['meanForm'].clearValidate()
+      })
     },
     async selectParent() {
       if(this.role && this.role.parentId) {

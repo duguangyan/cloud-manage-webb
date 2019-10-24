@@ -248,6 +248,15 @@ const routeModule = [
     noCache: false
   },
   {
+    name: 'systemClient',
+    path: '/system/client',
+    compare: 'system/client/index',
+    source: 'system/client/index',
+    isSource: true,
+    hidden: false,
+    noCache: false
+  },
+  {
     name: 'freight',
     path: '/freight',
     compare: 'freight',

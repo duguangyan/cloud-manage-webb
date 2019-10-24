@@ -350,6 +350,9 @@ export default {
       }
       this.dialogType = 'new'
       this.dialogVisible = true
+      this.$nextTick(() => {
+        this.$refs['roleForm'].clearValidate()
+      })
     },
     async msgEdit(scope) {
       await this.getSystem()
@@ -357,6 +360,9 @@ export default {
       this.dialogType = 'edit'
       this.dialogVisible = true
       this.role = deepClone(scope.row)
+      this.$nextTick(() => {
+        this.$refs['roleForm'].clearValidate()
+      })
     },
     async handleEdit(scope) {
       this.dialogTitle = '分配权限'
