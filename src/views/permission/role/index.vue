@@ -44,7 +44,7 @@
       </el-table-column>
     </el-table>
 
-    <el-dialog :visible.sync="dialogVisible" :closeOnClickModal="false" :title="dialogTitle">
+    <el-dialog :visible.sync="dialogVisible" :closeOnClickModal="false" :width="dialogType ==='edit' || dialogType === 'new'?'50%':'80%'" :title="dialogTitle">
       <el-form ref="roleForm" v-loading="diaLoading" :model="role" label-width="80px" label-position="left">
         <template v-if="dialogType ==='edit' || dialogType === 'new'">
          <el-form-item label="角色名称"
@@ -102,9 +102,12 @@
                 </template>
               </el-table-column>
               <el-table-column
-                prop="name"
                 label="名称"
                 show-overflow-tooltip>
+                <template slot-scope="{ row }">
+                  <svg-icon v-if="row.icon" :icon-class="row.icon" />
+                  <span>{{row.name}}</span>
+                </template>
               </el-table-column>
               <el-table-column
                 width="50"
@@ -135,7 +138,7 @@
                 width="100"
                 align="center"
                 label="授权">
-                <template slot-scope="scope">
+                <template slot-scope="scope" v-if="scope.row.type !== 1">
                   <span v-if="scope.row.auth === -1">禁止</span>
                   <span v-else-if="scope.row.auth === 0">不需要认证</span>
                   <span v-else-if="scope.row.auth === 1">已认证</span>

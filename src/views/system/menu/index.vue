@@ -91,7 +91,7 @@
         label="授权"
           width="100"
         align="center">
-        <template slot-scope="scope">
+        <template slot-scope="scope" v-if="scope.row.type !== 1">
           <span v-if="scope.row.auth === -1">禁止</span>
           <span v-else-if="scope.row.auth === 0">不需要认证</span>
           <span v-else-if="scope.row.auth === 1">已认证</span>
@@ -309,15 +309,10 @@
     <el-dialog class="icon-box" :visible.sync="iconDialogVisible" :closeOnClickModal="false" :title="'选择图标'">
       
             <div v-for="item of svgIcons" :key="item" @click="handleClipboard(item, $event)">
-              <!-- <el-tooltip placement="top"> -->
-                <!-- <div slot="content">
-                  {{ generateIconCode(item) }}
-                </div> -->
                 <div class="icon-item">
                   <svg-icon :icon-class="item" class-name="disabled" />
                   <span>{{ item }}</span>
                 </div>
-              <!-- </el-tooltip> -->
             </div>
             <div class="clear"></div>
     </el-dialog>
@@ -449,6 +444,7 @@ export default {
           label: '角色'
         }
       ],
+      isChangeParent: false,
       routes: [],
       rolesList: [],
       resourceData: [],
@@ -502,13 +498,8 @@ export default {
     })
   },
   methods: {
-    generateIconCode(symbol) {
-      return `<svg-icon icon-class="${symbol}" />`
-    },
-    handleSelectionChange(val) {
-      // 多选事件
-    },
     getMeanFirstRec() {
+      // 获取一级资源树
       this.meanData = []
       this.listLoading = true
       getMeanFirstRec().then(res => {
@@ -539,6 +530,7 @@ export default {
       })
     },
     load(tree, treeNode, resolve) {
+      // 懒加载资源树
       this.loadNodeMap.set(tree.id, { tree, treeNode, resolve })
       getMeanByPid({
         parentId: tree.id
@@ -572,7 +564,10 @@ export default {
       })
     },
     handleLoad(id, pid, type) {
-      // type 1:新增 2:更新 3:删除
+      /**
+       * 根据type动态增删改查
+       * type {number} 1:新增 2:更新 3:删除
+       */
       if(type === 1) {
         if (this.loadNodeMap.has(id)) {
           const { tree, treeNode, resolve } = this.loadNodeMap.get(id);
@@ -600,6 +595,7 @@ export default {
       }
     },
     filterData(arr, obj, type) {
+      // 非懒加载时数据动态增删改
       const sData = arr.filter((item, index, array) => {
         let r = true
         if(type === 1) {
@@ -647,15 +643,19 @@ export default {
       this.routes = []
     },
     handleClipboard(text, event) {
+      // 复制图标
       this.iconDialogVisible = false
       this.role.icon = text
     },
     parentCancle() {
+      // 取消选择父级
+      this.isChangeParent = false
       this.checkParentName = ''
       this.checkParentId = ''
       this.prarentDialogVisible = false
     },
     async getRoutes() {
+      // 获取资源树
       this.listLoading = true
       await getRoutes().then(res => {
         if(Array.isArray(res.data)) {
@@ -670,8 +670,7 @@ export default {
             }
           ]
           this.routes = this.generateRoutes(pData)
-          let arr = [this.parentShowId];
-          this.$refs.parentTree.setCheckedKeys(arr);
+          this.$refs.parentTree.setCheckedKeys([this.parentShowId]);
         }
         this.listLoading = false
       }).catch(err => {
@@ -680,29 +679,25 @@ export default {
       
     },
     generateRoutes(routes) {
-      // 路由生成
+      // 生成资源树
       const res = []
       for (let route of routes) {
-        // skip some route
-        if (route.hidden) { continue }
-        // const onlyOneShowingChild = this.onlyOneShowingChild(route.children, route)
-        const onlyOneShowingChild = false
-        if (route.children && onlyOneShowingChild && !route.alwaysShow) {
-          route = onlyOneShowingChild
-        }
         const data = {
           id: route.id,
           title: route.name
         }
         // recursive child routes
-        if (route.children) {
+        if (Array.isArray(route.children)) {
           data.children = this.generateRoutes(route.children)
         }
-        res.push(data)
+        if(this.role.id !== data.id) {
+          res.push(data)
+        }
       }
       return res
     },
     handleFilter() {
+      // 搜索事件
       if(this.listQuery.status === '' && this.listQuery.type === '' && this.listQuery.name.length === 0) {
         this.$message({
           type: 'warning',
@@ -714,6 +709,7 @@ export default {
       }
     },
     resourceSearch(obj) {
+      // 搜索接口
       this.searchLoading = true
       resourceSearch(obj).then(res => {
         this.isSearch = true
@@ -729,6 +725,7 @@ export default {
     },
     resetResource() {
       // 重置事件
+      this.isChangeParent = false
       this.isSearch = false
       this.isLazy = true
       this.listQuery = {
@@ -737,20 +734,9 @@ export default {
       this.searchData = []
       this.getMeanFirstRec()
     },
-    generateArr(routes) {
-      let data = []
-      routes.forEach(route => {
-        data.push(route)
-        if (route.children) {
-          const temp = this.generateArr(route.children)
-          if (temp.length > 0) {
-            data = [...data, ...temp]
-          }
-        }
-      })
-      return data
-    },
     async handleAddResource() {
+      // 添加顶级资源
+      this.isChangeParent = false
       this.role = Object.assign({}, defaultRole)
       this.dialogType = 'new'
       this.checkStrictly = true
@@ -760,15 +746,20 @@ export default {
       })
     },
     msgEdit(row) {
+      // 编辑资源
+      this.isChangeParent = false
       this.dialogVisible = true
       this.checkStrictly = true
       this.dialogType = 'edit'
       this.role = deepClone(row)
+      console.log(this.role)
       this.$nextTick(() => {
         this.$refs['meanForm'].clearValidate()
       })
     },
     msgAdd(row) {
+      // 添加资源
+      this.isChangeParent = false
       this.dialogType = 'new'
       const pName = row.name
       const pId = row.id
@@ -785,6 +776,7 @@ export default {
       })
     },
     async selectParent() {
+      // 选择父级事件
       if(this.role && this.role.parentId) {
         this.parentShowId = this.role.parentId
       } else {
@@ -798,7 +790,7 @@ export default {
       this.iconDialogVisible = true
     },
     handleCheckChange (data, checked, indeterminate) {
-      /* 主要通过checked进行判断 */
+      // 通过checked进行判断
       if (checked) {
         let arr = [data.id];
         this.$refs.parentTree.setCheckedKeys(arr);
@@ -807,6 +799,7 @@ export default {
       }
     },
     handleDelete(row) {
+      // 删除资源
       this.$confirm('确定要删除该资源?', 'Warning', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -828,25 +821,8 @@ export default {
             this.listLoading = false
       })
     },
-    generateTree(routes, basePath = '/', checkedKeys) {
-      const res = []
-
-      for (const route of routes) {
-        const routePath = path.resolve(basePath, route.path)
-
-        // recursive child routes
-        if (route.children) {
-          route.children = this.generateTree(route.children, routePath, checkedKeys)
-        }
-
-        if (checkedKeys.includes(routePath) || (route.children && route.children.length >= 1)) {
-          res.push(route)
-        }
-      }
-      return res
-    },
     regFun() {
-      // 输入校验
+      // 校验表单
       this.$refs.meanForm.validate((valid) => {
         if (valid) {
           this.confirmRole()
@@ -854,6 +830,7 @@ export default {
       });
     },
     async confirmRole() {
+      // 新增、编辑后提交表单
       const isEdit = this.dialogType === 'edit'
       let succMsg = ''
       if (isEdit) {
@@ -880,11 +857,15 @@ export default {
          })
          this.diaDisable = false
          this.diaLoading = false
-         if(this.isSearch) {
-          // this.resourceSearch(this.searchQuery)
-          this.searchData = this.filterData(this.searchData, parem, 2)
+         if(this.isChangeParent) {
+           this.resetResource()
          } else {
-           this.handleLoad(this.role.id, this.role.parentId, 2)
+           if(this.isSearch) {
+          // this.resourceSearch(this.searchQuery)
+            this.searchData = this.filterData(this.searchData, parem, 2)
+          } else {
+            this.handleLoad(this.role.id, this.role.parentId, 2)
+          }
          }
       } else {
         succMsg = '新增成功'
@@ -907,16 +888,21 @@ export default {
         })
         this.diaDisable = false
         this.diaLoading = false
-        if(this.isSearch) {
-          // this.resourceSearch(this.searchQuery)
-          if(data.parentId) {
-            this.searchData = this.filterData(this.searchData, data, 1)
-          } else {
-            this.getMeanFirstRec()
-          }
+        if(this.isChangeParent) {
+          this.resetResource()
         } else {
-          this.handleLoad(this.role.id, this.role.parentId, 1)
+          if(this.isSearch) {
+            // this.resourceSearch(this.searchQuery)
+            if(data.parentId) {
+              this.searchData = this.filterData(this.searchData, data, 1)
+            } else {
+              this.resetResource()
+            }
+          } else {
+            this.handleLoad(this.role.id, this.role.parentId, 1)
+          }
         }
+        
       }
       this.checkParentName = ''
       this.checkParentId = ''
@@ -928,33 +914,10 @@ export default {
         type: 'success'
       })
     },
-    refreshLazyTree(node, children) {
-      var theChildren = node.childNodes
-      theChildren.splice(0, theChildren.length)
-      node.doCreateChildren(children)
-    },
     confirmParent() {
+      // 选择父级确认
+      this.isChangeParent = true
       this.prarentDialogVisible = false
-    },
-    // reference: src/view/layout/components/Sidebar/SidebarItem.vue
-    onlyOneShowingChild(children = [], parent) {
-      let onlyOneChild = null
-      const showingChildren = children.filter(item => !item.hidden)
-
-      // When there is only one child route, the child route is displayed by default
-      if (showingChildren.length === 1) {
-        onlyOneChild = showingChildren[0]
-        onlyOneChild.path = path.resolve(parent.path, onlyOneChild.path)
-        return onlyOneChild
-      }
-
-      // Show parent if there are no child route to display
-      if (showingChildren.length === 0) {
-        onlyOneChild = { ... parent, path: '', noShowingChildren: true }
-        return onlyOneChild
-      }
-
-      return false
     }
   }
 }

@@ -4,7 +4,7 @@
       <el-input v-if="btnsPermission.search.auth" v-model.trim="listQuery.name"  placeholder="请输入搜索关键字" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
       <el-button v-if="btnsPermission.search.auth" v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">{{btnsPermission.search.name}}</el-button>
       <el-button v-if="btnsPermission.search.auth" v-waves class="filter-item" @click="resetResource">重置</el-button>
-      <el-button v-if="btnsPermission.add.auth" v-waves class="filter-item" @click="handAddTop">{{btnsPermission.add.name}}</el-button>
+      <el-button v-if="btnsPermission.addDic.auth" v-waves class="filter-item" @click="handAddTop">{{btnsPermission.addDic.name}}</el-button>
     </div>
 
     <el-table
@@ -18,8 +18,7 @@
       :header-cell-style="{background: '#f3f3f3'}"
       lazy
       :expand-row-keys="expandArr"
-      :load="load"
-      @expand-change="expandChange">
+      :load="load">
       <el-table-column
         prop="name"
         label="字典名"
@@ -57,8 +56,8 @@
           <el-button v-if="btnsPermission.edit.auth" type="primary" size="mini" @click="msgEdit(row)">
             {{btnsPermission.edit.name}}
           </el-button>
-          <el-button v-if="btnsPermission.addChild.auth" type="primary" size="mini" @click="msgAdd(row)">
-            {{btnsPermission.addChild.name}}
+          <el-button v-if="btnsPermission.add.auth" type="primary" size="mini" @click="msgAdd(row)">
+            {{btnsPermission.add.name}}
           </el-button>
           <el-button v-if="btnsPermission.delete.auth" size="mini" type="danger" @click="handleDelete(row)">
             {{btnsPermission.delete.name}}
@@ -125,6 +124,12 @@
 
   <el-dialog :visible.sync="dialogVisible" :closeOnClickModal="false" :title="dialogType==='edit'?'编辑字典':'添加字典'">
       <el-form ref="dictForm" v-loading="diaLoading" :model="role" label-width="80px" label-position="left" :rules="rules">
+        <el-form-item label="父级">
+          <span v-if="checkParentName.length > 0" class="mr10">{{checkParentName}}</span>
+          <span v-else-if="role.parentName !== undefined && role.parentName !== ''" class="mr10">{{role.parentName}}</span>
+          <span v-else class="mr10">顶级</span>
+          <el-button v-waves class="filter-item" size="small" @click="selectParent">选择父级</el-button>
+        </el-form-item>
         <el-form-item prop="name" label="字典名">
           <el-input v-model.trim="role.name" maxlength="64" placeholder="请输入字典名" />
         </el-form-item>
@@ -159,12 +164,34 @@
         <el-button type="primary" :disabled="diaDisable" @click="regFun">确定</el-button>
       </div>
     </el-dialog>
+
+    <el-dialog :visible.sync="prarentDialogVisible" :closeOnClickModal="false" :title="'选择父级'">
+      <el-form :model="role" label-width="80px" label-position="left">
+        <el-form-item label="字典列表">
+          <el-tree
+            ref="parentTree"
+            :default-expanded-keys="keyArr"
+            :check-strictly="checkStrictly"
+            :data="routesData"
+            :props="defaultProps"
+            @check-change="handleCheckChange"
+            show-checkbox
+            node-key="id"
+            class="permission-tree"
+          />
+        </el-form-item>
+      </el-form>
+      <div style="text-align:right;">
+        <el-button type="danger" @click="parentCancle">取消</el-button>
+        <el-button type="primary" @click="confirmParent">确定</el-button>
+      </div>
+    </el-dialog>
 </div>
 </template>
 
 <script>
 import { getUserBtnByPId } from '@/api/upms/menu'
-import { addDict, getDictById, getDictByPid, updateDict, deleteDict, searchDictByPid } from '@/api/upms/dict'
+import { addDict, getDictById, getDictByPid, updateDict, deleteDict, searchDictByPid, getTreeNode } from '@/api/upms/dict'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import { deepClone } from '@/utils'
@@ -196,11 +223,11 @@ export default {
           name: '搜索',
           auth: false
         },
-        add: {
-          name: '新增一级字典',
+        addDic: {
+          name: '新增字典',
           auth: false
         },
-        addChild: {
+        add: {
           name: '添加',
           auth: false
         },
@@ -260,9 +287,20 @@ export default {
       },
       treeNode: {},
       dialogVisible: false,
-      checkStrictly: false,
+      checkStrictly: true,
       dialogFormVisible: false,
+      prarentDialogVisible: false,
+      parentShowId: '',
+      checkParentName: '',
+      checkParentId: '',
+      keyArr: [''],
+      routes: [],
+      defaultProps: {
+        children: 'children',
+        label: 'title'
+      },
       dialogStatus: '',
+      isChangeParent: false,
       dialogPvVisible: false,
       downloadLoading: false,
       loadNodeMap: new Map()
@@ -283,8 +321,14 @@ export default {
       }
     })
   },
+  computed: {
+    routesData() {
+      return this.routes
+    }
+  },
   methods: {
     getDictById() {
+      // 通过ID获取一级字典表
       this.listLoading = true
       getDictById().then(res => {
         this.listLoading = false
@@ -310,6 +354,7 @@ export default {
       })
     },
     load(tree, treeNode, resolve) {
+      // 懒加载字典
       const pid = tree.id
       this.loadNodeMap.set(pid, { tree, treeNode, resolve })
       getDictByPid({
@@ -339,10 +384,11 @@ export default {
         resolve(resData)
       })
     },
-    expandChange(row, expanded) {
-    },
     handleLoad(id, pid, type) {
-      // type 1:新增 2:更新 3:删除
+      /**
+       * 根据type动态增删改查
+       * type {number} 1:新增 2:更新 3:删除
+       */
       if(type === 1) {
         if (this.loadNodeMap.has(id)) {
           const { tree, treeNode, resolve } = this.loadNodeMap.get(id);
@@ -371,6 +417,7 @@ export default {
       
     },
     handleFilter() {
+      // 搜索功能
       if(this.listQuery.name.length === 0) {
         this.$message({
           type: 'warning',
@@ -382,6 +429,7 @@ export default {
       }
     },
     searchDictByPid(obj) {
+      // 搜索接口
       searchDictByPid(obj).then(res => {
         this.isSearch = true
         if(Array.isArray(res.data)) {
@@ -389,8 +437,82 @@ export default {
         }
       })
     },
+    async selectParent() {
+      // 选择父级
+      if(this.role && this.role.parentId) {
+        this.parentShowId = this.role.parentId
+      } else {
+        this.parentShowId = ''
+      }
+      this.prarentDialogVisible = true
+      await this.getAllTree()
+      getTreeNode
+    },
+    async getAllTree() {
+      // 获取父级树列表
+      this.listLoading = true
+      await getTreeNode().then(res => {
+        if(Array.isArray(res.data)) {
+          // this.serviceRoutes = res.data
+          this.routes = []
+          const pData = [
+              {
+              id: '',
+              name: '顶级',
+              parentId: '',
+              children: res.data
+            }
+          ]
+          this.routes = this.generateRoutes(pData)
+          this.$refs.parentTree.setCheckedKeys([this.parentShowId])
+        }
+        this.listLoading = false
+      }).catch(err => {
+        this.listLoading = false
+      })
+    },
+    generateRoutes(routes) {
+      // 生成树
+      const res = []
+      for (let route of routes) {
+        const data = {
+          id: route.id,
+          title: route.name
+        }
+        // recursive child routes
+        if (Array.isArray(route.children)) {
+          data.children = this.generateRoutes(route.children)
+        }
+        if(this.role.id !== data.id) {
+          res.push(data)
+        }
+      }
+      return res
+    },
+    handleCheckChange (data, checked, indeterminate) {
+      // 通过checked判断选中的父级
+      if (checked) {
+        let arr = [data.id];
+        this.$refs.parentTree.setCheckedKeys(arr);
+        this.checkParentId = data.id
+        this.checkParentName = data.title
+      }
+    },
+    parentCancle() {
+      // 取消选择父元素
+      this.isChangeParent = false
+      this.checkParentName = ''
+      this.checkParentId = ''
+      this.prarentDialogVisible = false
+    },
+    confirmParent() {
+      // 确定选择父级事件
+      this.isChangeParent = true
+      this.prarentDialogVisible = false
+    },
     resetResource() {
       // 重置事件
+      this.isChangeParent = false
       this.isSearch = false
       this.listQuery = {
         name: ''
@@ -399,6 +521,8 @@ export default {
       this.getDictById()
     },
     handAddTop() {
+      // 新增顶级字典事件
+      this.isChangeParent = false
       this.role = Object.assign({}, defaultRole)
       this.dialogType = 'top'
       this.dialogVisible = true
@@ -407,17 +531,22 @@ export default {
       })
     },
     msgEdit(scope) {
+      // 编辑字典事件
+      this.isChangeParent = false
       this.dialogType = 'edit'
       this.dialogVisible = true
-      this.checkStrictly = true
       this.role = deepClone(scope)
+      this.checkParentId = scope.id
       this.$nextTick(() => {
         this.$refs['dictForm'].clearValidate()
       })
     },
     msgAdd(scope) {
+      // 添加字典事件
+      this.isChangeParent = false
       this.role = Object.assign({}, defaultRole)
       this.role.id = scope.id
+      this.checkParentId = scope.id
       this.role.parentId = scope.parentId
       this.dialogType = 'new'
       this.dialogVisible = true
@@ -425,34 +554,24 @@ export default {
         this.$refs['dictForm'].clearValidate()
       })
     },
-    handleUpdate(row) {
-      // 编辑事件
-      this.temp = Object.assign({}, row) // copy obj
-      this.dialogStatus = 'update'
-      this.dialogFormVisible = true
-      this.$nextTick(() => {
-        this.$refs['dictForm'].clearValidate()
-      })
-    },
-    handleDelete(data) {
-      // 删除
+    handleDelete(row) {
+      // 删除字典
       this.$confirm('此操作将永久删除该系统, 是否继续?', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
           this.listLoading = true
-          deleteDict({id: data.id}).then(response => {
+          deleteDict({ id: row.id }).then(response => {
             this.listLoading = false
             this.$message({
               type: 'success',
               message: '删除成功!'
             })
             if(this.isSearch) {
-              // this.searchDictByPid(this.searchQuery)
-              this.getDictById()
+              this.searchData = this.filterData(this.searchData, {id: row.id}, 3)
             } else {
-              this.handleLoad(data.id, data.parentId, 3)
+              this.handleLoad(row.id, row.parentId, 3)
             }
           })
         }).catch(() => {
@@ -463,19 +582,64 @@ export default {
         });
     },
     regFun() {
-      // 输入校验
+      // 校验输入内容
       this.$refs.dictForm.validate((valid) => {
         if (valid) {
           this.confirmRole()
         }
       });
     },
+    filterData(arr, obj, type) {
+      // 非懒加载时数据动态增删改
+      const sData = arr.filter((item, index, array) => {
+        let r = true
+        if(type === 1) {
+          if(item.id === obj.parentId) {
+            if(Array.isArray(item.children)) {
+              item.children.push(obj)
+            } else {
+              item.children = []
+              item.children.push(obj)
+            }
+          }
+        } else if (type === 2) {
+          if(item.id === obj.id) {
+            item.name = obj.name
+            item.sort = obj.sort
+            item.icon = obj.icon 
+            item.code = obj.code 
+            item.status = obj.status
+            item.url = obj.url 
+            item.type = obj.type
+            item.operation = obj.operation
+            item.auth = obj.auth
+            item.remark = obj.remark
+          }
+        } else {
+          if(item.id === obj.id) {
+            array.splice(index, 1)
+            r = false
+          }
+        }
+        if(Array.isArray(item.children)) {
+          this.filterData(item.children, obj, type)
+        }
+        if(r) {
+          return item
+        }
+      })
+      return sData
+    },
     async confirmRole() {
+      // 新增、修改后提交form表单
       this.listLoading = true
       this.dialogVisible = false
+      let succMsg = ''
       if (this.dialogType === 'edit') {
+        succMsg = '编辑字典成功'
         await updateDict({
         id: this.role.id,
+        parentId: this.checkParentId,
         name: this.role.name,
         code: this.role.code,
         status: (this.role.status === '启用'? 1: 0),
@@ -483,28 +647,41 @@ export default {
         remark: this.role.remark
         })
         this.listLoading = false
-        if(this.isSearch) {
-          // this.searchDictByPid(this.searchQuery)
-          this.getDictById()
-        } else {
-          this.handleLoad(this.role.id, this.role.parentId, 2)
-        }
+        if(this.isChangeParent) {
+           this.resetResource()
+         } else {
+           if(this.isSearch) {
+            this.searchData = this.filterData(this.searchData, parem, 2)
+          } else {
+            this.handleLoad(this.role.id, this.role.parentId, 2)
+          }
+         }
       } else if(this.dialogType === 'new') {
+        succMsg = '添加字典成功'
         const { data } = await addDict({
-          parentId: this.role.id,
+          parentId: this.checkParentId,
           name: this.role.name,
           code: this.role.code,
           value: this.role.value,
           remark: this.role.remark
         })
         this.listLoading = false
-        if(this.isSearch) {
-          // this.searchDictByPid(this.searchQuery)
-          this.getDictById()
+        if(this.isChangeParent) {
+          this.resetResource()
         } else {
-          this.handleLoad(this.role.id, this.role.parentId, 1)
+          if(this.isSearch) {
+            // this.resourceSearch(this.searchQuery)
+            if(data.parentId) {
+              this.searchData = this.filterData(this.searchData, data, 1)
+            } else {
+              this.resetResource()
+            }
+          } else {
+            this.handleLoad(this.role.id, this.role.parentId, 1)
+          }
         }
       } else if(this.dialogType === 'top') {
+        succMsg = '添加字典成功'
         const { data } = await addDict({
           name: this.role.name,
           code: this.role.code,
@@ -516,15 +693,10 @@ export default {
       }
       const { name, remark } = this.role
       this.$notify({
-        title: 'Success',
-        dangerouslyUseHTMLString: true,
-        message: `
-            <div>字典名: ${name}</div>
-            <div>备注: ${remark}</div>
-          `,
+        title: succMsg,
         type: 'success'
       })
-    },
+    }
   }
 }
 </script>

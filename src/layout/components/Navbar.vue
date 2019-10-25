@@ -24,11 +24,39 @@
             <el-dropdown-item>Docs</el-dropdown-item>
           </a> -->
           <el-dropdown-item divided>
+            <span style="display:block;" @click="updatePass">修改密码</span>
+          </el-dropdown-item>
+          <el-dropdown-item divided>
             <span style="display:block;" @click="logout">退出登录</span>
           </el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
     </div>
+
+    <el-dialog :visible.sync="dialogVisible" :closeOnClickModal="false" title="修改密码">
+      <el-form ref="updateForm" v-loading="diaLoading" :model="user" label-width="80px" label-position="left" :rules="rules">
+        <el-form-item prop="name" label="账号姓名">
+          {{user.name}}
+        </el-form-item>
+        <el-form-item prop="phone" label="手机号码">
+          {{user.phone}}
+        </el-form-item>
+        <el-form-item prop="oldPass" label="原密码">
+          <el-input v-model.trim="user.oldPass" maxlength="64" placeholder="请输入原密码" />
+        </el-form-item>
+        <el-form-item prop="firstPass" label="新密码">
+          <el-input v-model.trim="user.pass" maxlength="64" placeholder="请输入新密码" />
+        </el-form-item>
+        <el-form-item prop="secondPass" label="再次输入新密码">
+          <el-input v-model.trim="user.pass" maxlength="64" placeholder="请再次输入新密码" />
+        </el-form-item>
+
+      </el-form>
+      <div style="text-align:right;">
+        <el-button type="danger" @click="dialogVisible=false">取消</el-button>
+        <el-button type="primary" :disabled="diaDisable" @click="regFun">确定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -38,6 +66,21 @@ import Breadcrumb from '@/components/Breadcrumb'
 import Hamburger from '@/components/Hamburger'
 
 export default {
+  data() {
+    return {
+      dialogVisible: false,
+      diaLoading: false,
+      user: {
+        name: 'xxx',
+        phone: '13662263665',
+        oldPass: '',
+        firstPass: '',
+        secondPass: ''
+      },
+      diaDisable: false,
+      rules: {}
+    }
+  },
   components: {
     Breadcrumb,
     Hamburger
@@ -55,6 +98,12 @@ export default {
     async logout() {
       await this.$store.dispatch('user/logout')
       this.$router.push(`/login?redirect=${this.$route.fullPath}`)
+    },
+    regFun() {
+
+    },
+    updatePass() {
+      this.dialogVisible = true
     }
   }
 }

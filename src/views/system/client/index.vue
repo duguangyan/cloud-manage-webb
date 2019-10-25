@@ -2,13 +2,13 @@
   <div class="app-container">
     <div class="filter-container" style="padding-bottom: 10px">
       <template v-if="btnsPermission.search.auth">
-         名称：<el-input v-model="searchQuery.name" maxlength="64" placeholder="请输入名称" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-        客户端ID：<el-input v-model="searchQuery.clientId" maxlength="128" placeholder="请输入客户端ID" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-        系统ID：<el-input v-model="searchQuery.systemId" maxlength="32" placeholder="请输入系统ID" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+         名称：<el-input v-model="listQuery.name" maxlength="64" placeholder="请输入名称" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+        客户端ID：<el-input v-model="listQuery.clientId" maxlength="128" placeholder="请输入客户端ID" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+        系统ID：<el-input v-model="listQuery.systemId" maxlength="32" placeholder="请输入系统ID" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
         <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
           {{btnsPermission.search.name}}
         </el-button>
-        <el-button v-if="btnsPermission.search.auth" v-waves class="filter-item" @click="resetSearch">重置</el-button>
+        <el-button v-waves class="filter-item" @click="resetSearch">重置</el-button>
       </template>
       <el-button v-if="btnsPermission.add.auth" class="filter-item" style="margin-left: 10px;" @click="handleCreate">
         {{btnsPermission.add.name}}
@@ -132,6 +132,13 @@ export default {
   },
   directives: { waves },
   data() {
+    const checkNum = (rule, value, callback) => {
+      if(value && !/^[0-9]*$/.test(value)) {
+        callback(new Error('请输入整数'))
+      } else {
+        callback()
+      }
+    }
     return {
       list: null,
       listLoading: false,
@@ -140,13 +147,11 @@ export default {
       total: 0,
       allPages: 0,
       listQuery: {
+        name: '',
+        systemId: '',
+        clientId: '',
         pageIndex: 1,
         pageSize: 10
-      },
-      searchQuery: {
-        name: '',
-        clientId: '',
-        systemId: ''
       },
       btnsPermission: {
         search: {
@@ -186,6 +191,16 @@ export default {
             required: true,
             trigger: 'blur',
             message: '请填写授权方式'
+        }],
+        accessTokenValidity: [{
+            required: false,
+            trigger: 'blur',
+            validator: checkNum
+        }],
+        refreshTokenValidity: [{
+            required: false,
+            trigger: 'blur',
+            validator: checkNum
         }]
       },
       temp: {
@@ -233,7 +248,20 @@ export default {
     getClientList() {
       //获取系统数据
       this.listLoading = true
-      getClientList(this.listQuery).then(res => {
+      let param = {
+        pageIndex: this.listQuery.pageIndex,
+        pageSize: this.listQuery.pageSize
+      }
+      if(this.listQuery.name.length > 0) {
+        param.name = this.listQuery.name
+      }
+      if(this.listQuery.clientId.length > 0) {
+        param.clientId = this.listQuery.clientId
+      }
+      if(this.listQuery.systemId.length > 0) {
+        param.systemId = this.listQuery.systemId
+      }
+      getClientList(param).then(res => {
         this.list = res.data.records
         this.total = res.data.total
         this.allPages = res.data.pages
@@ -395,6 +423,9 @@ export default {
     },
     resetSearch() {
       this.listQuery = {
+        name: '',
+        clientId: '',
+        systemId: '',
         pageIndex: 1,
         pageSize: 10
       },

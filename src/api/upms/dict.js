@@ -36,6 +36,15 @@ export function searchDictByPid(query) {
   })
 }
 
+// 查询字典树
+export function getTreeNode(query) {
+  return request({
+    url: '/upms/dic/getTreeNode',
+    method: 'get',
+    params: query
+  })
+}
+
 // 修改字典
 export function updateDict(data) {
   return request({
