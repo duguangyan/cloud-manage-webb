@@ -611,9 +611,13 @@ export default {
     },
     handAddRoot() {
       // 添加顶级树
+      this.role = Object.assign({}, defaultRole)
       this.dialogType = 'root'
       this.dialogMsg = '添加一级分类'
       this.dialogVisible = true
+      this.$nextTick(() => {
+        this.$refs['productForm'].clearValidate()
+      })
     },
     filterNode(value, data) {
       // 查询节点
@@ -680,6 +684,9 @@ export default {
       this.parentId = data.id
       this.dialogType = 'new'
       this.dialogVisible = true
+       this.$nextTick(() => {
+        this.$refs['productForm'].clearValidate()
+      })
     },
 
     remove(node, data) {
@@ -762,10 +769,16 @@ export default {
         this.dialogType = 'unit'
         this.dialogMsg = '新增计量单位'
         this.unit = Object.assign({}, defaultUnit)
+        this.$nextTick(() => {
+          this.$refs['unitForm'].clearValidate()
+        })
       } else if (type === 2) {
         this.dialogType = 'spec'
         this.dialogMsg = '新增规格管理'
         this.spec = Object.assign({}, defaultSpec)
+        this.$nextTick(() => {
+          this.$refs['specForm'].clearValidate()
+        })
       } else {
         this.dialogType = 'prop'
         this.dialogMsg = '新增属性模板'
@@ -773,6 +786,9 @@ export default {
         this.prop.list = [
           { value: '' }
         ]
+        this.$nextTick(() => {
+          this.$refs['propForm'].clearValidate()
+        })
       }
       this.dialogVisible = true
       this.checkStrictly = true
@@ -785,6 +801,9 @@ export default {
       this.checkStrictly = true
       this.nodeData = data
       this.role = deepClone(data)
+       this.$nextTick(() => {
+        this.$refs['productForm'].clearValidate()
+      })
     },
     msgAdd(scope) {
       // 添加分类
@@ -793,6 +812,9 @@ export default {
       this.dialogVisible = true
       this.changeId = scope.id
       this.changePid = scope.pid
+      this.$nextTick(() => {
+        this.$refs['productForm'].clearValidate()
+      })
     },
     regFun () {
       // 表单校验
@@ -1058,6 +1080,9 @@ export default {
         this.unit.status = row.status
         this.dialogType = 'unit'
         this.dialogMsg = '编辑计量单位'
+        this.$nextTick(() => {
+          this.$refs['unitForm'].clearValidate()
+        })
       } else if (type === 2) {
         this.spec.id = row.id
         this.spec.name = row.name
@@ -1066,6 +1091,9 @@ export default {
         this.spec.afterDes = row.valueSuffix
         this.dialogType = 'spec'
         this.dialogMsg = '编辑规格管理'
+        this.$nextTick(() => {
+          this.$refs['specForm'].clearValidate()
+        })
       } else if(type === 3) {
         this.dialogType = 'prop'
         this.dialogMsg = '编辑属性模板'
@@ -1082,6 +1110,9 @@ export default {
         this.prop.isRequire = row.isRequire
         this.prop.isSearch = row.isSearch
         this.prop.sort = row.sort
+        this.$nextTick(() => {
+          this.$refs['propForm'].clearValidate()
+        })
       }
       this.dialogVisible = true
       this.checkStrictly = true

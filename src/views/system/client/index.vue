@@ -1,11 +1,15 @@
 <template>
   <div class="app-container">
     <div class="filter-container" style="padding-bottom: 10px">
-      系统名：<el-input v-if="btnsPermission.search.auth" v-model="listQuery.name" maxlength="64" placeholder="请输入系统名" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-button v-if="btnsPermission.search.auth" v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
-        {{btnsPermission.search.name}}
-      </el-button>
-      <el-button v-if="btnsPermission.search.auth" v-waves class="filter-item" @click="resetSearch">重置</el-button>
+      <template v-if="btnsPermission.search.auth">
+         名称：<el-input v-model="searchQuery.name" maxlength="64" placeholder="请输入名称" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+        客户端ID：<el-input v-model="searchQuery.clientId" maxlength="128" placeholder="请输入客户端ID" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+        系统ID：<el-input v-model="searchQuery.systemId" maxlength="32" placeholder="请输入系统ID" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+        <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+          {{btnsPermission.search.name}}
+        </el-button>
+        <el-button v-if="btnsPermission.search.auth" v-waves class="filter-item" @click="resetSearch">重置</el-button>
+      </template>
       <el-button v-if="btnsPermission.add.auth" class="filter-item" style="margin-left: 10px;" @click="handleCreate">
         {{btnsPermission.add.name}}
       </el-button>
@@ -34,11 +38,11 @@
       <el-table-column label="附加信息" prop="additionalInformation" align="center"></el-table-column>
       <el-table-column label="操作" align="center" width="200" class-name="small-padding fixed-width">
         <template slot-scope="{row}">
-          <el-button type="primary" size="mini" @click="handleUpdate(row)">
-            编辑
+          <el-button v-if="btnsPermission.edit.auth" type="primary" size="mini" @click="handleUpdate(row)">
+            {{btnsPermission.edit.name}}
           </el-button>
-          <el-button v-if="row.status!='deleted'" size="mini" type="danger" @click="handleDelete(row,'deleted')">
-            删除
+          <el-button v-if="btnsPermission.delete.auth" size="mini" type="danger" @click="handleDelete(row)">
+            {{btnsPermission.delete.name}}
           </el-button>
         </template>
       </el-table-column>
@@ -139,14 +143,27 @@ export default {
         pageIndex: 1,
         pageSize: 10
       },
+      searchQuery: {
+        name: '',
+        clientId: '',
+        systemId: ''
+      },
       btnsPermission: {
         search: {
           name: '查询',
-          auth: true
+          auth: false
         },
         add: {
-          name: '添加',
-          auth: true
+          name: '新增',
+          auth: false
+        },
+        edit: {
+          name: '编辑',
+          auth: false
+        },
+        delete: {
+          name: '删除',
+          auth: false
         }
       },
       rules: {
@@ -348,7 +365,7 @@ export default {
         this.$refs['dataForm'].clearValidate()
       })
     },
-    handleDelete(data, msg) {
+    handleDelete(data) {
       // 删除
       this.$confirm('此操作将永久删除该客户端信息, 是否继续?', '提示', {
           confirmButtonText: '确定',

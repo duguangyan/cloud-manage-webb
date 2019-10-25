@@ -84,7 +84,7 @@
         show-overflow-tooltip>
       </el-table-column>
     </el-table>
-    <pagination v-show="total>0" :total="total" :page.sync="list.pageIndex" :limit.sync="list.pageSize"  @pagination="getPage" />
+    <pagination v-show="total>0" :total="total" :page.sync="query.pageIndex" :limit.sync="query.pageSize"  @pagination="getPage" />
   </div>
 </template>
 
@@ -114,12 +114,7 @@ export default {
         pageSize: 10
       },
       tableData: [],
-      list: {
-     
-        pageIndex: 1,
-        pageSize: 10
-      },
-      total: 10
+      total: 0
     }
   },
   components: { Pagination },
@@ -132,6 +127,7 @@ export default {
       this.listLoading = true
       getAnalyseList(this.query).then(res => {
         this.listLoading = false
+        this.total = res.data.total
         if(Array.isArray(res.data.records)) {
           this.tableData = res.data.records
         }
@@ -152,8 +148,8 @@ export default {
     },
     getPage(data) {
      // 分页事件
-      this.listQuery.pageIndex = data.page
-      this.getList()
+      this.query.pageIndex = data.page
+      this.getAnalyseList()
     },
     checkChange(val, name) {
       // 显示选择
@@ -161,7 +157,9 @@ export default {
     },
     radioChange(val) {
       // 日期选择
+      this.query.pageIndex = 1
       this.setDateFun(val)
+      console.log(this.query)
       this.getAnalyseList()
     }
   }

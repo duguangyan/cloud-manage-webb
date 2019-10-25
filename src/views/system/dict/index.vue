@@ -54,14 +54,14 @@
       </el-table-column>
       <el-table-column label="操作" align="center" width="300" class-name="small-padding fixed-width">
         <template slot-scope="{ row }">
-          <el-button type="primary" size="mini" @click="msgEdit(row)">
-            编辑
+          <el-button v-if="btnsPermission.edit.auth" type="primary" size="mini" @click="msgEdit(row)">
+            {{btnsPermission.edit.name}}
           </el-button>
-          <el-button type="primary" size="mini" @click="msgAdd(row)">
-            添加
+          <el-button v-if="btnsPermission.addChild.auth" type="primary" size="mini" @click="msgAdd(row)">
+            {{btnsPermission.addChild.name}}
           </el-button>
-          <el-button v-if="row.status!='deleted'" size="mini" type="danger" @click="handleDelete(row)">
-            删除
+          <el-button v-if="btnsPermission.delete.auth" size="mini" type="danger" @click="handleDelete(row)">
+            {{btnsPermission.delete.name}}
           </el-button>
         </template>
       </el-table-column>
@@ -198,6 +198,18 @@ export default {
         },
         add: {
           name: '新增一级字典',
+          auth: false
+        },
+        addChild: {
+          name: '添加',
+          auth: false
+        },
+        edit: {
+          name: '编辑',
+          auth: false
+        },
+        delete: {
+          name: '删除',
           auth: false
         }
       },
@@ -391,7 +403,7 @@ export default {
       this.dialogType = 'top'
       this.dialogVisible = true
       this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
+        this.$refs['dictForm'].clearValidate()
       })
     },
     msgEdit(scope) {
@@ -400,7 +412,7 @@ export default {
       this.checkStrictly = true
       this.role = deepClone(scope)
       this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
+        this.$refs['dictForm'].clearValidate()
       })
     },
     msgAdd(scope) {
@@ -410,7 +422,7 @@ export default {
       this.dialogType = 'new'
       this.dialogVisible = true
       this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
+        this.$refs['dictForm'].clearValidate()
       })
     },
     handleUpdate(row) {
@@ -419,7 +431,7 @@ export default {
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
       this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
+        this.$refs['dictForm'].clearValidate()
       })
     },
     handleDelete(data) {

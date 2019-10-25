@@ -455,6 +455,9 @@ export default {
       this.dialogType = 'new'
       this.dialogVisible = true
       this.getExpress({ status: 1, pageIndex: 1, pageSize: 20 })
+      this.$nextTick(() => {
+        this.$refs['expressForm'].clearValidate()
+      })
     },
     editShipping() {
       // 修改物流信息
@@ -462,6 +465,9 @@ export default {
       this.dialogType = 'edit'
       this.dialogVisible = true
       this.getExpress({ status: 1, pageIndex: 1, pageSize: 20 })
+      this.$nextTick(() => {
+        this.$refs['expressForm'].clearValidate()
+      })
     },
     back() {
       // 返回事件
