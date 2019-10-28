@@ -38,7 +38,7 @@ const routeModule = [
     source: 'product/list/list/index',
     isSource: true,
     hidden: false,
-    noCache: false
+    noCache: true
   },
   {
     name: 'productEdit',
@@ -119,7 +119,7 @@ const routeModule = [
     source: 'order/sell/list/index',
     isSource: true,
     hidden: false,
-    noCache: false
+    noCache: true
   },
   {
     name: 'orderDetailList',

@@ -21,6 +21,7 @@
     <el-table
       v-loading="listLoading"
       border
+      @sort-change="sortChange"
       :data="tableData"
       :header-cell-style="{background: '#f3f3f3'}">
       <el-table-column
@@ -39,6 +40,7 @@
         v-if="showObj.pv"
         prop="pv"
         label="浏览次数"
+        sortable="custom"
         align="center"
         width="180"
         show-overflow-tooltip>
@@ -47,6 +49,7 @@
         v-if="showObj.uv"
         prop="uv"
         label="访客"
+        sortable="custom"
         align="center"
         width="180"
         show-overflow-tooltip>
@@ -56,6 +59,7 @@
         prop="starNum"
         align="center"
         label="收藏人数"
+        sortable="custom"
         width="180"
         show-overflow-tooltip>
       </el-table-column>
@@ -63,6 +67,7 @@
         v-if="showObj.payPersonNum"
         prop="payPersonNum"
         label="支付人数"
+        sortable="custom"
         align="center"
         width="180"
         show-overflow-tooltip>
@@ -71,6 +76,7 @@
         v-if="showObj.rebuyPersonNum"
         prop="rebuyPersonNum"
         label="复购人数"
+        sortable="custom"
         align="center"
         width="180"
         show-overflow-tooltip>
@@ -79,6 +85,7 @@
         v-if="showObj.payNum"
         prop="payNum"
         label="支付笔数"
+        sortable="custom"
         align="center"
         width="180"
         show-overflow-tooltip>
@@ -110,6 +117,8 @@ export default {
       query: {
         beginTime: '',
         endTime: '',
+        orderBy: '',
+        colName: '',
         pageIndex: 1,
         pageSize: 10
       },
@@ -125,7 +134,17 @@ export default {
   methods: {
     getAnalyseList() {
       this.listLoading = true
-      getAnalyseList(this.query).then(res => {
+      let param = {
+        beginTime: this.query.beginTime,
+        endTime: this.query.endTime,
+        pageIndex: this.query.pageIndex,
+        pageSize: this.query.pageSize
+      }
+      if(this.query.orderBy.length > 0) {
+        param.colName = this.query.colName
+        param.orderBy = this.query.orderBy
+      }
+      getAnalyseList(param).then(res => {
         this.listLoading = false
         this.total = res.data.total
         if(Array.isArray(res.data.records)) {
@@ -160,6 +179,29 @@ export default {
       this.query.pageIndex = 1
       this.setDateFun(val)
       console.log(this.query)
+      this.getAnalyseList()
+    },
+    sortChange(data) {
+      // 排序
+      if(data.order === 'descending') {
+        this.query.orderBy = 'desc'
+      } else if(data.order === 'ascending') {
+        this.query.orderBy = 'asc'
+      } else {
+        this.query.orderBy = ''
+      }
+      this.query.colName = data.prop
+      if(data.prop === 'starNum') {
+        this.query.colName = 'star_num'
+      } else if(data.prop === 'payPersonNum') {
+        this.query.colName = 'pay_person_num'
+      } else if(data.prop === 'rebuyPersonNum') {
+        this.query.colName = 'rebuy_person_num'
+      } else if(data.prop === 'payNum') {
+        this.query.colName = 'pay_num'
+      } else {
+        this.query.colName = data.prop
+      }
       this.getAnalyseList()
     }
   }

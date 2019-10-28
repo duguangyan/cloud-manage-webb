@@ -501,10 +501,10 @@ export default {
     getMeanFirstRec() {
       // 获取一级资源树
       this.meanData = []
+      let resData = []
       this.listLoading = true
       getMeanFirstRec().then(res => {
         this.listLoading = false
-        let resData = []
         if(Array.isArray(res.data)) {
           for(let i = 0; i < res.data.length; i++) {
             let obj = {
@@ -752,7 +752,6 @@ export default {
       this.checkStrictly = true
       this.dialogType = 'edit'
       this.role = deepClone(row)
-      console.log(this.role)
       this.$nextTick(() => {
         this.$refs['meanForm'].clearValidate()
       })

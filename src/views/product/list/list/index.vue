@@ -424,7 +424,7 @@ export default {
       } else if (tab.name === '1') {
         this.listQuery.sortColumn = 'create_time'
       } else if(tab.name === '4') {
-        this.listQuery.sortColumn = 'create_time'
+        this.listQuery.sortColumn = 'modify_time'
       }
       this.listQuery.sortType = 0
       this.listQuery.sellTimeStart = ''

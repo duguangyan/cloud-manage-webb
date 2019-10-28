@@ -330,10 +330,11 @@ export default {
     getDictById() {
       // 通过ID获取一级字典表
       this.listLoading = true
+      this.dictData = []
       getDictById().then(res => {
         this.listLoading = false
+        let resData = []
         if(Array.isArray(res.data)) {
-          let resData = []
           res.data.forEach(item => {
             let v = {
               name: item.name,
@@ -349,8 +350,8 @@ export default {
             }
             resData.push(v)
           })
-          this.dictData = resData
         }
+        this.dictData = resData
       })
     },
     load(tree, treeNode, resolve) {
@@ -489,6 +490,13 @@ export default {
       }
       return res
     },
+    dioCancle() {
+      // 取消编辑
+      this.dialogVisible = false
+      this.checkParentName = ''
+      this.checkParentId = ''
+      this.routes = []
+    },
     handleCheckChange (data, checked, indeterminate) {
       // 通过checked判断选中的父级
       if (checked) {
@@ -536,7 +544,6 @@ export default {
       this.dialogType = 'edit'
       this.dialogVisible = true
       this.role = deepClone(scope)
-      this.checkParentId = scope.id
       this.$nextTick(() => {
         this.$refs['dictForm'].clearValidate()
       })
@@ -639,7 +646,7 @@ export default {
         succMsg = '编辑字典成功'
         await updateDict({
         id: this.role.id,
-        parentId: this.checkParentId,
+        parentId: this.checkParentName.length > 0? this.checkParentId: this.role.parentId,
         name: this.role.name,
         code: this.role.code,
         status: (this.role.status === '启用'? 1: 0),
@@ -647,6 +654,7 @@ export default {
         remark: this.role.remark
         })
         this.listLoading = false
+        console.log(this.isChangeParent)
         if(this.isChangeParent) {
            this.resetResource()
          } else {

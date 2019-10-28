@@ -7,8 +7,8 @@
     <div class="right-menu">
       <el-dropdown class="avatar-container" trigger="click">
         <div class="avatar-wrapper">
-          <img v-if="avatar === ''" src= "@/assets/img/circle_avatar.png" size="50" class="user-avatar">
-          <img v-else :src= "avatar" size="50" class="user-avatar">
+          <img v-if="user.avatar" :src= "user.avatar" size="50" class="user-avatar">
+          <img v-else src= "@/assets/img/circle_avatar.png" size="50" class="user-avatar">
           <i class="el-icon-caret-bottom" />
         </div>
         <el-dropdown-menu slot="dropdown" class="user-dropdown">
@@ -34,23 +34,55 @@
     </div>
 
     <el-dialog :visible.sync="dialogVisible" :closeOnClickModal="false" title="修改密码">
-      <el-form ref="updateForm" v-loading="diaLoading" :model="user" label-width="80px" label-position="left" :rules="rules">
-        <el-form-item prop="name" label="账号姓名">
+      <el-form ref="userForm" v-loading="diaLoading" :model="user" label-width="120px" label-position="left" :rules="rules">
+        <el-form-item prop="name" label="账号">
           {{user.name}}
         </el-form-item>
         <el-form-item prop="phone" label="手机号码">
           {{user.phone}}
         </el-form-item>
         <el-form-item prop="oldPass" label="原密码">
-          <el-input v-model.trim="user.oldPass" maxlength="64" placeholder="请输入原密码" />
+          <el-input
+            :key="oldType"
+            ref="oldPass"
+            v-model.trim="user.oldPass"
+            :type="oldType"
+            placeholder="请输入原密码"
+            name="oldPass"
+            tabindex="2"
+          />
+          <span class="show-pwd" @click="showPwd(1)">
+            <svg-icon :icon-class="oldType === 'password' ? 'eye' : 'eye-open'" />
+          </span>
         </el-form-item>
-        <el-form-item prop="firstPass" label="新密码">
-          <el-input v-model.trim="user.pass" maxlength="64" placeholder="请输入新密码" />
+         <el-form-item prop="firstPass" label="新密码">
+          <el-input
+            :key="newType"
+            ref="newPass"
+            v-model.trim="user.firstPass"
+            :type="newType"
+            placeholder="请输入新密码"
+            name="password"
+            tabindex="2"
+          />
+          <span class="show-pwd" @click="showPwd(2)">
+            <svg-icon :icon-class="newType === 'password' ? 'eye' : 'eye-open'" />
+          </span>
         </el-form-item>
-        <el-form-item prop="secondPass" label="再次输入新密码">
-          <el-input v-model.trim="user.pass" maxlength="64" placeholder="请再次输入新密码" />
+         <el-form-item prop="secondPass" label="再次输入新密码">
+          <el-input
+            ref="newPass2"
+            @blur="inputBlur"
+            v-model.trim="user.secondPass"
+            :type="newType"
+            placeholder="请再次输入新密码"
+            name="password"
+            tabindex="2"
+          />
+          <div v-if="noSame" class="el-form-item__error">
+            输入的新密码不一致
+          </div>
         </el-form-item>
-
       </el-form>
       <div style="text-align:right;">
         <el-button type="danger" @click="dialogVisible=false">取消</el-button>
@@ -64,26 +96,69 @@
 import { mapGetters } from 'vuex'
 import Breadcrumb from '@/components/Breadcrumb'
 import Hamburger from '@/components/Hamburger'
+import { updatePassword } from '@/api/upms/user'
 
 export default {
   data() {
+    const validateLen = (rule, value, callback) => {
+      if (!value) {
+        callback(new Error(rule.des))
+      } else if (value.length < 5 || value.length > 64) {
+        callback(new Error(rule.lenDes))
+      } else if (!/^[a-zA-Z0-9]*$/.test(value)) {
+        callback('密码只能由字母、数字数字组成')
+      } else {
+          callback()
+      }
+    }
     return {
       dialogVisible: false,
       diaLoading: false,
+      noSame: false,
       user: {
-        name: 'xxx',
-        phone: '13662263665',
+        id: '',
+        name: '',
+        phone: '',
+        avatar: '',
         oldPass: '',
         firstPass: '',
         secondPass: ''
       },
+      oldType: "password",
+      newType: "password",
+      rules: {
+        oldPass: [{
+            required: true,
+            trigger: 'blur',
+            message: '请填写原密码'
+        }],
+        firstPass: [{
+            required: true,
+            trigger: 'blur',
+            validator: validateLen,
+            lenDes: '密码下限为5，上限为64',
+            des: '请填写新密码'
+        }],
+        secondPass: [{
+            required: true,
+            trigger: 'blur',
+            validator: validateLen,
+            lenDes: '密码长度下限为5，上限为64',
+            des: '请再次填写新密码'
+        }]
+      },
       diaDisable: false,
-      rules: {}
     }
   },
   components: {
     Breadcrumb,
     Hamburger
+  },
+  created() {
+    this.user.id = this.$store.getters.userId
+    this.user.name = this.$store.getters.name
+    this.user.phone = this.$store.getters.phone
+    this.user.avatar = this.$store.getters.avatar
   },
   computed: {
     ...mapGetters([
@@ -99,17 +174,83 @@ export default {
       await this.$store.dispatch('user/logout')
       this.$router.push(`/login?redirect=${this.$route.fullPath}`)
     },
+    inputBlur() {
+      this.noSame = false
+    },
     regFun() {
-
+      this.$refs.userForm.validate(valid => {
+        if(valid) {
+          if(this.user.firstPass === this.user.secondPass) {
+            this.noSame = false
+            this.confirm()
+          } else {
+            this.noSame = true
+          }
+        }
+      })
+    },
+    showPwd(type) {
+      if(type === 1) {
+        if (this.oldType === "password") {
+          this.oldType = ""
+        } else {
+          this.oldType = "password"
+        }
+        this.$nextTick(() => {
+          this.$refs.oldPass.focus()
+        })
+      } else {
+        if (this.newType === "password") {
+          this.newType = ""
+        } else {
+          this.newType = "password"
+        }
+      }
     },
     updatePass() {
+      this.noSame = false
       this.dialogVisible = true
+      this.$nextTick(() => {
+        this.$refs.userForm.clearValidate()
+      })
+    },
+    confirm() {
+      this.diaLoading = true
+      this.diaDisable = true
+      updatePassword({
+        id: this.user.id,
+        oldPassword: this.user.oldPass,
+        password: this.user.secondPass
+      }).then(res => {
+        this.diaLoading = false
+        this.diaDisable = false
+        this.dialogVisible = false
+        this.$notify({
+          title: '密码修改成功',
+          type: 'success'
+        })
+      }).catch(err => {
+        this.diaLoading = false
+        this.diaDisable = false
+      })
     }
   }
 }
 </script>
 
 <style lang="scss" scoped>
+$dark_gray: #889aa4;
+
+.show-pwd {
+  position: absolute;
+  right: 10px;
+  top: 0;
+  font-size: 16px;
+  color: $dark_gray;
+  cursor: pointer;
+  user-select: none;
+}
+
 .navbar {
   height: 50px;
   overflow: hidden;

@@ -49,3 +49,11 @@ export function getRoles(query) {
     params: query
   })
 }
+
+export function updatePassword(data) {
+  return request({
+    url: '/upms/user/passwordModify',
+    method: 'post',
+    data
+  })
+}

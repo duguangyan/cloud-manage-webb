@@ -199,12 +199,16 @@ export default {
           callback(new Error(rule.des))
         } else if (value.length < 5 || value.length > 64) {
           callback(new Error(rule.lenDes))
+        } else if (!/^[a-zA-Z0-9]*$/.test(value)) {
+          callback('密码只能由字母、数字数字组成')
         } else {
             callback()
         }
       } else {
         if (value && (value.length < 5 || value.length > 64)) {
           callback(new Error(rule.lenDes))
+        } else if (value && !/^[a-zA-Z0-9]*$/.test(value)) {
+          callback('密码只能由字母、数字数字组成')
         } else {
             callback()
         }

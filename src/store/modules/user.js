@@ -18,6 +18,7 @@ const user = {
     name: '',
     avatar: '',
     userId: '',
+    phone: '',
     deviceId: '',
     shop: {}
   },
@@ -89,6 +90,11 @@ const user = {
       if (id) {
         state.userId = id
       }
+    },
+    SET_PHONE: (state, p) => {
+      if (p) {
+        state.phone = p
+      }
     }
     // SET_ROLES: (state, roles) => {
     //   state.roles = roles
@@ -152,11 +158,12 @@ const user = {
             if (!data) {
               reject('Verification failed, please Login again.')
             }
-            const { username, avatar, id } = data
+            const { username, headImgUrl, id, phone } = data
 
             commit('SET_NAME', username)
-            commit('SET_AVATAR', avatar)
+            commit('SET_AVATAR', headImgUrl)
             commit('SET_USERID', id)
+            commit('SET_PHONE', phone)
             // commit('SET_AVATAR', avatar)
             resolve(data)
           })
