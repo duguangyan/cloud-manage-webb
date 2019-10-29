@@ -279,9 +279,6 @@ export default {
       listQuery: {
         name: ''
       },
-      searchQuery: {
-
-      },
       query: {
         id: ''
       },
@@ -290,7 +287,6 @@ export default {
       checkStrictly: true,
       dialogFormVisible: false,
       prarentDialogVisible: false,
-      parentShowId: '',
       checkParentName: '',
       checkParentId: '',
       keyArr: [''],
@@ -342,6 +338,7 @@ export default {
               hasChildren: item.haveChild === 1 ? true : false,
               id: item.id,
               parentId: item.parentId,
+              parentName: '',
               remark: item.remark,
               sort: item.sort,
               status: item.status,
@@ -370,6 +367,7 @@ export default {
               hasChildren: item.haveChild === 1 ? true : false,
               id: item.id,
               parentId: item.parentId,
+              parentName: tree.name,
               remark: item.remark,
               sort: item.sort,
               status: item.status,
@@ -425,7 +423,6 @@ export default {
           message: '请输入搜索内容！'
         })
       } else {
-        this.searchQuery = deepClone(this.listQuery)
         this.searchDictByPid(this.listQuery)
       }
     },
@@ -433,21 +430,26 @@ export default {
       // 搜索接口
       searchDictByPid(obj).then(res => {
         this.isSearch = true
+        this.searchData = []
         if(Array.isArray(res.data)) {
-          this.searchData = res.data
+          this.searchData = this.filterSearch(res.data, '')
         }
       })
     },
+    filterSearch(data, msg) {
+      const res = data.filter(item => {
+        item.parentName = msg
+        if(Array.isArray(item.children)) {
+          this.filterSearch(item.children, item.name)
+        }
+        return item
+      })
+      return res
+    },
     async selectParent() {
       // 选择父级
-      if(this.role && this.role.parentId) {
-        this.parentShowId = this.role.parentId
-      } else {
-        this.parentShowId = ''
-      }
       this.prarentDialogVisible = true
       await this.getAllTree()
-      getTreeNode
     },
     async getAllTree() {
       // 获取父级树列表
@@ -464,8 +466,9 @@ export default {
               children: res.data
             }
           ]
+          console.log('id', this.checkParentId)
           this.routes = this.generateRoutes(pData)
-          this.$refs.parentTree.setCheckedKeys([this.parentShowId])
+          this.$refs.parentTree.setCheckedKeys([this.checkParentId])
         }
         this.listLoading = false
       }).catch(err => {
@@ -484,7 +487,8 @@ export default {
         if (Array.isArray(route.children)) {
           data.children = this.generateRoutes(route.children)
         }
-        if(this.role.id !== data.id) {
+        if(this.dialogType === 'edit' && this.role.id === data.id) {
+        } else {
           res.push(data)
         }
       }
@@ -534,27 +538,33 @@ export default {
       this.role = Object.assign({}, defaultRole)
       this.dialogType = 'top'
       this.dialogVisible = true
+      this.checkParentName = ''
+      this.checkParentId = ''
       this.$nextTick(() => {
         this.$refs['dictForm'].clearValidate()
       })
     },
-    msgEdit(scope) {
+    msgEdit(row) {
       // 编辑字典事件
       this.isChangeParent = false
       this.dialogType = 'edit'
       this.dialogVisible = true
-      this.role = deepClone(scope)
+      this.role = deepClone(row)
+      console.log(row)
+      this.checkParentId = row.parentId ? row.parentId : ''
+      this.checkParentName = row.parentName
       this.$nextTick(() => {
         this.$refs['dictForm'].clearValidate()
       })
     },
-    msgAdd(scope) {
+    msgAdd(row) {
       // 添加字典事件
       this.isChangeParent = false
       this.role = Object.assign({}, defaultRole)
-      this.role.id = scope.id
-      this.checkParentId = scope.id
-      this.role.parentId = scope.parentId
+      this.role.parentName = row.name
+      this.role.parentId = row.parentId
+      this.role.id = row.id
+      this.checkParentId = row.id
       this.dialogType = 'new'
       this.dialogVisible = true
       this.$nextTick(() => {
@@ -654,7 +664,6 @@ export default {
         remark: this.role.remark
         })
         this.listLoading = false
-        console.log(this.isChangeParent)
         if(this.isChangeParent) {
            this.resetResource()
          } else {
@@ -678,7 +687,6 @@ export default {
           this.resetResource()
         } else {
           if(this.isSearch) {
-            // this.resourceSearch(this.searchQuery)
             if(data.parentId) {
               this.searchData = this.filterData(this.searchData, data, 1)
             } else {

@@ -35,7 +35,7 @@
                 size="mini"
                 :title="btnsPermission.deleteClassify.name"
                 @click.stop="() => handleDelete(node, data)" />
-              <i v-if="btnsPermission.addClassify.auth" class="el-icon-circle-plus-outline" 
+              <i v-if="btnsPermission.addClassify.auth && node.level < 4" class="el-icon-circle-plus-outline" 
                 type="text"
                 size="mini"
                 :title="btnsPermission.addClassify.name + '子集分类'"
@@ -666,13 +666,19 @@ export default {
     },
     allowDrop(draggingNode, dropNode, type) {
       // 拖拽操作
-      if (draggingNode.level === dropNode.level) {
-        if (draggingNode.data.aboveId === dropNode.data.aboveId) {
-          return type === 'prev' || type === 'next'
-        }
-      } else {
-        // 不同级不进行处理
+      if(draggingNode.level === 1) {
         return false
+      } else {
+        if (draggingNode.level === dropNode.level) {
+          if (draggingNode.data.aboveId === dropNode.data.aboveId) {
+            return type === 'prev' || type === 'next'
+          } else {
+            return false
+          }
+        } else {
+          // 不同级不进行处理
+          return false
+        }
       }
     },
     append(node, data) {

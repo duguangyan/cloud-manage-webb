@@ -464,13 +464,9 @@ export default {
         status: '',
         type: ''
       },
-      searchQuery: {
-
-      },
       checkParentId: '',
       checkParentName: '',
       iconShow: '',
-      parentShowId: '',
       multipleSelection: [],
       loadNodeMap: new Map(),
       isSearch: false
@@ -670,7 +666,7 @@ export default {
             }
           ]
           this.routes = this.generateRoutes(pData)
-          this.$refs.parentTree.setCheckedKeys([this.parentShowId]);
+          this.$refs.parentTree.setCheckedKeys([this.checkParentId])
         }
         this.listLoading = false
       }).catch(err => {
@@ -690,7 +686,8 @@ export default {
         if (Array.isArray(route.children)) {
           data.children = this.generateRoutes(route.children)
         }
-        if(this.role.id !== data.id) {
+        if(this.dialogType === 'edit' && this.role.id === data.id) {
+        } else {
           res.push(data)
         }
       }
@@ -704,7 +701,6 @@ export default {
           message: '请输入搜索内容或选择搜索状态、类型！'
         })
       } else {
-        this.searchQuery = deepClone(this.listQuery)
         this.resourceSearch(this.listQuery)
       }
     },
@@ -715,13 +711,24 @@ export default {
         this.isSearch = true
         this.searchLoading = false
         this.meanData = []
+        this.searchData = []
         this.isLazy = false
         if(Array.isArray(res.data)) {
-          this.searchData = res.data
+          this.searchData = this.filterSearch(res.data, '')
         }
       }).catch(err => {
         this.searchLoading = false
       })
+    },
+    filterSearch(data, msg) {
+      const res = data.filter(item => {
+        item.parentName = msg
+        if(Array.isArray(item.children)) {
+          this.filterSearch(item.children, item.name)
+        }
+        return item
+      })
+      return res
     },
     resetResource() {
       // 重置事件
@@ -741,6 +748,8 @@ export default {
       this.dialogType = 'new'
       this.checkStrictly = true
       this.dialogVisible = true
+      this.checkParentId = ''
+      this.checkParentName = ''
       this.$nextTick(() => {
         this.$refs['meanForm'].clearValidate()
       })
@@ -752,6 +761,8 @@ export default {
       this.checkStrictly = true
       this.dialogType = 'edit'
       this.role = deepClone(row)
+      this.checkParentId = row.parentId ? row.parentId : ''
+      this.checkParentName = row.parentName
       this.$nextTick(() => {
         this.$refs['meanForm'].clearValidate()
       })
@@ -776,11 +787,6 @@ export default {
     },
     async selectParent() {
       // 选择父级事件
-      if(this.role && this.role.parentId) {
-        this.parentShowId = this.role.parentId
-      } else {
-        this.parentShowId = ''
-      }
       this.prarentDialogVisible = true
       await this.getRoutes()
     },
@@ -836,23 +842,28 @@ export default {
         succMsg = '编辑成功'
         this.diaDisable = true
         this.diaLoading = true
-        let parem = {
+        let param = {
            id: this.role.id,
            name: this.role.name,
            sort: this.role.sort,
-           icon: this.role.icon,
-           code: this.role.code,
            parentId: this.checkParentName.length > 0? this.checkParentId: this.role.parentId,
            status: this.role.status,
-           url: this.role.url,
            type: this.role.type,
-           operation: this.role.operation,
-           auth: this.role.auth,
            remark: this.role.remark
          }
-         await updateResource(parem).catch(err => {
-           this.diaDisable = false
-          this.diaLoading = false
+         if(this.role.type === 0) {
+            param.operation = this.role.operation
+            param.url = this.role.url
+            param.icon = this.role.icon
+          } else if(this.role.type === 1) {
+            param.code = this.role.code
+          } else if (this.role.type === 2) {
+            param.url = this.role.url
+            param.auth = this.role.auth
+          }
+         await updateResource(param).catch(err => {
+            this.diaDisable = false
+            this.diaLoading = false
          })
          this.diaDisable = false
          this.diaLoading = false
@@ -860,7 +871,6 @@ export default {
            this.resetResource()
          } else {
            if(this.isSearch) {
-          // this.resourceSearch(this.searchQuery)
             this.searchData = this.filterData(this.searchData, parem, 2)
           } else {
             this.handleLoad(this.role.id, this.role.parentId, 2)
@@ -870,18 +880,24 @@ export default {
         succMsg = '新增成功'
         this.diaDisable = true
         this.diaLoading = true
-        const { data } = await addResource({
+        let param = {
           name: this.role.name,
           sort: this.role.sort,
-          icon: this.role.icon,
-          code: this.role.code,
           parentId: this.checkParentId,
-          url: this.role.url,
           type: this.role.type,
-          operation: this.role.operation,
-          auth: this.role.auth,
           remark: this.role.remark
-        }).catch(err => {
+        }
+        if(this.role.type === 0) {
+          param.operation = this.role.operation
+          param.url = this.role.url
+          param.icon = this.role.icon
+        } else if(this.role.type === 1) {
+          param.code = this.role.code
+        } else if (this.role.type === 2) {
+          param.url = this.role.url
+          param.auth = this.role.auth
+        }
+        const { data } = await addResource(param).catch(err => {
           this.diaDisable = false
           this.diaLoading = false
         })
@@ -891,7 +907,6 @@ export default {
           this.resetResource()
         } else {
           if(this.isSearch) {
-            // this.resourceSearch(this.searchQuery)
             if(data.parentId) {
               this.searchData = this.filterData(this.searchData, data, 1)
             } else {
