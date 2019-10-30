@@ -305,7 +305,7 @@ export default {
     },
     handleDelete(row) {
       // 删除广告位
-      this.$confirm('确定要删除该广告位?', 'Warning', {
+      this.$confirm('确定要删除该广告位?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'

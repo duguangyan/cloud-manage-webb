@@ -805,7 +805,7 @@ export default {
     },
     handleDelete(row) {
       // 删除资源
-      this.$confirm('确定要删除该资源?', 'Warning', {
+      this.$confirm('确定要删除该资源?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'

@@ -563,7 +563,7 @@ export default {
       }
     },
     handleDelete({ row }) {
-      this.$confirm('确定要删除该用户?', '警告', {
+      this.$confirm('确定要删除该用户?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
@@ -685,6 +685,7 @@ export default {
   .user-avatar{
     width: 30px;
     height: 30px;
+    border-radius: 50%;
   }
   .filter-container{
     padding-bottom: 30px;

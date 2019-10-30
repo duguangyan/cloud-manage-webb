@@ -178,7 +178,6 @@ export default {
       // 日期选择
       this.query.pageIndex = 1
       this.setDateFun(val)
-      console.log(this.query)
       this.getAnalyseList()
     },
     sortChange(data) {
@@ -209,9 +208,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  .mr10{
-    margin-right: 10px;
-  }
   .mb20{
     margin-bottom: 20px;
   }

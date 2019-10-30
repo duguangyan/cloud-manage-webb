@@ -1234,6 +1234,10 @@ let vm = {
         }
       });
     },
+    closeSelectedTag(view) {
+      console.log(view)
+      this.$store.dispatch('tagsView/delView', view)
+    },
     onSale(type) {
       // 上架
       let goodsVO = {}
@@ -1512,7 +1516,8 @@ let vm = {
             this.$message({
               type: 'success',
               message: type === 0 ? '保存待上架成功!' : '上架成功!'
-            });
+            })
+            this.closeSelectedTag(this.$route)
             this.$router.push({
               path: '/product/list',
               query: {
@@ -1529,7 +1534,8 @@ let vm = {
             this.$message({
               type: 'success',
               message: '编辑成功'
-            });
+            })
+            this.closeSelectedTag(this.$route)
             this.$router.push({
               path: '/product/list',
               query: {

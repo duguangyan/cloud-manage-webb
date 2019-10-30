@@ -320,6 +320,9 @@
                             <el-form-item prop="url" label="首页地址">
                               <el-input class="w300" v-model="menuForm.url" maxlength="64"/>
                             </el-form-item>
+                            <el-form-item prop="pagePath" label="小程序路径">
+                              <el-input class="w300" v-model="menuForm.pagePath" maxlength="64"/>
+                            </el-form-item>
                           </div>
                         </template>
                       </template>
@@ -540,6 +543,7 @@ export default {
         url: '',
         link: '',
         type: '',
+        pagePath: ''
       },
       wechatType: 1,
       wechatLoading: false,
@@ -576,6 +580,11 @@ export default {
           required: true,
           trigger: 'blur',
           validator: validateUrl
+        }],
+        pagePath: [{
+          required: true,
+          trigger: 'blur',
+          message: '请输入小程序路径'
         }],
       },
       isSelectMenu: false,
@@ -770,6 +779,7 @@ export default {
               url: item.url,
               type: item.type,
               appId: item.appId,
+              pagePath: item.pagePath,
               menuChild: []
             }
             if(Array.isArray(item.menuList) && item.menuList.length > 0) {
@@ -779,7 +789,8 @@ export default {
                   id: vItem.id,
                   url: vItem.url,
                   type: vItem.type,
-                  appId: vItem.appId
+                  appId: vItem.appId,
+                  pagePath: vItem.pagePath
                 })
               })
             }
@@ -877,6 +888,7 @@ export default {
           if(this.menuForm.type === 'miniprogram') {
             param.appId = this.menuForm.appId
             param.url = this.menuForm.url
+            param.pagePath = this.menuForm.pagePath
           } else if(this.menuForm.type === 'view') {
             param.url = this.menuForm.link
           }
@@ -921,6 +933,7 @@ export default {
         } else if(res.data.type === 'miniprogram') {
           this.menuForm.link = ''
           this.menuForm.url = res.data.url
+          this.menuForm.pagePath = res.data.pagePath
         }
       })
       this.isSelectMenu = true
@@ -976,6 +989,7 @@ export default {
         this.menuForm.link = '' 
         this.menuForm.url = '' 
         this.menuForm.appId = ''
+        this.menuForm.pagePath = ''
         if(type === 1) {
           this.menuForm.menuName = '菜单名称'
           this.isSelectMenu = true
@@ -1002,6 +1016,7 @@ export default {
         } else {
           this.menuForm.link = ''
           this.menuForm.url = res.data.url 
+          this.menuForm.pagePath = res.data.pagePath
         }
       })
     },

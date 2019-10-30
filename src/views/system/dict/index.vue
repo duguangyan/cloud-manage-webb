@@ -466,7 +466,6 @@ export default {
               children: res.data
             }
           ]
-          console.log('id', this.checkParentId)
           this.routes = this.generateRoutes(pData)
           this.$refs.parentTree.setCheckedKeys([this.checkParentId])
         }
@@ -550,7 +549,6 @@ export default {
       this.dialogType = 'edit'
       this.dialogVisible = true
       this.role = deepClone(row)
-      console.log(row)
       this.checkParentId = row.parentId ? row.parentId : ''
       this.checkParentName = row.parentName
       this.$nextTick(() => {
@@ -649,8 +647,9 @@ export default {
     },
     async confirmRole() {
       // 新增、修改后提交form表单
-      this.listLoading = true
-      this.dialogVisible = false
+      this.diaLoading = true
+      this.diaDisable = true
+      let noErr = true
       let succMsg = ''
       if (this.dialogType === 'edit') {
         succMsg = '编辑字典成功'
@@ -662,56 +661,69 @@ export default {
         status: (this.role.status === '启用'? 1: 0),
         value: this.role.value,
         remark: this.role.remark
+        }).catch(err => {
+          noErr = false
         })
-        this.listLoading = false
-        if(this.isChangeParent) {
+        if(noErr) {
+          if(this.isChangeParent) {
            this.resetResource()
-         } else {
-           if(this.isSearch) {
-            this.searchData = this.filterData(this.searchData, parem, 2)
           } else {
-            this.handleLoad(this.role.id, this.role.parentId, 2)
+            if(this.isSearch) {
+              this.searchData = this.filterData(this.searchData, parem, 2)
+            } else {
+              this.handleLoad(this.role.id, this.role.parentId, 2)
+            }
           }
-         }
+        }
       } else if(this.dialogType === 'new') {
         succMsg = '添加字典成功'
-        const { data } = await addDict({
+        await addDict({
           parentId: this.checkParentId,
           name: this.role.name,
           code: this.role.code,
           value: this.role.value,
           remark: this.role.remark
+        }).catch(err => {
+          noErr =false
         })
-        this.listLoading = false
-        if(this.isChangeParent) {
-          this.resetResource()
-        } else {
-          if(this.isSearch) {
-            if(data.parentId) {
-              this.searchData = this.filterData(this.searchData, data, 1)
-            } else {
-              this.resetResource()
-            }
+        if(noErr) {
+          if(this.isChangeParent) {
+            this.resetResource()
           } else {
-            this.handleLoad(this.role.id, this.role.parentId, 1)
+            if(this.isSearch) {
+              if(data.parentId) {
+                this.searchData = this.filterData(this.searchData, data, 1)
+              } else {
+                this.resetResource()
+              }
+            } else {
+              this.handleLoad(this.role.id, this.role.parentId, 1)
+            }
           }
         }
       } else if(this.dialogType === 'top') {
         succMsg = '添加字典成功'
-        const { data } = await addDict({
+        await addDict({
           name: this.role.name,
           code: this.role.code,
           value: this.role.value,
           remark: this.role.remark
+        }).catch(err => {
+          noErr = false
         })
-        this.listLoading = false
-        this.getDictById()
+        if(noErr) {
+          this.getDictById()
+        }
       }
-      const { name, remark } = this.role
-      this.$notify({
-        title: succMsg,
-        type: 'success'
-      })
+      this.diaDisable = false
+      this.diaLoading = false
+      if(noErr) {
+        this.dialogVisible = false
+        this.$notify({
+          title: succMsg,
+          type: 'success'
+        })
+      }
     }
   }
 }

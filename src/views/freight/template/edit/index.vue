@@ -688,11 +688,13 @@ var vm = {
           ? doUpdate(res).then(data => {
               vm.fullscreenLoading = false;
               vm.$message.success(data.message);
+              vm.closeSelectedTag(vm.$route);
               vm.$router.go(-1);
             })
           : doInsert(res).then(data => {
               vm.fullscreenLoading = false;
               vm.$message.success(data.message);
+              vm.closeSelectedTag(vm.$route);
               vm.$router.go(-1);
             });
       } else {
@@ -700,7 +702,9 @@ var vm = {
         return false;
       }
     },
-
+    closeSelectedTag(view) {
+      this.$store.dispatch('tagsView/delView', view)
+    },
     clearItem() {
       vm.solutionItem = {
         areaExp: [],

@@ -382,7 +382,7 @@ export default {
       })
     },
     handleDelete({ row }) {
-      this.$confirm('确定要删除该角色?', 'Warning', {
+      this.$confirm('确定要删除该角色?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
