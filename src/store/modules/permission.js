@@ -23,15 +23,6 @@ const routeModule = [
     noCache: false
   },
   {
-    name: 'productUnit',
-    path: '/product/unit',
-    compare: 'product/unit/index',
-    source: 'product/unit/index',
-    isSource: true,
-    hidden: false,
-    noCache: false
-  },
-  {
     name: 'productList',
     path: '/product/list',
     compare: 'product/list/list/index',
@@ -128,7 +119,7 @@ const routeModule = [
     source: 'stat/general/index',
     isSource: true,
     hidden: false,
-    noCache: false
+    noCache: true
   },
   {
     name: 'statAnalyze',
@@ -155,7 +146,7 @@ const routeModule = [
     source: 'PF/stat/general/index',
     isSource: true,
     hidden: false,
-    noCache: false
+    noCache: true
   },
   {
     name: 'order',
@@ -182,7 +173,7 @@ const routeModule = [
     source: 'order/sell/detail/index',
     isSource: true,
     hidden: true,
-    noCache: false
+    noCache: true
   },
   { // 批发订单
     name: 'PForder',
@@ -209,7 +200,7 @@ const routeModule = [
     source: 'PF/order/sell/detail/index',
     isSource: true,
     hidden: true,
-    noCache: false
+    noCache: true
   },
   {
     name: 'activity',
@@ -245,7 +236,7 @@ const routeModule = [
     source: 'activity/manage/list/index',
     isSource: true,
     hidden: false,
-    noCache: false
+    noCache: true
   },
   {
     name: 'activityManageDetailList',
@@ -254,7 +245,7 @@ const routeModule = [
     source: 'activity/manage/detail/list/index',
     isSource: true,
     hidden: true,
-    noCache: false
+    noCache: true
   },
   {
     name: 'activityAdd',
@@ -299,7 +290,7 @@ const routeModule = [
     source: 'system/menu/index',
     isSource: true,
     hidden: false,
-    noCache: false
+    noCache: true
   },
   {
     name: 'systemDict',
@@ -308,7 +299,7 @@ const routeModule = [
     source: 'system/dict/index',
     isSource: true,
     hidden: false,
-    noCache: false
+    noCache: true
   },
   {
     name: 'systemConfig',
@@ -317,7 +308,7 @@ const routeModule = [
     source: 'system/config/index',
     isSource: true,
     hidden: false,
-    noCache: false
+    noCache: true
   },
   {
     name: 'systemStrict',
@@ -335,7 +326,7 @@ const routeModule = [
     source: 'system/client/index',
     isSource: true,
     hidden: false,
-    noCache: false
+    noCache: true
   },
   {
     name: 'freight',
@@ -353,7 +344,7 @@ const routeModule = [
     source: 'freight/template/list/index',
     isSource: true,
     hidden: false,
-    noCache: false
+    noCache: true
   },
   {
     name: 'freightTemplateEdit',
@@ -371,7 +362,7 @@ const routeModule = [
     source: 'freight/template/edit/index',
     isSource: true,
     hidden: true,
-    noCache: true
+    noCache: false
   },
   {
     name: 'wechat',
@@ -389,7 +380,7 @@ const routeModule = [
     source: 'wechat/list/index',
     isSource: true,
     hidden: false,
-    noCache: false
+    noCache: true
   },
   {
     name: 'PFapprove',
@@ -407,7 +398,16 @@ const routeModule = [
     source: 'PF/approve/list/index',
     isSource: true,
     hidden: false,
-    noCache: false
+    noCache: true
+  },
+  {
+    name: 'PFapproveDetail',
+    path: '/PF/approve/detail',
+    compare: 'PF/approve/detail/index',
+    source: 'PF/approve/detail/index',
+    isSource: true,
+    hidden: true,
+    noCache: true
   }
 ]
 

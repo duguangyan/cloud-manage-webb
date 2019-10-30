@@ -265,7 +265,7 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="排序">
+        <el-form-item label="排序" prop="sort">
           <el-input v-model="role.sort" maxlength="11" placeholder="请输入排序" />
         </el-form-item>
         <el-form-item label="描述">
@@ -322,6 +322,7 @@
 <script>
 import path from 'path'
 import { deepClone } from '@/utils'
+import { validInt } from "@/utils/validate"
 import waves from '@/directive/waves' // waves directive
 import { getMeanFirstRec, getMeanByPid, resourceDelete, updateUser, addResource, updateResource, getUserBtnByPId, resourceSearch, getResourceById } from '@/api/upms/menu'
 import { getRoutes } from '@/api/upms/manageRole'
@@ -342,6 +343,13 @@ export default {
   name: 'systemMenu',
   directives: { waves },
   data() {
+    const validateSort = (rule, value, callback) => {
+      if (value && !validInt(value)) {
+        callback(new Error("请输入整数"));
+      } else {
+        callback();
+      }
+    }
     return {
       role: Object.assign({}, defaultRole),
       svgIcons,
@@ -386,6 +394,11 @@ export default {
             required: true,
             trigger: 'change',
             message: '请选择类型'
+        }],
+        sort: [{
+            required: false,
+            trigger: 'blur',
+            validator: validateSort
         }]
       },
       statusData: [

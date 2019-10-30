@@ -197,7 +197,7 @@ export default {
         },
         detail: {
           name: '查看',
-          auth: false
+          auth: true
         }
       },
       disable: false,

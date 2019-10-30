@@ -265,7 +265,7 @@
             </el-select>
           </el-form-item>
           <el-form-item label="排序" prop="sort">
-            <el-input v-model="prop.sort" maxlength="20" placeholder="请输入排序" />
+            <el-input v-model.trim="prop.sort" maxlength="20" placeholder="请输入排序" />
           </el-form-item>
           <el-form-item v-if="prop.type === 3 || prop.type === 4 || prop.type === 0" label="提示语" prop="notice">
             <el-input v-model="prop.notice" maxlength="20" placeholder="请输入提示语" />
@@ -325,6 +325,7 @@
 <script>
 import waves from '@/directive/waves'
 import { deepClone } from '@/utils'
+import { validInt } from "@/utils/validate"
 import { getProductTree, insertRootProduct, insertProduct, deleteProduct, updateProduct, searchProduct, getProductNum, moveProduct } from '@/api/goods/product'
 import { getUnitList, insetUnitList, updateUnitList, deleteUnitList, getSpeList, insetSpeList, updateSpeList, deleteSpeList, getPropList, insetPropList, updatePropList, deletePropList } from '@/api/goods/list'
 import { getUserBtnByPId } from '@/api/upms/menu'
@@ -371,6 +372,13 @@ export default {
           callback(new Error('名称里不能有特殊字符'))
       } else {
           callback()
+      }
+    }
+    const validateSort = (rule, value, callback) => {
+      if (value && !validInt(value)) {
+        callback(new Error("请输入整数"));
+      } else {
+        callback();
       }
     }
     return {
@@ -511,6 +519,11 @@ export default {
             required: true,
             trigger: 'blur',
             message: '请选择城市等级'
+        }],
+        sort: [{
+            required: false,
+            trigger: 'blur',
+            validator: validateSort
         }]
       },
       form: {

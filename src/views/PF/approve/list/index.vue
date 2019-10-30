@@ -79,6 +79,7 @@
         width="55">
       </el-table-column>
       <el-table-column
+        label-class-name="down-column"
         align="center"
         prop="id"
         :filters="filtersStatus"
@@ -308,6 +309,13 @@ export default {
     this.getList()
   },
   mounted() {
+    // 设置下拉按钮样式
+    let dom = document.querySelector('.el-icon-arrow-down')
+    console.log(dom)
+    let style = dom.getAttribute('class') + ' self'
+    console.log(style)
+    dom.setAttribute('class', style)
+
     this.pageId = this.$route.meta.id
     getUserBtnByPId({ parentId: this.pageId }).then(res => {
       if(Array.isArray(res.data)) {
@@ -522,7 +530,7 @@ export default {
     },
     getDetail(scope) {
       // 查看商品详情
-      this.$router.push({path: 'list/detail', query:{ 
+      this.$router.push({path: '/PF/approve/detail', query:{ 
         id: scope.row.categoryId,
         eid: scope.row.id,
         pageId: this.pageId
@@ -532,6 +540,13 @@ export default {
 }
 </script>
 
+<style>
+  .down-column .el-icon-arrow-down{
+    font-size: 22px;
+    vertical-align: middle;
+    font-weight: bold;
+  }
+</style>
 <style lang="scss" scoped>
   .tc{
     text-align: center;

@@ -12,7 +12,6 @@
           placeholder="请选择品种"
           style="width: 200px;" 
           class="filter-item mr20"
-          @change="selectChange"
           @focus="focus"
           @keyup.enter.native="handleFilter">
         </el-cascader>
@@ -40,7 +39,6 @@
         value-format="yyyy-MM-dd HH:mm:ss"
         start-placeholder="开始日期"
         end-placeholder="结束日期"
-        @change="dateChange"
         align="right">
       </el-date-picker>
     </div>
@@ -203,26 +201,19 @@ export default {
       disable: false,
       pageId: '',
       listQuery: {
-        createTimeStart: '',
-        createTimeEnd: '',
-        downTimeStart: '',
-        downTimeEnd: '',
-        sellTimeStart: '',
-        sellTimeEnd: '',
-        categoryId: '',
         keywords: '',
         pageIndex: 1,
         pageSize: 10,
         sortColumn: 'sell_time',
         sortType: 0,
-        status: 3
+        status: '3'
       },
       treeOptions: [],
       treeProps: {
         label: 'name',
         value: 'id'
       },
-      treeValue: '',
+      treeValue: [],
       pickerOptions: {
         shortcuts: [{
           text: '最近一周',
@@ -287,7 +278,32 @@ export default {
       // 获取商品列表
       this.listLoading = true
       this.disable = true
-      getList(this.listQuery).then(res => {
+      let param = {
+        pageIndex: this.listQuery.pageIndex,
+        pageSize: this.listQuery.pageSize,
+        sortColumn: this.listQuery.sortColumn,
+        sortType: this.listQuery.sortType,
+        status: this.listQuery.sortType
+      }
+      if(this.treeValue.length > 3) {
+        param.categoryId = this.treeValue[3]
+      }
+      if(this.listQuery.keywords.length > 0) {
+        param.keywords = this.listQuery.keywords
+      }
+      if(Array.isArray(this.dateValue)) {
+        if(this.listQuery.status == '3') {
+          param.sellTimeStart = this.dateValue[0]
+          param.sellTimeEnd = this.dateValue[1]
+        } else if(this.listQuery.status == '1') {
+          param.createTimeStart = this.dateValue[0]
+          param.createTimeEnd = this.dateValue[1]
+        } else if(this.listQuery.status == '4') {
+          param.downTimeStart = this.dateValue[0]
+          param.sellTimeEnd = this.dateValue[1]
+        }
+      }
+      getList(param).then(res => {
         if(Array.isArray(res.data.records)) {
           this.listLoading = false
           this.disable = false
@@ -304,10 +320,6 @@ export default {
         id: scope.row.categoryId,
         eid: scope.row.id
       }})
-    },
-    selectChange(val) {
-      // 品种选择
-      this.listQuery.categoryId = val.length === 4 ? val[3] : ''
     },
     focus(val) {
       // 获取品种树
@@ -376,19 +388,6 @@ export default {
           })
         })
     },
-    dateChange(data) {
-      // 日期选择
-      if(this.saleType === '3') {
-        this.listQuery.sellTimeStart = data[0]
-        this.listQuery.sellTimeEnd = data[1]
-      } else if(this.saleType === '1') {
-        this.listQuery.createTimeStart = data[0]
-        this.listQuery.createTimeEnd = data[1]
-      } else if(this.saleType === '4') {
-        this.listQuery.downTimeStart = data[0]
-        this.listQuery.downTimeEnd = data[1]
-      }
-    },
     handleFilter() {
       // 搜索
       this.getList()
@@ -396,22 +395,15 @@ export default {
     resetList() {
       // 重置
       this.listQuery = {
-        createTimeStart: '',
-        createTimeEnd: '',
-        downTimeStart: '',
-        downTimeEnd: '',
-        sellTimeStart: '',
-        sellTimeEnd: '',
-        categoryId: '',
         keywords: '',
         pageIndex: 1,
         pageSize: 10,
         sortColumn: 'sell_time',
         sortType: 0,
-        status: 3
+        status: '3'
       }
-      this.dateValue = ''
-      this.treeValue = ''
+      this.dateValue = null
+      this.treeValue = []
       this.saleType = '3'
       this.getList()
     },

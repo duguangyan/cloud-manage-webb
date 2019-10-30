@@ -139,7 +139,7 @@ export default {
       btnsPermission: {
         search: {
           name: '搜索',
-          auth: false
+          auth: true
         },
         export: {
           name: '导出',
@@ -275,7 +275,7 @@ export default {
     orderDetail(row) {
       // 查看订单
       this.$router.push({
-        path: '/order/sell/detail', 
+        path: '/PF/order/sell/detail', 
         query:{ 
           id: row.orderId,
           createTimeBegin: this.order.createTimeBegin,

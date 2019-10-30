@@ -143,7 +143,6 @@
             value-format="yyyy-MM-dd HH:mm:ss"
             start-placeholder="开始日期"
             end-placeholder="结束日期"
-            @change="dateChange"
             align="right">
           </el-date-picker>
         </el-form-item>
@@ -202,6 +201,7 @@
 
 <script>
 import waves from '@/directive/waves'
+import { validInt } from "@/utils/validate"
 import { addAd, deleteAd, updateAd, getAdList, getBannerList, getAdById, updateAdStatus, fileUpload } from '@/api/act/banner'
 import Pagination from '@/components/Pagination'
 import { deepClone } from '@/utils'
@@ -213,8 +213,6 @@ const defaultBanner = {
   path: '',
   pathBox: [],
   type: '',
-  beginTime: '',
-  endTime: '',
   sort: '',
   pid: '',
   dateValue: [],
@@ -245,6 +243,13 @@ export default {
         callback(new Error('请输入正确的商品ID，商品ID为字母和数字的组合'))
       } else {
           callback()
+      }
+    }
+    const validateSort = (rule, value, callback) => {
+      if (value && !validInt(value)) {
+        callback(new Error("请输入整数"));
+      } else {
+        callback();
       }
     }
     return {
@@ -373,6 +378,11 @@ export default {
             type: 'array',
             message: '请选择开始和结束时间'
         }],
+        sort: [{
+            required: false,
+            trigger: 'blur',
+            validator: validateSort
+        }]
       },
       dialogVisible: false,
       diaLoading: false,
@@ -471,6 +481,7 @@ export default {
       this.banner = Object.assign({}, defaultBanner)
       this.banner.pathBox = []
       this.banner.dateValue = []
+      this.selectPid = ''
       this.dialogType = 'new'
       this.dialogVisible = true
       this.$nextTick(() => {
@@ -523,8 +534,6 @@ export default {
         this.banner.id = res.data.id
         this.banner.pid = res.data.pid
         this.banner.name = res.data.name
-        this.banner.beginTime = res.data.createTime
-        this.banner.endTime = res.data.endTime
         this.banner.adPositionName = res.data.adPositionName
         this.banner.path = res.data.path
         this.banner.type = res.data.type
@@ -604,8 +613,8 @@ export default {
         let param = {
           id: this.banner.id,
           name: this.banner.name,
-          beginTime: this.banner.beginTime,
-          endTime: this.banner.endTime,
+          beginTime: this.banner.dateValue[0],
+          endTime: this.banner.dateValue[1],
           type: this.banner.type,
           pId: this.banner.pid,
           path: this.banner.path,
@@ -631,8 +640,8 @@ export default {
         this.diaLoading = true
         let param = {
           name: this.banner.name,
-          beginTime: this.banner.beginTime,
-          endTime: this.banner.endTime,
+          beginTime: this.banner.dateValue[0],
+          endTime: this.banner.dateValue[1],
           type: this.banner.type,
           pId: this.banner.pid,
           path: this.banner.path,
@@ -713,11 +722,6 @@ export default {
     handleRemove(file, fileList) {
       // 删除图片
       this.banner.pathBox = []
-    },
-    dateChange(data) {
-      // 日期选择
-      this.banner.beginTime = data[0]
-      this.banner.endTime = data[1]
     },
     chooseBanner() {
       // 选择广告位

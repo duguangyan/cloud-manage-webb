@@ -321,8 +321,7 @@ export default {
   created() {
     this.id = this.$route.query.id
     this.order.orderStatus = this.$route.query.orderStatus
-    this.order.createTimeBegin = this.$route.query.createTimeBegin
-    this.order.createTimeEnd = this.$route.query.createTimeEnd
+    this.order.dateValue = this.$route.query.dateValue
     this.order.orderId = this.$route.query.orderId
     this.order.pageIndex = this.$route.query.pageIndex
     this.order.userName = this.$route.query.userName
@@ -473,8 +472,7 @@ export default {
       // 返回事件
       this.$router.push({path: '/order/sell/list', query:{ 
         pageIndex: this.order.pageIndex,
-        createTimeBegin: this.order.createTimeBegin,
-        createTimeEnd: this.order.createTimeEnd,
+        dateValue: this.order.dateValue,
         orderId: this.order.orderId,
         userName: this.order.userName,
         userId: this.order.userId,

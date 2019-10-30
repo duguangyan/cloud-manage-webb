@@ -34,3 +34,11 @@ export function validTelphone(str) {
 export function validWord(str) {
   return /^[\u4E00-\u9FA5A-Za-z0-9]+$/.test(str)
 }
+
+/**
+* @param {string} str
+* @returns {Boolean}
+*/
+export function validInt(str) {
+  return /^[0-9]+$/.test(str)
+}

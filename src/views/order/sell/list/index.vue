@@ -24,7 +24,6 @@
                 value-format="yyyy-MM-dd HH:mm:ss"
                 start-placeholder="开始日期"
                 end-placeholder="结束日期"
-                @change="dateChange"
                 align="right">
               </el-date-picker>
           </template>
@@ -104,7 +103,7 @@
             </template>
           </el-table-column>
         </el-table>
-        <pagination v-show="total>0" :total="total" :page.sync="order.pageIndex" :limit.sync="order.pageSize"  @pagination="getOrderList" />
+        <pagination v-show="total>0" :total="total" :page.sync="order.pageIndex" :limit.sync="order.pageSize"  @pagination="getPage" />
       </div>
       
   </div>
@@ -125,8 +124,6 @@ export default {
       listLoading: false,
       orderStatus: 'all',
       order: {
-        createTimeBegin: '',
-        createTimeEnd: '',
         orderId: '',
         pageIndex: 1,
         pageSize: 10,
@@ -163,7 +160,7 @@ export default {
         label: '已完成'
       }],
       orderValue: '',
-      dateValue: '',
+      dateValue: null,
       pickerOptions: {
         shortcuts: [{
           text: '最近一周',
@@ -209,8 +206,7 @@ export default {
       this.order.userName = this.$route.query.userName
       this.order.shopId = this.$route.query.shopId
       this.order.status = this.$route.query.status
-      this.order.createTimeBegin = this.$route.query.createTimeBegin
-      this.order.createTimeEnd = this.$route.query.createTimeEnd
+      this.dateValue = this.$route.query.dateValue
       this.order.orderId = this.$route.query.orderId
     }
     this.getOrderList()
@@ -231,7 +227,24 @@ export default {
     getOrderList() {
       // 订单列表
       this.listLoading = true
-      getOrderList(this.order).then(res => {
+      let param = {
+        status: this.order.status,
+        pageIndex : this.order.pageIndex,
+        pageSize: this.order.pageSize,
+        shopId: this.order.shopId,
+        userId: this.order.userId
+      }
+      if(Array.isArray(this.dateValue)) {
+        param.createTimeBegin = this.dateValue[0]
+        param.createTimeEnd = this.dateValue[1]
+      }
+      if(this.order.userName.length > 0) {
+        param.userName = this.order.userName
+      }
+      if(this.order.orderId.length > 0) {
+        param.orderId = this.order.orderId
+      }
+      getOrderList(param).then(res => {
         this.listLoading = false
         if(Array.isArray(res.data.records)) {
           this.orderData = res.data.records,
@@ -243,13 +256,16 @@ export default {
     },
     handleFilter() {
       // 搜索
+      if(this.order.status === '') {
+        this.orderStatus = 'all'
+      } else {
+        this.orderStatus = String(this.order.status)
+      }
       this.getOrderList()
     },
     resetOrder() {
       // 重置
       this.order = {
-        createTimeBegin: '',
-        createTimeEnd: '',
         orderId: '',
         pageIndex: 1,
         pageSize: 10,
@@ -258,18 +274,15 @@ export default {
         userId: '',
         userName: ''
       }
-      this.dateValue = ''
+      this.orderStatus = 'all'
+      this.dateValue = null
       this.getOrderList()
-    },
-    dateChange(data) {
-      // 日期选择
-      this.order.createTimeBegin = data[0]
-      this.order.createTimeEnd = data[1]
     },
     handleClick(tab, event) {
       // 已上架、待上架、已下架切换
-      this.order.status = tab.name
       this.order.status = tab.name === 'all' ? '' : parseInt(tab.name)
+      this.order.pageIndex = 1
+      this.dateValue = null
       this.getOrderList()
     },
     orderDetail(row) {
@@ -278,8 +291,7 @@ export default {
         path: '/order/sell/detail', 
         query:{ 
           id: row.orderId,
-          createTimeBegin: this.order.createTimeBegin,
-          createTimeEnd: this.order.createTimeEnd,
+          dateValue: this.dateValue,
           orderId: this.order.orderId,
           pageIndex: this.order.pageIndex,
           userName: this.order.userName,
@@ -290,6 +302,11 @@ export default {
           orderStatus: this.orderStatus
         }
       })
+    },
+    getPage(data) {
+     // 分页事件
+      this.order.pageIndex = data.page
+      this.getOrderList()
     },
     exportMsg() {
       this.downloadLoading = true
