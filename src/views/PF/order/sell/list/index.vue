@@ -233,9 +233,9 @@ export default {
       this.listLoading = true
       getOrderList(this.order).then(res => {
         this.listLoading = false
+        this.total = res.data.total
         if(Array.isArray(res.data.records)) {
-          this.orderData = res.data.records,
-          this.total = res.data.total
+          this.orderData = res.data.records
         }
       }).catch(err => {
         this.listLoading = false

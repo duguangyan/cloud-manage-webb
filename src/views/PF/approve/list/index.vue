@@ -1,23 +1,22 @@
 <template>
   <div class="app-container">
     <template v-if="btnsPermission.search.auth">
-      <div class="mb20">
+      <div class="mb20 top-width">
         姓名：
-        <el-input v-model="listQuery.keywords"  placeholder="请输入商品ID/标题" style="width: 200px;" class="filter-item mr20" @keyup.enter.native="handleFilter" />
+        <el-input v-model="list.realName"  placeholder="请输入姓名" style="width: 200px;" class="filter-item mr20" @keyup.enter.native="handleFilter" />
         经营类目：
         <el-cascader
-          v-model="treeValue"
+          v-model="list.categoryIdBox"
           :options="treeOptions"
           :props="treeProps"
-          placeholder="请选择品种"
+          placeholder="请选择经营类目"
           style="width: 200px;" 
           class="filter-item mr20"
-          @change="selectChange"
           @focus="focus"
           @keyup.enter.native="handleFilter">
         </el-cascader>
         审核状态：
-        <el-select v-model="listQuery.status" class="mr10" placeholder="请选择">
+        <el-select v-model="list.status" class="mr10" placeholder="请选择审核状态">
           <el-option
             v-for="item in statusData"
             :key="item.value"
@@ -26,31 +25,29 @@
           </el-option>
         </el-select>
       </div>
-      <div v-if="btnsPermission.search.auth" class="mb20">
+      <div v-if="btnsPermission.search.auth" class="mb20 top-width">
         经营地：
         <el-cascader
-          v-model="treeValue"
-          :options="treeOptions"
-          :props="treeProps"
-          placeholder="请选择品种"
-          style="width: 200px;" 
+          ref="address"
+          v-model="list.address"
+          label="id"
+          placeholder="请选择经营地"
+          :props="addressOptions"
+          style="width: 200px;"
           class="filter-item mr20"
-          @change="selectChange"
-          @focus="focus"
           @keyup.enter.native="handleFilter">
         </el-cascader>
         <template>
           提交时间：
         </template>
         <el-date-picker
-          v-model="dateValue"
+          v-model="list.dateValue"
           type="datetimerange"
           :picker-options="pickerOptions"
           range-separator="至"
           value-format="yyyy-MM-dd HH:mm:ss"
           start-placeholder="开始日期"
           end-placeholder="结束日期"
-          @change="dateChange"
           align="right">
         </el-date-picker>
       </div>
@@ -59,130 +56,86 @@
         <el-button v-waves class="filter-item" @click="resetList">重置</el-button>
       </div>
     </template>
-    <el-tabs v-model="saleType" @tab-click="handleClick">
-      <el-tab-pane label="货主" name="3"></el-tab-pane>
-      <el-tab-pane label="代办" name="1"></el-tab-pane>
+    <el-tabs v-model="list.type" @tab-click="handleClick">
+      <el-tab-pane label="货主" name="1"></el-tab-pane>
+      <el-tab-pane label="代办" name="2"></el-tab-pane>
     </el-tabs>
+    <div class="mb20">
+      <el-radio-group v-model="list.tabStatus" @change="statusChange">
+        <el-radio-button :label="0">待审核</el-radio-button>
+        <el-radio-button :label="1">已通过</el-radio-button>
+        <el-radio-button :label="2">未通过</el-radio-button>
+      </el-radio-group>
+    </div>
     <el-table
       ref="multipleTable"
       v-loading="listLoading"
       border
-      @sort-change="sortChange"
       :data="tableData"
       :header-cell-style="{background: '#f3f3f3'}" 
       tooltip-effect="dark"
-      style="width: 100%"
-      @selection-change="handleSelectionChange">
-      <el-table-column
-        type="selection"
-        align="center"
-        width="55">
-      </el-table-column>
-      <el-table-column
-        label-class-name="down-column"
-        align="center"
-        prop="id"
-        :filters="filtersStatus"
-        :filter-multiple="false"
-        :filter-method="handlefilterStatus"
-        label="商品ID"
-        width="280"
-        show-overflow-tooltip>
-      </el-table-column>
+      style="width: 100%">
       <el-table-column
         align="center"
-        label="图片"
+        prop="realName"
+        label="货主姓名"
         width="120">
-        <template slot-scope="scope">
-          <el-avatar shape="square" size="large" :src="scope.row.imgUri"></el-avatar>
-        </template>
       </el-table-column>
       <el-table-column
-        prop="name"
-        label="标题"
+        align="center"
+        prop="phone"
+        label="手机号码"
+        width="120"
         show-overflow-tooltip>
       </el-table-column>
       <el-table-column
+        align="center"
         prop="categoryName"
-        label="品种"
+        label="经营类目"
+        width="120"
         show-overflow-tooltip>
       </el-table-column>
       <el-table-column
         align="center"
-        sortable="custom"
-        label="单价"
-        width="120"
+        prop="area"
+        label="经营地"
         show-overflow-tooltip>
+      </el-table-column>
+      <el-table-column
+        align="center"
+        label="审核状态"
+        width="150">
         <template slot-scope="scope">
-          <span>{{scope.row.minprice}}</span>
-          <span v-if="scope.row.maxprice !==null">~</span> 
-          <span>{{scope.row.maxprice}}</span>
+          <span v-if="scope.row.status === 0">待审核</span>
+          <span v-else-if="scope.row.status === 1">已通过</span>
+          <span v-else-if="scope.row.status === 2">未通过</span>
         </template>
       </el-table-column>
       <el-table-column
         align="center"
-        sortable="custom"
-        prop="spuSalesNum"
-        label="销量"
-        width="120"
+        prop="creatTime"
+        label="提交时间"
+        width="160"
         show-overflow-tooltip>
       </el-table-column>
-      <el-table-column
-        align="center"
-        sortable="custom"
-        prop="hits"
-        label="浏览量"
-        width="120"
-        show-overflow-tooltip>
-      </el-table-column>
-      <el-table-column
-        align="center"
-        sortable="custom"
-        prop="totalStock"
-        label="库存"
-        width="120"
-        show-overflow-tooltip>
-      </el-table-column>
-      <el-table-column
-        v-if="saleType === '3'"
-        align="center"
-        prop="sellTime"
-        label="上架时间"
-        width="160">
-      </el-table-column>
-      <el-table-column
-        v-if="saleType === '1'"
-        align="center"
-        prop="createTime"
-        label="创建时间"
-        width="160">
-      </el-table-column>
-      <el-table-column
-        v-if="saleType === '4'"
-        align="center"
-        prop="downTime"
-        label="下架时间"
-        width="160">
-      </el-table-column>
-      <el-table-column align="center" label="操作" width="300">
+      <el-table-column align="center" label="操作">
         <template slot-scope="scope">
-          <el-button v-if="btnsPermission.edit.auth && (saleType === '1' || saleType === '4')" type="primary" size="small" @click="msgEdit(scope)">{{btnsPermission.edit.name}}</el-button>
-          <el-button v-if="btnsPermission.onSale.auth && (saleType === '1' || saleType === '4')" type="primary" size="small" @click="saleChange('one', 0, scope)">{{btnsPermission.onSale.name}}</el-button>
-          <el-button v-if="btnsPermission.offSale.auth && saleType === '3'" type="primary" size="small" @click="saleChange('one', 1, scope)">{{btnsPermission.offSale.name}}</el-button>
-          <el-button v-if="btnsPermission.detail.auth" type="primary" size="small" @click="getDetail(scope)">{{btnsPermission.detail.name}}</el-button>
+          <el-button v-if="btnsPermission.check.auth && scope.row.status === 0" type="primary" size="small" @click="approveCheck(scope.row)">{{btnsPermission.check.name}}</el-button>
+          <el-button v-else-if="btnsPermission.detail.auth" type="primary" size="small" @click="approveCheck(scope.row)">{{btnsPermission.detail.name}}</el-button>
         </template>
       </el-table-column>
     </el-table>
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageIndex" :limit.sync="listQuery.pageSize"  @pagination="getPage" />
+    <pagination v-show="total>0" :total="total" :page.sync="list.pageIndex" :limit.sync="list.pageSize"  @pagination="getPage" />
   </div>
 </template>
 
 <script>
 import waves from '@/directive/waves'
 import Pagination from '@/components/Pagination'
-import { getList, handlerGoods } from '@/api/goods/list'
+import { getApproveList } from '@/api/PF/apply/apply'
 import { getUserBtnByPId } from '@/api/upms/menu'
 import { getProductTree } from '@/api/goods/product'
+import { getAd } from '@/api/upms/strict'
 
 
 export default {
@@ -190,82 +143,69 @@ export default {
   directives: { waves },
   data() {
     return {
+      radio1: '1',
       btnsPermission: {
         search: {
           name: '搜索',
-          auth: true
+          auth: false
         },
-        add: {
-          name: '添加',
-          auth: true
-        },
-        edit: {
-          name: '编辑',
-          auth: true
-        },
-        onSale: {
-          name: '上架',
-          auth: true
-        },
-        offSale: {
-          name: '下架',
-          auth: true
+        check: {
+          name: '审核',
+          auth: false
         },
         detail: {
           name: '查看',
-          auth: true
+          auth: false
         }
       },
-      filtersStatus: [
-        {
-          text: '待审核',
-          value: 1
-        },{
-          text: '未审核',
-          value: 2
-        }
-      ],
       statusData: [
         {
           value: 0,
-          label: '全部'
+          label: '待审核'
         },
         {
           value: 1,
-          label: '待审核'
+          label: '已通过'
         },
         {
           value: 2,
           label: '未通过'
-        },
-        {
-          value: 3,
-          label: '已入驻'
         }
       ],
       disable: false,
       pageId: '',
-      listQuery: {
-        createTimeStart: '',
-        createTimeEnd: '',
-        downTimeStart: '',
-        downTimeEnd: '',
-        sellTimeStart: '',
-        sellTimeEnd: '',
-        categoryId: '',
-        keywords: '',
+      list: {
+        categoryIdBox: null,
         pageIndex: 1,
         pageSize: 10,
-        sortColumn: 'sell_time',
-        sortType: 0,
-        status: 3
+        realName: '',
+        status: 0,
+        tabStatus: 0,
+        type: '1',
+        address: null,
+        dateValue: null
       },
       treeOptions: [],
       treeProps: {
         label: 'name',
         value: 'id'
       },
-      treeValue: '',
+      addressOptions: {
+        lazy: true,
+        lazyLoad (node, resolve) {
+          getAd({ parentId: node.level === 0 ? 0 : node.data.id }).then( res => {
+            if(Array.isArray(res.data)) {
+              res.data.map((lazyItem) => {
+                lazyItem.leaf = lazyItem.haveChild === 0 || node.level === 2
+              })
+              resolve(res.data);
+            }
+          })
+        },
+        value: "id",
+        label: "shortName",
+      },
+      addressData: [],
       pickerOptions: {
         shortcuts: [{
           text: '最近一周',
@@ -293,8 +233,6 @@ export default {
           }
         }]
       },
-      dateValue: '',
-      saleType: "3",
       tableData: [],
       multipleSelection: [],
       total: 0
@@ -302,20 +240,14 @@ export default {
   },
   components: { Pagination },
   created() {
-    if(this.$route.query.status) {
-      this.saleType = this.$route.query.status
-      this.listQuery.status = this.$route.query.status
-    }
-    this.getList()
+    // if(this.$route.query.status) {
+    //   this.saleType = this.$route.query.status
+    //   this.listQuery.status = this.$route.query.status
+    // }
+    this.getApproveList()
   },
   mounted() {
     // 设置下拉按钮样式
-    let dom = document.querySelector('.el-icon-arrow-down')
-    console.log(dom)
-    let style = dom.getAttribute('class') + ' self'
-    console.log(style)
-    dom.setAttribute('class', style)
-
     this.pageId = this.$route.meta.id
     getUserBtnByPId({ parentId: this.pageId }).then(res => {
       if(Array.isArray(res.data)) {
@@ -333,15 +265,46 @@ export default {
       // 新增商品
       this.$router.push({path: '/product/list/release'})
     },
-    getList() {
-      // 获取商品列表
+    getApproveList() {
+      // 获取入驻列表
+      let param = {
+        pageIndex: this.list.pageIndex,
+        pageSize: this.list.pageSize,
+        status: this.list.status,
+        type: this.list.type
+      }
+      if(this.list.realName.length > 0) {
+        param.realName = this.list.realName
+      }
+      if(Array.isArray(this.list.categoryIdBox)) {
+        if(this.list.categoryIdBox.length > 3) {
+          param.categoryId = this.list.categoryIdBox[3]
+        } else {
+          this.$message({
+            type: 'warning',
+            message: '经营类目请选择到四级进行查询!'
+          })
+          return false
+        }
+      }
+      if(Array.isArray(this.list.dateValue) && this.list.dateValue.length > 1) {
+        param.beginTime = this.list.dateValue[0]
+        param.endTime = this.list.dateValue[1]
+      }
+      if(Array.isArray(this.list.address)) {
+        if(this.list.address.length > 2) {
+          param.provinceId = this.list.address[0]
+          param.cityId = this.list.address[1]
+          param.regionId = this.list.address[2]
+        }
+      }
       this.listLoading = true
       this.disable = true
-      getList(this.listQuery).then(res => {
+      getApproveList(param).then(res => {
+        this.listLoading = false
+        this.disable = false
+        this.total = res.data.total
         if(Array.isArray(res.data.records)) {
-          this.listLoading = false
-          this.disable = false
-          this.total = res.data.total
           this.tableData = res.data.records
         }
       }).catch(err => {
@@ -349,20 +312,13 @@ export default {
         this.disable = false
       })
     },
-    handlefilterStatus(value, row, column) {
-      console.log(value)
+    approveCheck(row) {
       console.log(row)
-      console.log(column)
-    },
-    msgEdit(scope) {
-      this.$router.push({path: '/product/list/edit', query:{ 
-        id: scope.row.categoryId,
-        eid: scope.row.id
+      // 审核、查看跳转详情页面
+      this.$router.push({path: '/PF/approve/detail', query:{ 
+        cid: row.categoryId,
+        id: row.id
       }})
-    },
-    selectChange(val) {
-      // 品种选择
-      this.listQuery.categoryId = val.length === 4 ? val[3] : ''
     },
     focus(val) {
       // 获取品种树
@@ -382,151 +338,52 @@ export default {
         this.listLoading = false
       })
     },
-    saleChange(isOne, type, scope) {
-      // 上下架
-      let msg = ''
-      let succMsg = ''
-      let ids = ''
-      if(isOne === 'one') {
-        ids = scope.row.id
-        if(type === 0) {
-          msg = '确定要上架该商品？'
-          succMsg = '上架成功'
-        } else if (type === 1) {
-          msg ='确定要下架该商品？'
-          succMsg = '下架成功'
-        }
-      } else {
-        this.multipleSelection.forEach((item) => {
-          ids += ids.length === 0? item.id: ',' +item.id
-        })
-        if(type === 0) {
-          msg = '确定要批量上架这些商品？'
-          succMsg = '批量上架成功'
-        } else if (type === 1) {
-          msg ='确定要批量下架这些商品？'
-          succMsg = '批量下架成功'
-        }
-      }
-      
-      this.$confirm(msg, '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(async() => {
-          this.listLoading = true
-          handlerGoods({ 
-            goodsId: ids,
-            handlerType: type
-          }).then(res => {
-            this.listLoading = false
-            this.$notify({
-              title: succMsg,
-              dangerouslyUseHTMLString: true,
-              type: 'success'
-            })
-            this.getList()
-          }).catch(err => {
-            this.listLoading = false
-          })
-        })
-    },
-    dateChange(data) {
-      // 日期选择
-      if(this.saleType === '3') {
-        this.listQuery.sellTimeStart = data[0]
-        this.listQuery.sellTimeEnd = data[1]
-      } else if(this.saleType === '1') {
-        this.listQuery.createTimeStart = data[0]
-        this.listQuery.createTimeEnd = data[1]
-      } else if(this.saleType === '4') {
-        this.listQuery.downTimeStart = data[0]
-        this.listQuery.downTimeEnd = data[1]
-      }
-    },
     handleFilter() {
       // 搜索
-      this.getList()
+      this.list.tabStatus = this.list.status
+      this.getApproveList()
     },
     resetList() {
       // 重置
-      this.listQuery = {
-        createTimeStart: '',
-        createTimeEnd: '',
-        downTimeStart: '',
-        downTimeEnd: '',
-        sellTimeStart: '',
-        sellTimeEnd: '',
-        categoryId: '',
-        keywords: '',
+      this.list = {
+        categoryIdBox: null,
         pageIndex: 1,
         pageSize: 10,
-        sortColumn: 'sell_time',
-        sortType: 0,
-        status: 3
+        realName: '',
+        status: 0,
+        searchStatus: 0,
+        type: '1',
+        address: null,
+        dateValue: null
       }
-      this.dateValue = ''
-      this.treeValue = ''
-      this.saleType = '3'
-      this.getList()
+      this.getApproveList()
     },
     handleClick(tab, event) {
-      // 已上架、待上架、已下架切换
-      this.listQuery.pageIndex = 1
-      this.listQuery.status = tab.name
-      if(tab.name === '3') {
-        this.listQuery.sortColumn = 'sell_time'
-      } else if (tab.name === '1') {
-        this.listQuery.sortColumn = 'create_time'
-      } else if(tab.name === '4') {
-        this.listQuery.sortColumn = 'modify_time'
+      // 货主、代办切换
+      this.list.pageIndex = 1
+      this.list = {
+        categoryIdBox: null,
+        pageIndex: 1,
+        pageSize: 10,
+        realName: '',
+        type: tab.name,
+        status: 0,
+        tabStatus: 0,
+        address: null,
+        dateValue: null
       }
-      this.listQuery.sortType = 0
-      this.listQuery.sellTimeStart = ''
-      this.listQuery.sellTimeEnd = ''
-      this.listQuery.createTimeStart = ''
-      this.listQuery.createTimeEnd = ''
-      this.listQuery.downTimeStart = ''
-      this.listQuery.downTimeEnd = ''
-      this.dateValue = ''
-      this.getList()
+      this.getApproveList()
     },
-    handleSelectionChange(val) {
-      // 列表商品多选
-      this.multipleSelection = val;
+    statusChange(val) {
+      //  审核状态切换
+      this.list.pageIndex = 1
+      this.list.status = this.list.tabStatus
+      this.getApproveList()
     },
     getPage(data) {
      // 分页事件
-      this.listQuery.pageIndex = data.page
-      this.getList()
-    },
-    sortChange(data) {
-      // 排序
-      if(data.prop === 'minprice') {
-        this.listQuery.sortColumn = 'min_price'
-      } else if(data.prop === 'spuSalesNum') {
-        this.listQuery.sortColumn = 'spu_sales_num'
-      } else if(data.prop === 'hits') {
-        this.listQuery.sortColumn = 'hits'
-      } else if(data.prop === 'totalStock') {
-        this.listQuery.sortColumn = 'total_stock'
-      }
-      this.listQuery.pageIndex = 1
-      if(data.order === 'descending') {
-        this.listQuery.sortType = 0
-      } else if(data.order === 'ascending') {
-        this.listQuery.sortType = 1
-      } else {
-        if(this.saleType === '3') {
-          this.listQuery.sortColumn = 'sell_time'
-        } else if(this.saleType === '1') {
-          this.listQuery.sortColumn = 'create_time'
-        } else if(this.saleType === '4') {
-          this.listQuery.sortColumn = 'sell_time'
-        }
-        this.listQuery.sortType = 0
-      }
-      this.getList()
+      this.list.pageIndex = data.page
+      this.getApproveList()
     },
     getDetail(scope) {
       // 查看商品详情
@@ -540,24 +397,12 @@ export default {
 }
 </script>
 
-<style>
-  .down-column .el-icon-arrow-down{
-    font-size: 22px;
-    vertical-align: middle;
-    font-weight: bold;
-  }
-</style>
 <style lang="scss" scoped>
   .tc{
     text-align: center;
   }
-  .add-btn{
-    color: #ff9933;
-    border-color: #ff9933;
-    &:hover{
-      color: #fff;
-      background-color: #ff9933;
-    }
+  .top-width{
+    min-width: 900px;
   }
   .mb10{
     margin-bottom: 10px;

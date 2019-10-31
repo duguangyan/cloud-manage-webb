@@ -45,6 +45,9 @@ service.interceptors.request.use(
     if (+config.debug === 1) {
       config.baseURL = debugUrl
     }
+    if (config.pf) {
+      config.baseURL = '/pfapi'
+    }
     // do something before request is sent
     if (store.getters.token) {
       config.headers['Authorization'] = 'Bearer ' + store.getters.token

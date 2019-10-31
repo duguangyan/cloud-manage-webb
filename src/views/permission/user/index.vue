@@ -418,11 +418,11 @@ export default {
     getUserList() {
       this.listLoading = true
       getUserList(this.listQuery).then(res => {
+        this.listLoading = false
+        this.total = res.data.total
+        this.allPages = res.data.pages
         if(Array.isArray(res.data.records)) {
-          this.listLoading = false
           this.userData = res.data.records
-          this.total = res.data.total
-          this.allPages = res.data.pages
         }
       }).catch(err => {
         this.listLoading = false

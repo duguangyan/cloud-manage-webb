@@ -45,8 +45,7 @@
                 :style="{width: item.length + 'px'}"
                 :props="addressData[item.id]"
                 style="width: 200px;"
-                class="filter-item mr20"
-                @keyup.enter.native="handleFilter">
+                class="filter-item mr20">
               </el-cascader>
               <span v-if="item.exp !== null">{{item.exp}}</span>
             </template>
@@ -111,7 +110,7 @@
               v-if="showStyle.type === '2'" 
               :prop="'sku.'+showStyle.id+'.store'"
               :rules="{
-                required: activeName === 'first', message: '库存必填，且为数字', trigger: 'blur',  pattern:/^\d+$/,
+                required: activeName === 'first', message: '库存必填，且为整数', trigger: 'blur',  pattern:/^([1-9]\d*|0)$/,
               }"
               label="库存">
                 <el-input class="short-input" v-model.trim="addForm.sku[showStyle.id].store" size="medium"  maxlength="10" />
@@ -355,7 +354,7 @@
         label="物流体积"
          prop="freightSize"
         :rules="{
-            required: true, message: '体积必填', trigger: 'blur'
+            required: true, message: '体积必填,且必须为数字', trigger: 'blur', pattern:/^(((0|([1-9]\d*))\.)?\d+)$/,
           }">
           <el-input v-model="addForm.freightSize" style="width:200px;" maxlength="12" /> <span class="freight-type">立方</span> <span class="freight-des">当前运费模板，按物流体积（含包装）计</span>
         </el-form-item>
@@ -364,9 +363,9 @@
         label="物流重量"
         prop="freightWeight"
         :rules="{
-            required: true, message: '重量必填', trigger: 'blur'
+            required: true, message: '重量必填,且必须为数字', trigger: 'blur',pattern:/^(((0|[1-9]\d*)\.)?\d+)$/,
         }">
-          <el-input v-model="addForm.freightWeight" style="width:200px;" maxlength="12" /> <span class="freight-type">千克</span> <span class="freight-des">当前运费模板，按物流重量（含包装）计</span>
+          <el-input v-model.trim="addForm.freightWeight" style="width:200px;" maxlength="12" /> <span class="freight-type">千克</span> <span class="freight-des">当前运费模板，按物流重量（含包装）计</span>
         </el-form-item>
       </div>
     </el-card>
@@ -1208,6 +1207,7 @@ let vm = {
     },
     submitForm(formName, type) {
       if(this.activeName === 'first') {
+        console.log('first')
         this.tableShow = false
         let tableData = this.addForm.sku[this.showStyle.id] ? this.addForm.sku[this.showStyle.id].list : []
         for(let i = 0; i < tableData.length; i++) {
@@ -1215,6 +1215,13 @@ let vm = {
             this.tableShow = true
             return false
           }
+        }
+        if(tableData.length > 1 && (tableData[tableData.length - 1].number < tableData[tableData.length - 2].number || tableData[tableData.length - 1].price > tableData[tableData.length - 2].price)) {
+          this.$message({
+            message: `阶梯${tableData.length}的起批数必须比阶梯${tableData.length - 1}的起批数大，阶梯${tableData.length}的单价必须比阶梯${tableData.length - 1}的单价小!`,
+            type: 'warning'
+          })
+          return false
         }
       } else if(this.activeName === 'second') {
         this.moreTableShow = false
@@ -1235,7 +1242,6 @@ let vm = {
       });
     },
     closeSelectedTag(view) {
-      console.log(view)
       this.$store.dispatch('tagsView/delView', view)
     },
     onSale(type) {

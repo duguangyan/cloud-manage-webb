@@ -262,10 +262,12 @@ export default {
         param.systemId = this.listQuery.systemId
       }
       getClientList(param).then(res => {
-        this.list = res.data.records
         this.total = res.data.total
         this.allPages = res.data.pages
         this.listLoading = false
+        if(Array.isArray(res.data.records)) {
+          this.list = res.data.records
+        }
       }).catch(err => {
         this.listLoading = false
       })

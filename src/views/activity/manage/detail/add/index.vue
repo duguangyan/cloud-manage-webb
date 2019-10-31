@@ -180,10 +180,10 @@ export default {
       this.listLoading = true
       this.disable = true
       getColumnGoodsList(this.listQuery).then(res => {
+        this.listLoading = false
+        this.disable = false
+        this.total = res.data.total
         if(Array.isArray(res.data.records)) {
-          this.listLoading = false
-          this.disable = false
-          this.total = res.data.total
           this.tableData = res.data.records
         }
       }).catch(err => {

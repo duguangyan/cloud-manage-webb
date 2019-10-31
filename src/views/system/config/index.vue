@@ -187,10 +187,12 @@ export default {
       //获取系统数据
       this.listLoading = true
       getSystem(this.listQuery).then(res => {
-        this.list = res.data.records
         this.total = res.data.total
         this.allPages = res.data.pages
         this.listLoading = false
+        if(Array.isArray(res.data.records)) {
+          this.list = res.data.records
+        }
       }).catch(err => {
         this.listLoading = false
       })

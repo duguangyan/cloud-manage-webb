@@ -213,7 +213,7 @@ export default {
         label: 'name',
         value: 'id'
       },
-      treeValue: [],
+      treeValue: null,
       pickerOptions: {
         shortcuts: [{
           text: '最近一周',
@@ -276,8 +276,6 @@ export default {
     },
     getList() {
       // 获取商品列表
-      this.listLoading = true
-      this.disable = true
       let param = {
         pageIndex: this.listQuery.pageIndex,
         pageSize: this.listQuery.pageSize,
@@ -285,9 +283,18 @@ export default {
         sortType: this.listQuery.sortType,
         status: this.listQuery.sortType
       }
-      if(this.treeValue.length > 3) {
-        param.categoryId = this.treeValue[3]
+      if(Array.isArray(this.treeValue)) {
+        if(this.treeValue.length > 3) {
+          param.categoryId = this.treeValue[3]
+        } else {
+          this.$message({
+            type: 'warning',
+            message: '品种请选择到四级进行查询!'
+          })
+          return false
+        }
       }
+      
       if(this.listQuery.keywords.length > 0) {
         param.keywords = this.listQuery.keywords
       }
@@ -303,11 +310,13 @@ export default {
           param.sellTimeEnd = this.dateValue[1]
         }
       }
+      this.listLoading = true
+      this.disable = true
       getList(param).then(res => {
+        this.listLoading = false
+        this.disable = false
+        this.total = res.data.total
         if(Array.isArray(res.data.records)) {
-          this.listLoading = false
-          this.disable = false
-          this.total = res.data.total
           this.tableData = res.data.records
         }
       }).catch(err => {
@@ -403,7 +412,7 @@ export default {
         status: '3'
       }
       this.dateValue = null
-      this.treeValue = []
+      this.treeValue = null
       this.saleType = '3'
       this.getList()
     },
