@@ -281,7 +281,7 @@ export default {
         pageSize: this.listQuery.pageSize,
         sortColumn: this.listQuery.sortColumn,
         sortType: this.listQuery.sortType,
-        status: this.listQuery.sortType
+        status: this.listQuery.status
       }
       if(Array.isArray(this.treeValue)) {
         if(this.treeValue.length > 3) {

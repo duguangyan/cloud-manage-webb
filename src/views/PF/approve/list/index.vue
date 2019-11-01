@@ -313,7 +313,6 @@ export default {
       })
     },
     approveCheck(row) {
-      console.log(row)
       // 审核、查看跳转详情页面
       this.$router.push({path: '/PF/approve/detail', query:{ 
         cid: row.categoryId,

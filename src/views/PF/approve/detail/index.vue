@@ -1,7 +1,29 @@
 <template>
   <div class="app-container">
-    审核详情页面
-
+    <el-form v-loading="diaLoading" ref="productForm" :model="form" label-position="right" label-width="140px" style="">
+      <el-card class="box-card">
+        <div slot="header" class="clearfix">
+          <span>个人信息</span>
+        </div>
+        <div  class="text item">
+          <el-form-item label="申请人姓名：" required>代用名</el-form-item>
+          <el-form-item label="身份证号码：" required>430512198908131367</el-form-item>
+          <el-form-item label="手机号码：" required>13665545885</el-form-item>
+          <el-form-item label="身份证正面照：" required>430512198908131367</el-form-item>
+          <el-form-item label="身份证国徽照：" required>430512198908131367</el-form-item>
+        </div>
+      </el-card>
+      <el-card class="box-card">
+        <div slot="header" class="clearfix">
+          <span>店铺信息</span>
+        </div>
+        <div  class="text item">
+          <el-form-item label="经营类目：" required>农用作物/蔬菜/红薯</el-form-item>
+          <el-form-item label="经营地区：" required>河北廊坊长安区</el-form-item>
+        </div>
+      </el-card>
+    </el-form>
+    
   </div>
 </template>
 
@@ -15,6 +37,8 @@ export default {
   data() {
     return {
       id: '',
+      form: {},
+      diaLoading: false,
     }
   },
   created() {

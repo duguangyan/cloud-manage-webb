@@ -287,6 +287,7 @@ export default {
       // 获取商品列表
       this.listLoading = true
       this.disable = true
+      console.log(this.listQuery)
       getList(this.listQuery).then(res => {
         this.listLoading = false
         this.disable = false
