@@ -16,3 +16,12 @@ export function getAnaData(query) {
     params: query
   })
 }
+
+// 根据日期查询当天统计数据
+export function getStatDataByDay(query) {
+  return request({
+    url: '/analyse/websiteStat/getStatDataByDay',
+    method: 'get',
+    params: query
+  })
+}

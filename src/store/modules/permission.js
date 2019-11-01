@@ -402,8 +402,17 @@ const routeModule = [
   },
   {
     name: 'PFapproveDetail',
-    path: '/PF/approve/detail',
-    compare: 'PF/approve/detail/index',
+    path: '/PF/approve/detail/1',
+    compare: 'PF/approve/owner/detail/index',
+    source: 'PF/approve/detail/index',
+    isSource: true,
+    hidden: true,
+    noCache: true
+  },
+  {
+    name: 'PFapproveDetail',
+    path: '/PF/approve/detail/2',
+    compare: 'PF/approve/commission/detail/index',
     source: 'PF/approve/detail/index',
     isSource: true,
     hidden: true,

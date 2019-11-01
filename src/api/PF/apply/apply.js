@@ -15,6 +15,7 @@ export function checkApprove(data) {
   return request({
     url: '/ws/shop/apply/checkUp',
     method: 'post',
+    pf: true,
     data
   })
 }
@@ -23,6 +24,16 @@ export function checkApprove(data) {
 export function getApproveDetail(query) {
   return request({
     url: '/ws/shop/apply/getById',
+    method: 'get',
+    params: query,
+    pf: true
+  })
+}
+
+// 根据ID修改通过状态
+export function modifyApprove(query) {
+  return request({
+    url: '/ws/shop/apply/modifyPass',
     method: 'get',
     params: query,
     pf: true

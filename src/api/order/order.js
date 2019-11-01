@@ -27,3 +27,12 @@ export function exportOrder(query) {
   })
 }
 
+// 后台-最近30天商品销售列表
+export function getsaleGoodsList(query) {
+  return request({
+    url: '/order/orderDetail/saleGoodsList',
+    method: 'get',
+    params: query
+  })
+}
+

@@ -56,7 +56,7 @@
         <el-button v-waves class="filter-item" @click="resetList">重置</el-button>
       </div>
     </template>
-    <el-tabs v-model="list.type" @tab-click="handleClick">
+    <el-tabs v-model="list.type" class="self" @tab-click="handleClick">
       <el-tab-pane label="货主" name="1"></el-tab-pane>
       <el-tab-pane label="代办" name="2"></el-tab-pane>
     </el-tabs>
@@ -110,6 +110,12 @@
           <span v-else-if="scope.row.status === 1">已通过</span>
           <span v-else-if="scope.row.status === 2">未通过</span>
         </template>
+      </el-table-column>
+      <el-table-column
+        align="center"
+        prop="auditOpinion"
+        label="原因"
+        show-overflow-tooltip>
       </el-table-column>
       <el-table-column
         align="center"
@@ -240,10 +246,10 @@ export default {
   },
   components: { Pagination },
   created() {
-    // if(this.$route.query.status) {
-    //   this.saleType = this.$route.query.status
-    //   this.listQuery.status = this.$route.query.status
-    // }
+    if(this.$route.query.hasOwnProperty('status')) {
+      this.list.status = Number(this.$route.query.status)
+      this.list.type = String(this.$route.query.type)
+    }
     this.getApproveList()
   },
   mounted() {
@@ -314,7 +320,13 @@ export default {
     },
     approveCheck(row) {
       // 审核、查看跳转详情页面
-      this.$router.push({path: '/PF/approve/detail', query:{ 
+      let path = ''
+      if(this.list.type === '1') {
+        path = '/PF/approve/detail/1'
+      } else {
+        path = '/PF/approve/detail/2'
+      }
+      this.$router.push({path: path, query:{ 
         cid: row.categoryId,
         id: row.id
       }})
@@ -396,6 +408,12 @@ export default {
 }
 </script>
 
+<style>
+  .self .el-tabs__item.is-active{
+    font-size: 20px;
+    font-weight: bold;
+  }
+</style>
 <style lang="scss" scoped>
   .tc{
     text-align: center;
