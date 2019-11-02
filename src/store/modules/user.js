@@ -1,11 +1,9 @@
-import { login, logout, getInfo, refreshToken } from '@/api/upms/user'
+import { login, getInfo, refreshToken } from '@/api/upms/user'
+import { getShop } from '@/api/goods/shop'
 import {
-  getToken,
   setToken,
   removeToken,
-  getUuid,
-  setUuid,
-  removeUuid
+  getUuid
 } from '@/utils/auth'
 import router, { resetRouter } from '@/router'
 import { getStore, setStore } from '@/store/store'
@@ -20,12 +18,12 @@ const user = {
     userId: '',
     phone: '',
     deviceId: '',
-    shop: {}
+    shopId: ''
   },
   mutations: {
-    SET_SHOP: (state, shop) => {
-      state.shop = shop
-      localStorage.setItem('shopId', shop.id)
+    SET_SHOP: (state, id) => {
+      state.shopId = id
+      localStorage.setItem('shopId', id)
     },
     SET_NAME: (state, name) => {
       state.name = name
@@ -148,7 +146,7 @@ const user = {
       })
     },
 
-    // get user info
+    // 获取用户信息
     getInfo({ commit, state }) {
       return new Promise((resolve, reject) => {
         getInfo()
@@ -156,7 +154,7 @@ const user = {
             const { data } = response
 
             if (!data) {
-              reject('Verification failed, please Login again.')
+              reject('获取用户信息失败，请重新登陆！')
             }
             const { username, headImgUrl, id, phone } = data
 
@@ -165,6 +163,26 @@ const user = {
             commit('SET_USERID', id)
             commit('SET_PHONE', phone)
             // commit('SET_AVATAR', avatar)
+            resolve(data)
+          })
+          .catch(error => {
+            reject(error)
+          })
+      })
+    },
+
+    // 获取店铺信息
+    getShop({ commit, state }) {
+      return new Promise((resolve, reject) => {
+        getShop()
+          .then(response => {
+            const { data } = response
+
+            if (!data) {
+              reject('获取店铺信息失败，请重新登陆！')
+            }
+            const { id } = data
+            commit('SET_SHOP', id)
             resolve(data)
           })
           .catch(error => {

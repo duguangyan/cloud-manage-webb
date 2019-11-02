@@ -7,7 +7,7 @@
           审核状态：<span class="status">待审核</span>
         </template>
         <template v-else-if="person.status === 1">
-          审核状态：<span class="status">已通过</span>
+          审核状态：<span v-if="person.type === 1" class="status">已通过</span><span v-else class="status">已入驻</span>
         </template>
         <template v-else-if="person.status === 2">
           <el-row>
@@ -32,13 +32,31 @@
           </el-form-item>
         </div>
       </el-card>
-      <el-card class="box-card">
+      <el-card v-if="person.type === 1" class="box-card">
         <div slot="header" class="clearfix">
           <span>店铺信息</span>
         </div>
         <div  class="text item">
           <el-form-item label="经营类目：">{{person.categoryName}}</el-form-item>
           <el-form-item label="经营地区：">{{person.area}}</el-form-item>
+        </div>
+        <div v-if="person.status === 2"  class="text item">
+          <el-form-item label="审核不通过原因：">{{person.auditOpinion}}</el-form-item>
+        </div>
+        <div v-if="person.status === 0" class="tc">
+          <el-button v-waves type="primary" :disabled="disable" @click="check(1)">通过</el-button>
+          <el-button v-waves type="primary" :disabled="disable" @click="handleCheck">不通过</el-button>
+        </div>
+      </el-card>
+      <el-card v-else-if="person.type === 2" class="box-card">
+        <div slot="header" class="clearfix">
+          <span>代办信息</span>
+        </div>
+        <div  class="text item">
+          <el-form-item label="代办地区：">{{person.area}}</el-form-item>
+        </div>
+        <div v-if="person.status === 2"  class="text item">
+          <el-form-item label="审核不通过原因：">{{person.auditOpinion}}</el-form-item>
         </div>
         <div v-if="person.status === 0" class="tc">
           <el-button v-waves type="primary" :disabled="disable" @click="check(1)">通过</el-button>
@@ -95,7 +113,8 @@ export default {
         cardImgReverse: null,
         type: null,
         area: null,
-        categoryName: null
+        categoryName: null,
+        auditOpinion: null
       },
       reasonForm: {
         reason: ''
@@ -123,8 +142,18 @@ export default {
         this.person.cardImgFront = res.data.cardImgFront
         this.person.cardImgReverse = res.data.cardImgReverse
         this.person.type = res.data.type
-        this.person.area =  res.data.province + res.data.city + res.data.region
+        this.person.area =  ''
+        if(res.data.province) {
+          this.person.area +=  res.data.province
+        }
+        if(res.data.city) {
+          this.person.area +=  res.data.city
+        }
+        if(res.data.region) {
+          this.person.area +=  res.data.region
+        }
         this.person.categoryName = res.data.categoryName
+        this.person.auditOpinion = res.data.auditOpinion
       })
     },
     handleCheck() {

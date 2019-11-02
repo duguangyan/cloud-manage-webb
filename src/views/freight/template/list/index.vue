@@ -42,7 +42,7 @@ var vm = {
   methods: {
     load() {
       getList({
-        shopId: vm.$store.state.user.shop.id || localStorage.getItem('shopId')
+        shopId: localStorage.getItem('shopId') || vm.$store.state.user.shop.id 
       }).then(data => {
         vm.list = data.data;
       });

@@ -124,7 +124,7 @@ export default {
       listLoading: false,
       orderStatus: 'all',
       order: {
-        orderId: '',
+        orderId: localStorage.getItem('shopId') || this.$store.state.user.shop.id ,
         pageIndex: 1,
         pageSize: 10,
         shopId: '',
@@ -204,7 +204,6 @@ export default {
       this.order.pageSize = this.$route.query.pageSize
       this.order.userId = this.$route.query.userId
       this.order.userName = this.$route.query.userName
-      this.order.shopId = this.$route.query.shopId
       this.order.status = this.$route.query.status
       this.dateValue = this.$route.query.dateValue
       this.order.orderId = this.$route.query.orderId

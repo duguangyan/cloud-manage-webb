@@ -364,7 +364,7 @@ let vm = {
     getFreight() {
       // 获取运费模板
       this.listLoading = true
-      getFreight({ shopId: 1 }).then(res => {
+      getFreight({ shopId: localStorage.getItem('shopId') || this.$store.state.user.shop.id }).then(res => {
         this.listLoading = false
         if(Array.isArray(res.data)) {
           this.freightData = res.data

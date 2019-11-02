@@ -445,7 +445,7 @@ var vm = {
         provinceId: "",
         region: "",
         regionId: "",
-        shopId: "1",
+        shopId: localStorage.getItem('shopId') || vm.$store.state.user.shop.id,
         type: -1,
         solutionFreeItemList: /* 包邮条件 */ [],
         solutionItemList: /* 邮费方案 */ [],

@@ -11,7 +11,7 @@ NProgress.configure({ showSpinner: false }) // NProgress Configuration
 
 const whiteList = ['/login'] // no redirect whitelist
 
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async(to, from, next) => {
   // start progress bar
   NProgress.start()
 
@@ -33,19 +33,11 @@ router.beforeEach(async (to, from, next) => {
         next()
       } else {
         try {
-          // get user info
+          // 获取用户信息
           await store.dispatch('user/getInfo')
-          // 实际是请求用户信息后返回，这里是模拟数据，直接从store中取
-
-          // store.dispatch('permission/GenerateRoutes', { roles }).then(() => { // 生成可访问的路由表
-          //   router.addRoutes(store.getters.addRouters) // 动态添加可访问路由表
-          //   router.options.routes = store.getters.routers
-          //   next({ ...to, replace: true }) // hack方法 确保addRoutes已完成 ,set the replace: true so the navigation will not leave a history record
-          // })
-          // let accessRoutes = await store.dispatch('user/getRoles', roles)
-          // console.log('accessroutes:')
-          // console.log(accessRoutes)
-          // dynamically add accessible routes
+          // 获取用户店铺信息
+          await store.dispatch('user/getShop')
+          // 动态生成路由
           await store.dispatch('permission/generateRoutes')
           router.options.routes = store.getters.routes
           router.addRoutes(store.getters.routes)

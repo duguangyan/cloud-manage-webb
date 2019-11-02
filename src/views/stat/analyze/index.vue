@@ -41,6 +41,7 @@
         prop="pv"
         label="浏览次数"
         sortable="custom"
+        :sort-orders="sortOrders"
         align="center"
         width="180"
         show-overflow-tooltip>
@@ -50,6 +51,7 @@
         prop="uv"
         label="访客"
         sortable="custom"
+        :sort-orders="sortOrders"
         align="center"
         width="180"
         show-overflow-tooltip>
@@ -60,6 +62,7 @@
         align="center"
         label="收藏人数"
         sortable="custom"
+        :sort-orders="sortOrders"
         width="180"
         show-overflow-tooltip>
       </el-table-column>
@@ -68,6 +71,7 @@
         prop="payPersonNum"
         label="支付人数"
         sortable="custom"
+        :sort-orders="sortOrders"
         align="center"
         width="180"
         show-overflow-tooltip>
@@ -77,6 +81,7 @@
         prop="rebuyPersonNum"
         label="复购人数"
         sortable="custom"
+        :sort-orders="sortOrders"
         align="center"
         width="180"
         show-overflow-tooltip>
@@ -86,6 +91,7 @@
         prop="payNum"
         label="支付笔数"
         sortable="custom"
+        :sort-orders="sortOrders"
         align="center"
         width="180"
         show-overflow-tooltip>
@@ -113,6 +119,7 @@ export default {
         'payNum': true
       },
       dateValue: 30,
+      sortOrders: ['descending', 'ascending', null],
       listLoading: false,
       query: {
         beginTime: '',

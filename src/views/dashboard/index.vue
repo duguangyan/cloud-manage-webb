@@ -57,8 +57,7 @@ import { mapGetters } from "vuex";
 import adminDashboard from "./admin";
 import editorDashboard from "./editor";
 import { token } from "@/store/getters";
-import { getStore } from "@/store/store";
-import { getShop } from '@/api/goods/shop'
+import { getStore } from "@/store/store"
 import { getsaleGoodsList } from '@/api/order/order'
 import { getStatDataByDay } from '@/api/analyse/analyse'
 import PanelGroup from './admin/components/PanelGroup'
@@ -118,10 +117,6 @@ export default {
     this.refreshToken();
     this.getStatDataByDay();
     this.getsaleGoodsList();
-    getShop().then(data=>{
-      self.$store.commit('user/SET_SHOP',data.data)
-    })
-
   },
   methods: {
     getStatDataByDay() {
@@ -145,9 +140,7 @@ export default {
         pageIndex: this.list.pageIndex,
         pageSize: this.list.pageSize
       }
-      if(this.list.shopId.length > 0) {
-        query.shopId = this.list.shopId
-      }
+      query.shopId = localStorage.getItem('shopId') || this.$store.state.user.shop.id 
       getsaleGoodsList(query).then(res => {
         this.total = res.data.total
         if(Array.isArray(res.data.records)) {

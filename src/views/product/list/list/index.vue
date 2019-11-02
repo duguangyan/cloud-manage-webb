@@ -92,6 +92,8 @@
       <el-table-column
         align="center"
         sortable="custom"
+        :sort-orders="sortOrders"
+        prop="minprice"
         label="单价"
         width="120"
         show-overflow-tooltip>
@@ -104,6 +106,7 @@
       <el-table-column
         align="center"
         sortable="custom"
+        :sort-orders="sortOrders"
         prop="spuSalesNum"
         label="销量"
         width="120"
@@ -112,6 +115,7 @@
       <el-table-column
         align="center"
         sortable="custom"
+        :sort-orders="sortOrders"
         prop="hits"
         label="浏览量"
         width="120"
@@ -120,6 +124,7 @@
       <el-table-column
         align="center"
         sortable="custom"
+        :sort-orders="sortOrders"
         prop="totalStock"
         label="库存"
         width="120"
@@ -198,6 +203,7 @@ export default {
           auth: false
         }
       },
+      sortOrders: ['descending', 'ascending', null],
       disable: false,
       pageId: '',
       listQuery: {

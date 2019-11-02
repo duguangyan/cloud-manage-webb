@@ -112,6 +112,7 @@
         </template>
       </el-table-column>
       <el-table-column
+        v-if="list.status === 2"
         align="center"
         prop="auditOpinion"
         label="原因"
@@ -247,7 +248,9 @@ export default {
   components: { Pagination },
   created() {
     if(this.$route.query.hasOwnProperty('status')) {
+      console.log(this.$route)
       this.list.status = Number(this.$route.query.status)
+      this.list.tabStatus = Number(this.$route.query.status)
       this.list.type = String(this.$route.query.type)
     }
     this.getApproveList()

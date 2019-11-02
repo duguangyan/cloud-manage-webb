@@ -3,6 +3,7 @@
     <div v-if="btnsPermission.search.auth" class="filter-container" style="padding-bottom: 10px">
       公众号名称：<el-input v-model="listQuery.name" maxlength="64" placeholder="请输入公众号名称" style="width: 200px;margin-right:10px;" class="filter-item" @keyup.enter.native="handleFilter" />
       应用ID：<el-input v-model="listQuery.appId" maxlength="64" placeholder="请输入应用ID" style="width: 200px;margin-right:10px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      类型：
       <el-select v-model="listQuery.type" placeholder="请选择类型">
         <el-option
           v-for="item in typeData"
@@ -1067,11 +1068,14 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-  ul,li,a,p,h1,h2,h3,h4,h5,h6{
-    list-style: none;
-    margin: 0;
-    padding: 0;
+  .el-dialog{
+    ul,li,a,p,h1,h2,h3,h4,h5,h6{
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
   }
+  
   .tc{
     text-align: center;
   }
