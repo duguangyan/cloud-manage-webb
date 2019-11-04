@@ -245,49 +245,25 @@ export default {
       btnsPermission: {
         search: {
           name: '查询',
-          auth: true
+          auth: false
         },
         add: {
           name: '新增版本',
-          auth: true
+          auth: false
         },
         edit: {
           name: '编辑',
-          auth: true
+          auth: false
         },
         detail: {
           name: '查看',
-          auth: true
+          auth: false
         },
         delete: {
           name: '删除',
-          auth: true
+          auth: false
         }
       },
-      typeData: [
-        {
-          value: 1,
-          label: '订阅号'
-        },
-        {
-          value: 2,
-          label: '服务号'
-        },
-        {
-          value: 3,
-          label: '小程序'
-        }
-      ],
-      forceData: [
-        {
-          value: 1,
-          label: '是'
-        },
-        {
-          value: 0,
-          label: '否'
-        }
-      ],
       fileInstall: [],
       fileUpdate: [],
       rules: {
@@ -345,8 +321,7 @@ export default {
         update: '编辑版本',
         create: '新增版本',
         detail: '版本详情'
-      },
-      statusOptions: ['published', 'draft', 'deleted'],
+      }
     }
   },
   components: { Pagination },
