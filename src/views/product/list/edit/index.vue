@@ -229,7 +229,7 @@
               <el-button type="primary" plain size="mini" v-waves @click="addMoreSpecValue(pIndex)">添加</el-button>
             </div>
           </el-form-item>
-          <el-form-item>
+          <el-form-item v-if="addForm.moreSpec.length < 2">
             <el-button v-show="moreSpecTableShow" type="primary" plain size="medium" v-waves @click="addMoreSpec">添加规格</el-button>
           </el-form-item>
           <el-form-item>  
@@ -289,11 +289,10 @@
           label="商品视图" required>
           <el-upload
             ref="uplodadImg"
-            action="https://jsonplaceholder.typicode.com/posts/"
+            action=""
             list-type="picture-card"
             :http-request="uploadImg"
             :multiple="true"
-            v-model="addForm.imgBox"
             :limit="imgLimit"
             :on-preview="handlePictureCardPreview"
             :file-list="addForm.imgsBox"
@@ -303,11 +302,14 @@
             <i class="el-icon-plus"></i>
           </el-upload>
           <div>
-            <p>还能添加<span style="color: #ff0000">{{10 - addForm.imgsBox.length}}</span>张图片或视频；</p>
-            <p>* 仅支持3M以内jpg、jpeg、gif、png格式图片上传；图片建议尺寸500*500；</p>
-            <p>* 仅支持10mb以内mp4视频上传；</p>
-            <p>* 文件大小不能超过3MB，包括图片和视频；图片建议尺寸500*500；支持JPG、GIF、PNG格式；</p>
-            <p>* 默认第一个文件为商品封面图，如果是视频则取第一帧画面作为封面图。</p>
+            <p style="margin: 0;">还能添加<span style="color: #ff0000">{{10 - addForm.imgsBox.length}}</span>张图片或视频；</p>
+            <p style="margin: 0;">* 仅支持3M以内jpg、jpeg、gif、png格式图片上传；图片建议尺寸500*500；</p>
+            <p style="margin: 0;">* 仅支持10mb以内mp4视频上传；</p>
+            <p style="margin: 0;">* 文件大小不能超过3MB，包括图片和视频；图片建议尺寸500*500；支持JPG、GIF、PNG格式；</p>
+            <p style="margin: 0;">* 默认第一个文件为商品封面图，如果是视频则取第一帧画面作为封面图。</p>
+          </div>
+          <div v-if="showPackgeErr" class="el-form-item__error">
+            请上传商品视图
           </div>
         </el-form-item>
         <el-form-item 
@@ -567,6 +569,7 @@ let vm = {
       categoryId: '',
       eiditId: '',
       baseData: [],
+      showPackgeErr: false,
       skuId: '',
       specId: '',
       unitName: '',
@@ -1235,6 +1238,12 @@ let vm = {
       }
       this.$refs[formName].validate((valid) => {
         if (valid) {
+          if(this.addForm.imgsBox.length > 0) {
+            this.showPackgeErr = false
+          } else {
+            this.showPackgeErr = true
+            return false
+          }
           this.onSale(type)
         } else {
           return false
