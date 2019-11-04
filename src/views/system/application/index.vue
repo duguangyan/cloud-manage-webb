@@ -214,7 +214,7 @@ export default {
     const checkNum = (rule, value, callback) => {
       if(!value) {
         callback(new Error('请输入版本序号'))
-      } else if(!/^[1-9]\d*|0$/.test(value)) {
+      } else if(!/^([1-9]\d*|0)$/.test(value)) {
         callback(new Error('请输入整数'))
       } else {
         callback()
