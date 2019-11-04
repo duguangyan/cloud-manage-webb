@@ -124,10 +124,10 @@ export default {
       listLoading: false,
       orderStatus: 'all',
       order: {
-        orderId: localStorage.getItem('shopId') || this.$store.state.user.shop.id ,
+        orderId: '',
         pageIndex: 1,
         pageSize: 10,
-        shopId: '',
+        shopId: localStorage.getItem('shopId') || this.$store.state.user.shop.id,
         status: '',
         userId: '',
         userName: ''
