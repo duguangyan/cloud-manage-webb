@@ -138,11 +138,16 @@
                 width="100"
                 align="center"
                 label="授权">
-                <template slot-scope="scope" v-if="scope.row.type !== 1">
-                  <span v-if="scope.row.auth === -1">禁止</span>
-                  <span v-else-if="scope.row.auth === 0">不需要认证</span>
-                  <span v-else-if="scope.row.auth === 1">已认证</span>
-                  <span v-else-if="scope.row.auth === 2">角色</span>
+                <template slot-scope="scope">
+                  <div v-if="scope.row.type === 2">
+                    <span v-if="scope.row.auth === -1">禁止</span>
+                    <span v-else-if="scope.row.auth === 0">不需要认证</span>
+                    <span v-else-if="scope.row.auth === 1">已认证</span>
+                    <span v-else-if="scope.row.auth === 2">角色</span>
+                  </div>
+                  <div v-else>
+                    <span>角色</span>
+                  </div>
                 </template>
               </el-table-column>
             </el-table>

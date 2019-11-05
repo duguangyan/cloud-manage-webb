@@ -104,15 +104,16 @@
         <el-form-item label="图片或视频" prop="path">
           <el-upload
             class="self-upload"
-            v-model="banner.path"
-            action="https://jsonplaceholder.typicode.com/posts/"
+            action=""
             list-type="picture-card"
+            :class="{disabled: uploadDisabled}"
             :limit="1"
             :http-request="uploadImg"
             :on-preview="handlePictureCardPreview"
             :before-upload="beforeImgUpload"
             :file-list="banner.pathBox"
             :on-exceed="handleExceed"
+            :on-change="handleLimit"
             :on-remove="handleRemove">
             <i class="el-icon-plus"></i>
           </el-upload>
@@ -262,6 +263,7 @@ export default {
       bannerRow: {},
       selectPid: '',
       bannerData: [],
+      uploadDisabled: false,
       dialogVisibleBanner: false,
       btnsPermission: {
         search: {
@@ -547,7 +549,7 @@ export default {
           this.banner.webUrl = ''
           this.banner.selfUrl = ''
         }
-        
+        this.uploadDisabled = true
         this.banner.sort = res.data.sort
         this.banner.dateValue = []
         this.banner.dateValue[0] = res.data.createTime
@@ -712,6 +714,14 @@ export default {
         return false
       }
     },
+    handleLimit(file,fileList){
+      // 是否隐藏加号
+      if(fileList.length >= 1){
+        this.uploadDisabled = true
+      } else {
+        this.uploadDisabled = false
+      }
+    },
     handleExceed(files, fileList) {
       // 图片数量提示
       this.$message({
@@ -722,6 +732,7 @@ export default {
     handleRemove(file, fileList) {
       // 删除图片
       this.banner.pathBox = []
+      this.uploadDisabled = false
     },
     chooseBanner() {
       // 选择广告位

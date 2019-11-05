@@ -291,6 +291,7 @@
             ref="uplodadImg"
             action=""
             list-type="picture-card"
+            :class="{disabled: uploadDisabled}"
             :http-request="uploadImg"
             :multiple="true"
             :limit="imgLimit"
@@ -298,6 +299,7 @@
             :file-list="addForm.imgsBox"
             :before-upload="beforeImgUpload"
             :on-exceed="handleExceed"
+            :on-change="handleLimit"
             :on-remove="handleRemove">
             <i class="el-icon-plus"></i>
           </el-upload>
@@ -573,6 +575,7 @@ let vm = {
       skuId: '',
       specId: '',
       unitName: '',
+      uploadDisabled: false,
       icons: {
         back: backImg,
         love: loveImg,
@@ -1589,6 +1592,7 @@ let vm = {
       this.addForm.imgsBox.forEach((item, index) => {
         if(item.uid === file.uid) {
           this.addForm.imgsBox.splice(index, 1)
+          this.uploadDisabled = false
           return
         }
       })
@@ -1620,6 +1624,14 @@ let vm = {
       } else {
         this.$message.error('上传文件类型错误!')
         return false
+      }
+    },
+    handleLimit(file,fileList){
+      // 是否隐藏图片数量
+      if(fileList.length >= this.imgLimit){
+        this.uploadDisabled = true
+      } else {
+        this.uploadDisabled = false
       }
     },
     handlePictureCardPreview(file) {
@@ -1813,19 +1825,8 @@ let vm = {
       })
     },
     createExpress() {
-      this.$confirm('新建模板后当前页面数据会清空, 是否继续?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        this.$router.push({
-          path: '/freight/template/add'
-        })
-      }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: '已取消操作'
-        })       
+      this.$router.push({
+        path: '/freight/template/add'
       })
     }
   }

@@ -38,11 +38,6 @@ module.exports = {
       errors: true
     },
     proxy: {
-      '/pfapi': {
-        target: 'http://192.168.0.202:7012',
-        pathRewrite: { '^/pfapi': '' },
-        changeOrigin: true
-      },
       '/api': {
         target: 'http://192.168.0.202:8000',
         pathRewrite: { '^/api': '' },

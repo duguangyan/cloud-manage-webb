@@ -1,8 +1,7 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="filterText"  placeholder="输入关键字进行过滤" style="width: 200px;" class="filter-item"/>
-      <!-- <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">搜索</el-button> -->
+      <el-input v-model="filterText" clearable placeholder="输入关键字进行过滤" style="width: 200px;" class="filter-item"/>
       <el-button v-if="btnsPermission.addClassify.auth" v-waves class="filter-item" @click="handAddRoot">{{btnsPermission.addClassify.name + '一级分类'}}</el-button>
     </div>
     <div class="clearfix">
@@ -45,57 +44,21 @@
         </el-tree>
       </div>
       <div v-show="rightBoxShow" v-loading="boxLoading" class="right">
-        <div class="data-box">
-          <el-row type="flex" class="mb5" justify="space-around">
-            <el-col><div class="box-title">计量单位管理</div></el-col>
-            <el-col><div class="tr"><el-button v-if="btnsPermission.addUnit.auth" v-waves size="small" type="primary" @click="add(1)">{{btnsPermission.addUnit.name}}</el-button></div></el-col>
+        <div class="agency-box">
+          <el-row type="flex" justify="space-around">
+            <el-col><div class="box-title">
+              代办费用：<el-input v-model.trim="agency.name" type="text" placeholder="请输入代办费" style="width: 120px;"></el-input> 元/斤
+            </div></el-col>
+            <el-col>
+              <div class="tr">
+                <el-button v-if="btnsPermission.addAgency.auth" v-waves size="small" type="primary" @click="sureAgency">{{btnsPermission.addAgency.name}}</el-button>
+                <el-button v-if="btnsPermission.editAgency.auth" v-waves size="small" type="primary" @click="updateAdd(1, '')">{{btnsPermission.editAgency.name}}</el-button>
+              </div>
+            </el-col>
+            <div v-if="showAgencyErr" class="el-form-item__error">
+              {{agencyErr}}
+            </div>
           </el-row>
-          <el-table
-            :data="unitData"
-            border
-            >
-            <el-table-column
-              type=index
-              prop="index"
-              label="序号"
-              align="center"
-              width="100">
-            </el-table-column>
-            <el-table-column
-              prop="name"
-              label="计量单位"
-              align="center">
-            </el-table-column>
-            <el-table-column
-              label="启用状态"
-              align="center"
-              width="180">
-              <template slot-scope="scope">
-                <span v-if="scope.row.status === 0">禁用</span>
-                <span v-else-if="scope.row.status === 1">启用</span>
-              </template>
-            </el-table-column>
-            <el-table-column
-              prop="createTime"
-              label="创建时间"
-              width="160"
-              align="center">
-            </el-table-column>
-            <el-table-column
-              prop="address"
-              label="操作"
-              width="150"
-              align="center">
-              <template slot-scope="{row}">
-                <el-button v-if="btnsPermission.editUnit.auth" type="primary" size="mini" @click="updateAdd(1, row)">
-                  {{btnsPermission.editUnit.name}}
-                </el-button>
-                <el-button v-if="btnsPermission.deleteUnit.auth && row.status!='deleted'" size="mini" type="danger" @click="deleteAdd(1, row.id)">
-                  {{btnsPermission.deleteUnit.name}}
-                </el-button>
-              </template>
-            </el-table-column>
-          </el-table>
         </div>
 
         <div class="data-box">
@@ -219,14 +182,10 @@
     </div>
 
     <el-dialog :visible.sync="dialogVisible" :closeOnClickModal="false" :title="dialogMsg">
-      <template v-if="dialogType === 'unit'">
-        <el-form v-loading="diaLoading" ref="unitForm" :model="unit" label-width="100px" label-position="left" :rules="unitRules">
-          <el-form-item label="名称" prop="name">
-            <el-input v-model="unit.name" maxlength="20" placeholder="请输入名称" />
-          </el-form-item>
-          <el-form-item label="启用状态" prop="status">
-            <el-radio v-model="unit.status" :label="1">是</el-radio>
-            <el-radio v-model="unit.status" :label="0">否</el-radio>
+      <template v-if="dialogType === 'agency'">
+        <el-form v-loading="diaLoading" ref="agencyForm" :model="agency" label-width="100px" label-position="left" :rules="agencyRules">
+          <el-form-item label="代办费" prop="name">
+            <el-input v-model="agency.name" maxlength="20" placeholder="请输入代办费" />
           </el-form-item>
         </el-form>
       </template>
@@ -312,6 +271,18 @@
           <el-form-item label="分类名" prop="name">
             <el-input v-model="role.name" maxlength="20" placeholder="请输入分类名" />
           </el-form-item>
+          <!-- <el-form-item label="分类图片">
+            <el-upload
+              action="/api/goods/goodImg/fileUpload"
+              :limit="1"
+              :class="{disabled: uploadDisabled}"
+              list-type="picture-card"
+              :on-preview="handlePictureCardPreview"
+              :on-change="handleLimit"
+              :on-remove="handleRemove">
+              <i class="el-icon-plus"></i>
+            </el-upload>
+          </el-form-item> -->
         </el-form>
       </template>
       <div style="text-align:right;">
@@ -319,25 +290,24 @@
         <el-button type="primary" :disabled="diaDisable" @click="regFun">确定</el-button>
       </div>
     </el-dialog>
+
+    <el-dialog :visible.sync="dialogPicVisible">
+      <img width="100%" :src="dialogImageUrl" alt="">
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import waves from '@/directive/waves'
 import { deepClone } from '@/utils'
-import { getProductTree, insertRootProduct, insertProduct, deleteProduct, updateProduct, searchProduct, getProductNum, moveProduct } from '@/api/goods/product'
-import { getUnitList, insetUnitList, updateUnitList, deleteUnitList, getSpeList, insetSpeList, updateSpeList, deleteSpeList, getPropList, insetPropList, updatePropList, deletePropList } from '@/api/goods/list'
+import { getProductTree, insertRootProduct, insertProduct, deleteProduct, updateProduct, searchProduct, getProductNum, moveProduct } from '@/api/PF/goods/product'
+import { getUnitList, insetUnitList, updateUnitList, deleteUnitList, getSpeList, insetSpeList, updateSpeList, deleteSpeList, getPropList, insetPropList, updatePropList, deletePropList, getUnitById } from '@/api/PF/goods/list'
 import { getUserBtnByPId } from '@/api/upms/menu'
 import { validWord } from '@/utils/validate'
 let id = 1000;
 const defaultRole = {
   id: '',
   name: ''
-}
-const defaultUnit = {
-  id: '',
-  name: '',
-  status: ''
 }
 const defaultProp = {
   id: '',
@@ -373,11 +343,27 @@ export default {
           callback()
       }
     }
+    const checkNum = (rule, value, callback) => {
+      if(!value) {
+        callback(new Error('请输入代办费'))
+      } else if(!/^([1-9]\d*|0)$/.test(value)) {
+        callback(new Error('请输入正整数或0'))
+      } else {
+        callback()
+      }
+      
+    }
     return {
       role: Object.assign({}, defaultRole),
-      unit: Object.assign({}, defaultUnit),
       prop: Object.assign({}, defaultProp),
       spec: Object.assign({}, defaultSpec),
+      agency: {
+        id: '',
+        name: ''
+      },
+      showAgencyErr: false,
+      agencyErr: '',
+      uploadDisabled: false,
       btnsPermission: {
         addClassify: {
           name: '新增分类',
@@ -391,15 +377,11 @@ export default {
           name: '修改名称',
           auth: false
         },
-        addUnit: {
-          name: '新增',
+        addAgency: {
+          name: '确定',
           auth: false
         },
-        deleteUnit: {
-          name: '删除',
-          auth: false
-        },
-        editUnit: {
+        editAgency: {
           name: '编辑',
           auth: false
         },
@@ -452,16 +434,11 @@ export default {
             validator: validateName
         }]
       },
-      unitRules: {
+      agencyRules: {
         name: [{
           required: true,
           trigger: 'blur',
-          message: '请填写名称'
-        }],
-        status: [{
-            required: true,
-            trigger: 'blur',
-            message: '请选择启用状态'
+          validator: checkNum
         }]
       },
       specRules: {
@@ -513,22 +490,6 @@ export default {
             message: '请选择城市等级'
         }]
       },
-      form: {
-        unit: {
-          name: '',
-          status: ''
-        },
-        spec: {
-          name: '',
-          status: '',
-          require: '',
-          level: ''
-        },
-        prop: {
-          name: '',
-          status: ''
-        }
-      },
       checkList: [],
       cityValue: '',
       unitData: [],
@@ -550,6 +511,8 @@ export default {
       propId: '',
       specId: '',
       dialogVisible: false,
+      dialogPicVisible: false,
+      dialogImageUrl: '',
       checkStrictly: false,
       downloadLoading: false,
       listLoading: false,
@@ -694,7 +657,6 @@ export default {
         this.$refs['productForm'].clearValidate()
       })
     },
-
     remove(node, data) {
       // 删除分类
       const parent = node.parent;
@@ -768,17 +730,27 @@ export default {
         this.listLoading = false
       })
     },
+    handleRemove(file, fileList) {
+      // 删除图片
+        console.log(file, fileList);
+        this.uploadDisabled = false
+    },
+    handlePictureCardPreview(file) {
+      // 图片预览
+      this.dialogImageUrl = file.url
+      this.dialogPicVisible = true
+    },
+    handleLimit(file,fileList){
+      if(fileList.length>=1){
+        this.uploadDisabled = true
+      } else {
+        this.uploadDisabled = false
+      }
+    },
     add(type) {
       // 新增计量单位、规格、属性
       this.isEdit = false
-      if (type === 1) {
-        this.dialogType = 'unit'
-        this.dialogMsg = '新增计量单位'
-        this.unit = Object.assign({}, defaultUnit)
-        this.$nextTick(() => {
-          this.$refs['unitForm'].clearValidate()
-        })
-      } else if (type === 2) {
+      if (type === 2) {
         this.dialogType = 'spec'
         this.dialogMsg = '新增规格管理'
         this.spec = Object.assign({}, defaultSpec)
@@ -822,16 +794,23 @@ export default {
         this.$refs['productForm'].clearValidate()
       })
     },
+    sureAgency() {
+      // 代办费用提交
+      if(this.agency.name.length === 0) {
+         this.agencyErr = '*请输入代办费'
+        this.showAgencyErr = true
+      } else if(!/^([1-9]\d*|0)$/.test(this.agency.name)) {
+         this.agencyErr = '*代办费必须为正整数或0'
+        this.showAgencyErr = true
+      } else {
+         this.agencyErr = ''
+        this.showAgencyErr = false
+      }
+    },
     regFun () {
       // 表单校验
       if(this.dialogType === 'edit' || this.dialogType === 'new' || this.dialogType === 'root') {
         this.$refs.productForm.validate(valid => {
-          if(valid) {
-            this.confirmRole()
-          }
-        })
-      } else if(this.dialogType === 'unit') {
-        this.$refs.unitForm.validate(valid => {
           if(valid) {
             this.confirmRole()
           }
@@ -934,27 +913,25 @@ export default {
         this.diaDisable = false
         this.diaLoading = false
         this.getProductTree()
-      } else if (this.dialogType === 'unit') {
+      } else if (this.dialogType === 'agency') {
         this.diaDisable = true
         this.diaLoading = true
         if(this.isEdit) {
-          succMsg = '计量单位编辑成功'
+          succMsg = '代办费用编辑成功'
           await updateUnitList({
             categoryId: this.unitId,
-            id: this.unit.id,
-            name: this.unit.name,
-            status: this.unit.status
+            id: this.agency.id,
+            name: this.agency.name
           }).catch(err => {
             this.diaDisable = false
             this.diaLoading = false
             isFalse = true
           })
         } else {
-          succMsg = '计量单位新增成功'
+          succMsg = '代办费用新增成功'
           await insetUnitList({
             categoryId: this.unitId,
-            name: this.unit.name,
-            status: this.unit.status
+            name: this.agency.name
           }).catch(err => {
             this.diaDisable = false
             this.diaLoading = false
@@ -1081,13 +1058,10 @@ export default {
      // 编辑计量单位、规格、属性
      this.isEdit = true
      if (type === 1) {
-        this.unit.id = row.id
-        this.unit.name = row.name
-        this.unit.status = row.status
-        this.dialogType = 'unit'
-        this.dialogMsg = '编辑计量单位'
+        this.dialogType = 'agency'
+        this.dialogMsg = '编辑代办费用'
         this.$nextTick(() => {
-          this.$refs['unitForm'].clearValidate()
+          this.$refs['agencyForm'].clearValidate()
         })
       } else if (type === 2) {
         this.spec.id = row.id
@@ -1214,6 +1188,15 @@ export default {
   }
   .filter-container{
     padding-bottom: 30px;
+  }
+  .agency-box{
+    min-width: 1000px;
+    background: #eee;
+    padding: 20px;
+    margin-bottom: 20px;
+    .box-title{
+      line-height: 32px;
+    }
   }
   .data-box{
     min-width: 1000px;

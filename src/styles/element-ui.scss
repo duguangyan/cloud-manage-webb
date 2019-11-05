@@ -59,3 +59,8 @@
     transition: none !important;
   }
 }
+
+// 上传图片添加按钮到达limit时隐藏
+.disabled .el-upload--picture-card {
+  display: none!important;
+}

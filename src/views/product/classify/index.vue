@@ -1,8 +1,7 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="filterText"  placeholder="输入关键字进行过滤" style="width: 200px;" class="filter-item"/>
-      <!-- <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">搜索</el-button> -->
+      <el-input v-model="filterText" clearable placeholder="输入关键字进行过滤" style="width: 200px;" class="filter-item"/>
       <el-button v-if="btnsPermission.addClassify.auth" v-waves class="filter-item" @click="handAddRoot">{{btnsPermission.addClassify.name + '一级分类'}}</el-button>
     </div>
     <div class="clearfix">

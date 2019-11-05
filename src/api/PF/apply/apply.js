@@ -5,8 +5,7 @@ export function getApproveList(query) {
   return request({
     url: '/ws/shop/apply/listPage',
     method: 'get',
-    params: query,
-    pf: true
+    params: query
   })
 }
 
@@ -15,7 +14,6 @@ export function checkApprove(data) {
   return request({
     url: '/ws/shop/apply/checkUp',
     method: 'post',
-    pf: true,
     data
   })
 }
@@ -25,8 +23,7 @@ export function getApproveDetail(query) {
   return request({
     url: '/ws/shop/apply/getById',
     method: 'get',
-    params: query,
-    pf: true
+    params: query
   })
 }
 
@@ -35,7 +32,6 @@ export function modifyApprove(query) {
   return request({
     url: '/ws/shop/apply/modifyPass',
     method: 'get',
-    params: query,
-    pf: true
+    params: query
   })
 }
