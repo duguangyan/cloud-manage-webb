@@ -46,7 +46,7 @@ export function getUnit(query) {
 }
 
 // 根据分类获取计量单位
-export function getUnitList(query) {
+export function getAgencyList(query) {
   return request({
     url: '/ws/goods/categoryUnit/getCategoryUnitList',
     method: 'get',
@@ -54,8 +54,8 @@ export function getUnitList(query) {
   })
 }
 
-// 根据Id获取计量单位
-export function getUnitById(query) {
+// 根据Id获取代办费
+export function getAgencyById(query) {
   return request({
     url: '/ws/goods/categoryUnit/getById',
     method: 'get',
@@ -63,8 +63,8 @@ export function getUnitById(query) {
   })
 }
 
-// 新增计量单位
-export function insetUnitList(data) {
+// 新增代办费
+export function insetAgency(data) {
   return request({
     url: '/ws/goods/categoryUnit/insert',
     method: 'post',
@@ -72,8 +72,8 @@ export function insetUnitList(data) {
   })
 }
 
-// 更新计量单位
-export function updateUnitList(data) {
+// 更新代办费
+export function updateAgency(data) {
   return request({
     url: '/ws/goods/categoryUnit/update',
     method: 'post',
@@ -81,8 +81,8 @@ export function updateUnitList(data) {
   })
 }
 
-// 删除计量单位
-export function deleteUnitList(query) {
+// 删除代办费
+export function deleteAgency(query) {
   return request({
     url: '/ws/goods/categoryUnit/delete',
     method: 'get',

@@ -183,7 +183,7 @@ export default {
           message: '请填写范围'
         }],
         clientSecret: [{
-            required: true,
+            required: false,
             trigger: 'blur',
             message: '请填写客户端密钥'
         }],
@@ -377,7 +377,7 @@ export default {
               type: 'success',
               duration: 2000
             })
-            this.fetchData()
+            this.getClientList()
           }).catch(err => {
             this.diaDisable = false
             this.diaLoading = false

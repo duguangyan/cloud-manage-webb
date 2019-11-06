@@ -12,7 +12,6 @@
           placeholder="请选择品种"
           style="width: 200px;" 
           class="filter-item mr20"
-          @change="selectChange"
           @focus="focus"
           @keyup.enter.native="handleFilter">
         </el-cascader>
@@ -40,7 +39,6 @@
         value-format="yyyy-MM-dd HH:mm:ss"
         start-placeholder="开始日期"
         end-placeholder="结束日期"
-        @change="dateChange"
         align="right">
       </el-date-picker>
     </div>
@@ -94,6 +92,8 @@
       <el-table-column
         align="center"
         sortable="custom"
+        :sort-orders="sortOrders"
+        prop="minprice"
         label="单价"
         width="120"
         show-overflow-tooltip>
@@ -106,6 +106,7 @@
       <el-table-column
         align="center"
         sortable="custom"
+        :sort-orders="sortOrders"
         prop="spuSalesNum"
         label="销量"
         width="120"
@@ -114,6 +115,7 @@
       <el-table-column
         align="center"
         sortable="custom"
+        :sort-orders="sortOrders"
         prop="hits"
         label="浏览量"
         width="120"
@@ -122,6 +124,7 @@
       <el-table-column
         align="center"
         sortable="custom"
+        :sort-orders="sortOrders"
         prop="totalStock"
         label="库存"
         width="120"
@@ -164,13 +167,13 @@
 <script>
 import waves from '@/directive/waves'
 import Pagination from '@/components/Pagination'
-import { getList, handlerGoods } from '@/api/goods/list'
+import { getList, handlerGoods } from '@/api/PF/goods/list'
 import { getUserBtnByPId } from '@/api/upms/menu'
-import { getProductTree } from '@/api/goods/product'
+import { getProductTree } from '@/api/PF/goods/product'
 
 
 export default {
-  name: 'PFproductList',
+  name: 'productList',
   directives: { waves },
   data() {
     return {
@@ -197,32 +200,26 @@ export default {
         },
         detail: {
           name: '查看',
-          auth: true
+          auth: false
         }
       },
+      sortOrders: ['descending', 'ascending', null],
       disable: false,
       pageId: '',
       listQuery: {
-        createTimeStart: '',
-        createTimeEnd: '',
-        downTimeStart: '',
-        downTimeEnd: '',
-        sellTimeStart: '',
-        sellTimeEnd: '',
-        categoryId: '',
         keywords: '',
         pageIndex: 1,
         pageSize: 10,
         sortColumn: 'sell_time',
         sortType: 0,
-        status: 3
+        status: '0'
       },
       treeOptions: [],
       treeProps: {
         label: 'name',
         value: 'id'
       },
-      treeValue: '',
+      treeValue: null,
       pickerOptions: {
         shortcuts: [{
           text: '最近一周',
@@ -285,10 +282,43 @@ export default {
     },
     getList() {
       // 获取商品列表
+      let param = {
+        pageIndex: this.listQuery.pageIndex,
+        pageSize: this.listQuery.pageSize,
+        sortColumn: this.listQuery.sortColumn,
+        sortType: this.listQuery.sortType,
+        status: this.listQuery.status
+      }
+      if(Array.isArray(this.treeValue)) {
+        if(this.treeValue.length > 3) {
+          param.categoryId = this.treeValue[3]
+        } else {
+          this.$message({
+            type: 'warning',
+            message: '品种请选择到四级进行查询!'
+          })
+          return false
+        }
+      }
+      
+      if(this.listQuery.keywords.length > 0) {
+        param.keywords = this.listQuery.keywords
+      }
+      if(Array.isArray(this.dateValue)) {
+        if(this.listQuery.status == '3') {
+          param.sellTimeStart = this.dateValue[0]
+          param.sellTimeEnd = this.dateValue[1]
+        } else if(this.listQuery.status == '1') {
+          param.createTimeStart = this.dateValue[0]
+          param.createTimeEnd = this.dateValue[1]
+        } else if(this.listQuery.status == '4') {
+          param.downTimeStart = this.dateValue[0]
+          param.sellTimeEnd = this.dateValue[1]
+        }
+      }
       this.listLoading = true
       this.disable = true
-      console.log(this.listQuery)
-      getList(this.listQuery).then(res => {
+      getList(param).then(res => {
         this.listLoading = false
         this.disable = false
         this.total = res.data.total
@@ -305,10 +335,6 @@ export default {
         id: scope.row.categoryId,
         eid: scope.row.id
       }})
-    },
-    selectChange(val) {
-      // 品种选择
-      this.listQuery.categoryId = val.length === 4 ? val[3] : ''
     },
     focus(val) {
       // 获取品种树
@@ -377,19 +403,6 @@ export default {
           })
         })
     },
-    dateChange(data) {
-      // 日期选择
-      if(this.saleType === '3') {
-        this.listQuery.sellTimeStart = data[0]
-        this.listQuery.sellTimeEnd = data[1]
-      } else if(this.saleType === '1') {
-        this.listQuery.createTimeStart = data[0]
-        this.listQuery.createTimeEnd = data[1]
-      } else if(this.saleType === '4') {
-        this.listQuery.downTimeStart = data[0]
-        this.listQuery.downTimeEnd = data[1]
-      }
-    },
     handleFilter() {
       // 搜索
       this.getList()
@@ -397,22 +410,15 @@ export default {
     resetList() {
       // 重置
       this.listQuery = {
-        createTimeStart: '',
-        createTimeEnd: '',
-        downTimeStart: '',
-        downTimeEnd: '',
-        sellTimeStart: '',
-        sellTimeEnd: '',
-        categoryId: '',
         keywords: '',
         pageIndex: 1,
         pageSize: 10,
         sortColumn: 'sell_time',
         sortType: 0,
-        status: 3
+        status: '3'
       }
-      this.dateValue = ''
-      this.treeValue = ''
+      this.dateValue = null
+      this.treeValue = null
       this.saleType = '3'
       this.getList()
     },

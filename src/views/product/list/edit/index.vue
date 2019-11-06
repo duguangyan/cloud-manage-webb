@@ -280,6 +280,47 @@
         </el-tab-pane>
       </el-tabs>
     </el-card>
+    <el-card class="">
+      <div slot="header" class="clearfix">
+        <span>物流信息</span>
+      </div>
+      <div  class="text item">
+        <el-form-item 
+        label="运费设置"
+        prop="freight"
+        :rules="{
+            required: true, message: '请选择运费方式', trigger: 'blur'
+          }">
+          <el-select v-model="addForm.freight" size="medium" maxlength="64" placeholder="请选择" @change="freightChange">
+            <el-option
+              v-for="item in freightData"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id">
+            </el-option>
+          </el-select>
+          <el-link type="primary" :underline="false" @click="createExpress">新建运费模板</el-link>
+        </el-form-item>
+        <el-form-item 
+        v-if="addForm.freightType === 2" 
+        label="物流体积"
+         prop="freightSize"
+        :rules="{
+            required: true, message: '体积必填,且必须为数字', trigger: 'blur', pattern:/^(((0|([1-9]\d*))\.)?\d+)$/,
+          }">
+          <el-input v-model="addForm.freightSize" style="width:200px;" maxlength="12" /> <span class="freight-type">立方</span> <span class="freight-des">当前运费模板，按物流体积（含包装）计</span>
+        </el-form-item>
+        <el-form-item 
+        v-if="addForm.freightType === 3"
+        label="物流重量"
+        prop="freightWeight"
+        :rules="{
+            required: true, message: '重量必填,且必须为数字', trigger: 'blur',pattern:/^(((0|[1-9]\d*)\.)?\d+)$/,
+        }">
+          <el-input v-model.trim="addForm.freightWeight" style="width:200px;" maxlength="12" /> <span class="freight-type">千克</span> <span class="freight-des">当前运费模板，按物流重量（含包装）计</span>
+        </el-form-item>
+      </div>
+    </el-card>
     <el-card class="box-card">
       <div slot="header" class="clearfix">
         <span>图文描述</span>
@@ -332,44 +373,21 @@
         </el-form-item>
       </div>
     </el-card>
-    <el-card class="">
+    <el-card class="box-card">
       <div slot="header" class="clearfix">
-        <span>物流信息</span>
+        <span>富文本</span>
       </div>
       <div  class="text item">
         <el-form-item 
-        label="运费设置"
-        prop="freight"
-        :rules="{
-            required: true, message: '请选择运费方式', trigger: 'blur'
-          }">
-          <el-select v-model="addForm.freight" size="medium" maxlength="64" placeholder="请选择" @change="freightChange">
-            <el-option
-              v-for="item in freightData"
-              :key="item.id"
-              :label="item.name"
-              :value="item.id">
-            </el-option>
-          </el-select>
-          <el-link type="primary" :underline="false" @click="createExpress">新建运费模板</el-link>
-        </el-form-item>
-        <el-form-item 
-        v-if="addForm.freightType === 2" 
-        label="物流体积"
-         prop="freightSize"
-        :rules="{
-            required: true, message: '体积必填,且必须为数字', trigger: 'blur', pattern:/^(((0|([1-9]\d*))\.)?\d+)$/,
-          }">
-          <el-input v-model="addForm.freightSize" style="width:200px;" maxlength="12" /> <span class="freight-type">立方</span> <span class="freight-des">当前运费模板，按物流体积（含包装）计</span>
-        </el-form-item>
-        <el-form-item 
-        v-if="addForm.freightType === 3"
-        label="物流重量"
-        prop="freightWeight"
-        :rules="{
-            required: true, message: '重量必填,且必须为数字', trigger: 'blur',pattern:/^(((0|[1-9]\d*)\.)?\d+)$/,
-        }">
-          <el-input v-model.trim="addForm.freightWeight" style="width:200px;" maxlength="12" /> <span class="freight-type">千克</span> <span class="freight-des">当前运费模板，按物流重量（含包装）计</span>
+          label="介绍文案" 
+          :rules="{
+            required: true, message: '介绍文案必填', trigger: 'blur'
+          }"
+          prop="remark">
+          <div>
+            <tinymce v-model="content" :height="600" />
+          </div>
+          <div @click="showD">CLICK</div>
         </el-form-item>
       </div>
     </el-card>
@@ -538,6 +556,7 @@ import { getByCategoryId, getUnit, saveGoods, editGoods, getUnitList, getSpeList
 import { getFreight } from '@/api/goods/logistics'
 import { getAd } from '@/api/upms/strict'
 import { fileUpload } from '@/api/goods/upload'
+import Tinymce from '@/components/Tinymce'
 import loveImg from '@/assets/img/love.png'
 import backImg from '@/assets/img/back.png'
 import orderImg from '@/assets/img/order.png'
@@ -571,6 +590,7 @@ let vm = {
       categoryId: '',
       eiditId: '',
       baseData: [],
+      content: '',
       showPackgeErr: false,
       skuId: '',
       specId: '',
@@ -686,7 +706,7 @@ let vm = {
       productUnit: ''
     }
   },
-  components: {  },
+  components: { Tinymce },
   computed: {
 
   },
@@ -703,6 +723,9 @@ let vm = {
     }
   },
   methods: {
+    showD() {
+      console.log(this.content)
+    },
     getByCategoryId() {
       // 通过ID获取规格模板
       let CateParam = {

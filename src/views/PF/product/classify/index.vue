@@ -46,13 +46,21 @@
       <div v-show="rightBoxShow" v-loading="boxLoading" class="right">
         <div class="agency-box">
           <el-row type="flex" justify="space-around">
-            <el-col><div class="box-title">
-              代办费用：<el-input v-model.trim="agency.name" type="text" placeholder="请输入代办费" style="width: 120px;"></el-input> 元/斤
-            </div></el-col>
+            <el-col>
+              <div v-if="btnsPermission.addAgency.auth && agencyType === 1" class="box-title">
+                代办费用：<el-input v-model.trim="agency.fee" maxlength="9" type="text" placeholder="请输入代办费" style="width: 120px;"></el-input> 元/斤
+              </div>
+              <div v-else-if="agency.fee === ''" class="box-title">
+                代办费用：暂无
+              </div>
+              <div v-else class="box-title">
+                代办费用：{{agency.fee}} 元/斤
+              </div>
+            </el-col>
             <el-col>
               <div class="tr">
-                <el-button v-if="btnsPermission.addAgency.auth" v-waves size="small" type="primary" @click="sureAgency">{{btnsPermission.addAgency.name}}</el-button>
-                <el-button v-if="btnsPermission.editAgency.auth" v-waves size="small" type="primary" @click="updateAdd(1, '')">{{btnsPermission.editAgency.name}}</el-button>
+                <el-button v-if="btnsPermission.addAgency.auth && agencyType === 1" v-waves size="small" type="primary" @click="sureAgency">{{btnsPermission.addAgency.name}}</el-button>
+                <el-button v-if="btnsPermission.editAgency.auth && agencyType === 2" v-waves size="small" type="primary" @click="updateAdd(1, '')">{{btnsPermission.editAgency.name}}</el-button>
               </div>
             </el-col>
             <div v-if="showAgencyErr" class="el-form-item__error">
@@ -184,8 +192,8 @@
     <el-dialog :visible.sync="dialogVisible" :closeOnClickModal="false" :title="dialogMsg">
       <template v-if="dialogType === 'agency'">
         <el-form v-loading="diaLoading" ref="agencyForm" :model="agency" label-width="100px" label-position="left" :rules="agencyRules">
-          <el-form-item label="代办费" prop="name">
-            <el-input v-model="agency.name" maxlength="20" placeholder="请输入代办费" />
+          <el-form-item label="代办费" prop="fee">
+            <el-input v-model.trim="agency.fee" maxlength="9" placeholder="请输入代办费" />
           </el-form-item>
         </el-form>
       </template>
@@ -301,8 +309,9 @@
 import waves from '@/directive/waves'
 import { deepClone } from '@/utils'
 import { getProductTree, insertRootProduct, insertProduct, deleteProduct, updateProduct, searchProduct, getProductNum, moveProduct } from '@/api/PF/goods/product'
-import { getUnitList, insetUnitList, updateUnitList, deleteUnitList, getSpeList, insetSpeList, updateSpeList, deleteSpeList, getPropList, insetPropList, updatePropList, deletePropList, getUnitById } from '@/api/PF/goods/list'
+import { getAgencyList, insetAgency, updateAgency, getSpeList, insetSpeList, updateSpeList, deleteSpeList, getPropList, insetPropList, updatePropList, deletePropList } from '@/api/PF/goods/list'
 import { getUserBtnByPId } from '@/api/upms/menu'
+import { validInt } from "@/utils/validate"
 import { validWord } from '@/utils/validate'
 let id = 1000;
 const defaultRole = {
@@ -353,16 +362,24 @@ export default {
       }
       
     }
+    const validateSort = (rule, value, callback) => {
+      if (value && !validInt(value)) {
+        callback(new Error("请输入整数"));
+      } else {
+        callback();
+      }
+    }
     return {
       role: Object.assign({}, defaultRole),
       prop: Object.assign({}, defaultProp),
       spec: Object.assign({}, defaultSpec),
       agency: {
         id: '',
-        name: ''
+        fee: ''
       },
       showAgencyErr: false,
       agencyErr: '',
+      agencyType: null,
       uploadDisabled: false,
       btnsPermission: {
         addClassify: {
@@ -435,7 +452,7 @@ export default {
         }]
       },
       agencyRules: {
-        name: [{
+        fee: [{
           required: true,
           trigger: 'blur',
           validator: checkNum
@@ -488,11 +505,15 @@ export default {
             required: true,
             trigger: 'blur',
             message: '请选择城市等级'
+        }],
+        sort: [{
+            required: false,
+            trigger: 'blur',
+            validator: validateSort
         }]
       },
       checkList: [],
       cityValue: '',
-      unitData: [],
       propData: [],
       specData: [],
       cityOptions: [
@@ -507,9 +528,7 @@ export default {
       nodeData: {},
       dialogType: 'new',
       dialogMsg: '新增一级分类',
-      unitId: '',
-      propId: '',
-      specId: '',
+      categoryId: '',
       dialogVisible: false,
       dialogPicVisible: false,
       dialogImageUrl: '',
@@ -603,10 +622,8 @@ export default {
       // 显示四级分类的计量单位、规格管理、属性模板数据
       if(node.level === 4) {
         this.rightBoxShow = true
-        this.unitId = data.id
-        this.specId = data.id 
-        this.propId = data.id
-        this.getUnitList()
+        this.categoryId = data.id
+        this.getAgencyList()
         this.getSpeList()
         this.getPropList()
       } else {
@@ -732,7 +749,6 @@ export default {
     },
     handleRemove(file, fileList) {
       // 删除图片
-        console.log(file, fileList);
         this.uploadDisabled = false
     },
     handlePictureCardPreview(file) {
@@ -796,21 +812,30 @@ export default {
     },
     sureAgency() {
       // 代办费用提交
-      if(this.agency.name.length === 0) {
+      if(this.agency.fee.length === 0) {
          this.agencyErr = '*请输入代办费'
         this.showAgencyErr = true
-      } else if(!/^([1-9]\d*|0)$/.test(this.agency.name)) {
+      } else if(!/^([1-9]\d*|0)$/.test(this.agency.fee)) {
          this.agencyErr = '*代办费必须为正整数或0'
         this.showAgencyErr = true
       } else {
-         this.agencyErr = ''
+        this.agencyErr = ''
         this.showAgencyErr = false
+        this.isEdit = false
+        this.dialogType = 'agency'
+        this.confirmRole()
       }
     },
     regFun () {
       // 表单校验
       if(this.dialogType === 'edit' || this.dialogType === 'new' || this.dialogType === 'root') {
         this.$refs.productForm.validate(valid => {
+          if(valid) {
+            this.confirmRole()
+          }
+        })
+      } else if(this.dialogType === 'agency') {
+        this.$refs.agencyForm.validate(valid => {
           if(valid) {
             this.confirmRole()
           }
@@ -829,20 +854,26 @@ export default {
         })
       }
     },
-    getUnitList() {
-      // 获取计量单位表
+    getAgencyList() {
+      // 获取代办费
       this.listLoading = true
-      getUnitList({ categoryId: this.unitId }).then(res => {
+      getAgencyList({ categoryId: this.categoryId }).then(res => {
         this.listLoading = false
-        if(Array.isArray(res.data)) {
-          this.unitData = res.data
+        if(Array.isArray(res.data) && res.data.length > 0 && res.data[0].agencyFee !== null) {
+          this.agencyType = 2
+          this.agency.fee = res.data[0].agencyFee
+          this.agency.id = res.data[0].id
+        } else {
+          this.agencyType = 1
+          this.agency.fee = ''
+          this.agency.id = ''
         }
       })
     },
     getSpeList() {
       // 获取规格管理表
       this.listLoading = true
-      getSpeList({ categoryId: this.specId }).then(res => {
+      getSpeList({ categoryId: this.categoryId }).then(res => {
         this.listLoading = false
         if(Array.isArray(res.data)) {
           this.specData = res.data
@@ -852,7 +883,7 @@ export default {
     getPropList(id) {
       // 获取属性表
       this.listLoading = true
-      getPropList({ categoryId: this.propId }).then(res => {
+      getPropList({ categoryId: this.categoryId }).then(res => {
         this.listLoading = false
         if(Array.isArray(res.data)) {
           this.propData = res.data
@@ -918,10 +949,11 @@ export default {
         this.diaLoading = true
         if(this.isEdit) {
           succMsg = '代办费用编辑成功'
-          await updateUnitList({
-            categoryId: this.unitId,
+          await updateAgency({
+            categoryId: this.categoryId,
             id: this.agency.id,
-            name: this.agency.name
+            agencyFee: this.agency.fee,
+            name: '斤'
           }).catch(err => {
             this.diaDisable = false
             this.diaLoading = false
@@ -929,9 +961,11 @@ export default {
           })
         } else {
           succMsg = '代办费用新增成功'
-          await insetUnitList({
-            categoryId: this.unitId,
-            name: this.agency.name
+          await insetAgency({
+            categoryId: this.categoryId,
+            agencyFee: this.agency.fee,
+            name: '斤',
+            status: 1
           }).catch(err => {
             this.diaDisable = false
             this.diaLoading = false
@@ -943,12 +977,12 @@ export default {
         }
         this.diaDisable = false
         this.diaLoading = false
-        this.getUnitList()
+        this.getAgencyList()
       } else if (this.dialogType === 'spec') {
         this.diaDisable = true
         this.diaLoading = true
         let specObj = {
-          categoryId: this.specId,
+          categoryId: this.categoryId,
           name: this.spec.name,
           showStyle: this.spec.showType,
           status: this.spec.status,
@@ -990,7 +1024,7 @@ export default {
           valueStr = this.prop.level
         }
         let insetParams = {
-          categoryId: this.propId,
+          categoryId: this.categoryId,
           name: this.prop.name,
           hint: this.prop.notice,
           inputType: this.prop.type,
