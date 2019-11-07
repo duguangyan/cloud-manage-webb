@@ -2204,6 +2204,9 @@ export default vm;
   }
 </style>
 <style>
+.edit-content{
+  padding: 0 15px 15px 15px;
+}
 .edit-content img{
   width: 100%;
   height: auto;
