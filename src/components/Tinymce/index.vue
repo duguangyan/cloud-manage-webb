@@ -5,16 +5,13 @@
 </template>
 
 <script>
-/**
- * docs:
- * https://panjiachen.github.io/vue-element-admin-site/feature/component/rich-editor.html#tinymce
- */
 import plugins from './plugins'
 import toolbar from './toolbar'
 import load from './dynamicLoadScript'
 import { fileUpload } from '@/api/goods/upload'
 
 const tinymceCDN = 'https://cdn.jsdelivr.net/npm/tinymce-all-in-one@4.9.3/tinymce.min.js'
+// import Editor from '@tinymce/tinymce-vue';
 
 export default {
   name: 'Tinymce',
@@ -98,7 +95,6 @@ export default {
   },
   methods: {
     init() {
-      // dynamic load tinymce from cdn
       load(tinymceCDN, (err) => {
         if (err) {
           this.$message.error(err.message)
@@ -125,7 +121,6 @@ export default {
         file_picker_types: 'media',
         advlist_bullet_styles: 'square',
         advlist_number_styles: 'default',
-        imagetools_cors_hosts: ['www.tinymce.com', 'codepen.io'],
         default_link_target: '_blank',
         link_title: false,
         nonbreaking_force_tab: true, // inserting nonbreaking space &nbsp; need Nonbreaking Space Plugin

@@ -9,7 +9,6 @@ function loadedTinymce() {
 const dynamicLoadScript = (src, callback) => {
   const existingScript = document.getElementById(src)
   const cb = callback || function() {}
-
   if (!existingScript) {
     const script = document.createElement('script')
     script.src = src // src url for the third-party library being loaded.
