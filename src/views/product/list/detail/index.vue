@@ -150,7 +150,7 @@
             </div>
         </el-form-item>
         <el-form-item label="介绍文案:">
-            <span>{{remark}}</span>
+            <div class="detial-content" v-html="remark" />
         </el-form-item>
       </div>
     </el-card>
@@ -519,7 +519,11 @@ let vm = {
 }
 export default vm;
 </script>
-
+<style>
+  .detial-content p{
+    margin: 0;
+  }
+</style>
 <style lang="scss" scoped>
 .imgs-item{
     overflow: hidden;

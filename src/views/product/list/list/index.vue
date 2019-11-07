@@ -259,6 +259,9 @@ export default {
     if(this.$route.query.status) {
       this.saleType = this.$route.query.status
       this.listQuery.status = this.$route.query.status
+      if(this.$route.query.status === '1') {
+        this.listQuery.sortColumn = 'create_time'
+      }
     }
     this.getList()
   },

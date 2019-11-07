@@ -361,33 +361,7 @@
             required: true, message: '介绍文案必填', trigger: 'blur'
           }"
           prop="remark">
-          <el-input
-            class="long-input"
-            v-model.trim="addForm.remark"
-            maxlength="1000"
-            show-word-limit
-            :autosize="{ minRows: 5}"
-            type="textarea"
-            placeholder="请输入介绍内容"
-          />
-        </el-form-item>
-      </div>
-    </el-card>
-    <el-card class="box-card">
-      <div slot="header" class="clearfix">
-        <span>富文本</span>
-      </div>
-      <div  class="text item">
-        <el-form-item 
-          label="介绍文案" 
-          :rules="{
-            required: true, message: '介绍文案必填', trigger: 'blur'
-          }"
-          prop="remark">
-          <div>
-            <tinymce v-model="content" :height="600" />
-          </div>
-          <div @click="showD">CLICK</div>
+          <tinymce v-model="addForm.remark" :height="600" />
         </el-form-item>
       </div>
     </el-card>
@@ -492,10 +466,7 @@
             <div class="tc">
               <span class="title-des">商品详情</span>
             </div>
-            <p>{{goodsVo.detail}}</p>
-            <div v-for="(item, index) in goodsVo.goodsImgList" :key="index">
-              <img class="mb10" v-if="item.type !== 2" :src="item.imgUrl" alt="">
-            </div>
+            <div class="edit-content" v-html="goodsVo.detail" />
           </div>
         </div>
         <div class="product-buy">
@@ -723,9 +694,6 @@ let vm = {
     }
   },
   methods: {
-    showD() {
-      console.log(this.content)
-    },
     getByCategoryId() {
       // 通过ID获取规格模板
       let CateParam = {
@@ -1236,7 +1204,6 @@ let vm = {
     },
     submitForm(formName, type) {
       if(this.activeName === 'first') {
-        console.log('first')
         this.tableShow = false
         let tableData = this.addForm.sku[this.showStyle.id] ? this.addForm.sku[this.showStyle.id].list : []
         for(let i = 0; i < tableData.length; i++) {
@@ -2237,7 +2204,10 @@ export default vm;
   }
 </style>
 <style>
-
+.edit-content img{
+  width: 100%;
+  height: auto;
+}
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
     -webkit-appearance: none;

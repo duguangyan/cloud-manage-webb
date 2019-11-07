@@ -1,9 +1,6 @@
 <template>
   <div :class="{fullscreen:fullscreen}" class="tinymce-container" :style="{width:containerWidth}">
     <textarea :id="tinymceId" class="tinymce-textarea" />
-    <!-- <div class="editor-custom-btn-container">
-      <editorImage color="#1890ff" class="editor-upload-btn" @successCBK="imageSuccessCBK" />
-    </div> -->
   </div>
 </template>
 
@@ -12,7 +9,6 @@
  * docs:
  * https://panjiachen.github.io/vue-element-admin-site/feature/component/rich-editor.html#tinymce
  */
-import editorImage from './components/EditorImage'
 import plugins from './plugins'
 import toolbar from './toolbar'
 import load from './dynamicLoadScript'
@@ -22,7 +18,6 @@ const tinymceCDN = 'https://cdn.jsdelivr.net/npm/tinymce-all-in-one@4.9.3/tinymc
 
 export default {
   name: 'Tinymce',
-  components: { editorImage },
   props: {
     id: {
       type: String,
@@ -43,7 +38,7 @@ export default {
     },
     menubar: {
       type: String,
-      default: 'file edit insert view format table'
+      default: 'edit insert view format table'
     },
     height: {
       type: [Number, String],
@@ -177,11 +172,17 @@ export default {
             input.onchange = function(){
               let file = this.files[0];//只选取第一个文件。如果要选取全部，后面注意做修改
               if(file.type !== 'video/mp4') {
-                _this.$message.error('上传视频只能是MP4格式!')
+                tinymce.activeEditor.windowManager.open({
+                  title: '上传视频只能是MP4格式!',
+                  buttons: [],
+                })
                 return false
               }
               if(file.size / 1024 / 1024 > 10) {
-                _this.$message.error('上传视频大小不能超过 10MB!')
+                tinymce.activeEditor.windowManager.open({
+                  title: '上传视频大小不能超过 10MB!',
+                  buttons: [],
+                })
                 return false
               } 
               let formData = new FormData()
