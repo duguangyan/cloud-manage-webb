@@ -47,9 +47,9 @@
       </el-date-picker>
     </div>
     <el-tabs v-model="saleType" @tab-click="handleClick">
-      <el-tab-pane label="已上架" name="3"></el-tab-pane>
-      <el-tab-pane label="待上架" name="1"></el-tab-pane>
-      <el-tab-pane label="已下架" name="4"></el-tab-pane>
+      <el-tab-pane label="待审核" name="0"></el-tab-pane>
+      <el-tab-pane label="未通过" name="2"></el-tab-pane>
+      <el-tab-pane label="已通过" name="5"></el-tab-pane>
     </el-tabs>
     <el-button v-if="btnsPermission.onSale.auth && (saleType === '1' || saleType === '4')" type="primary" size="small" v-waves class="filter-item mb10" @click="saleChange('mul', 0, '')">批量{{btnsPermission.onSale.name}}</el-button>
     <el-button v-if="btnsPermission.offSale.auth && saleType === '3'" size="small" v-waves class="filter-item mb10" @click="saleChange('mul', 1, '')">批量{{btnsPermission.offSale.name}}</el-button>
@@ -86,6 +86,11 @@
       <el-table-column
         prop="name"
         label="标题"
+        show-overflow-tooltip>
+      </el-table-column>
+      <el-table-column
+        prop="realName"
+        label="货主"
         show-overflow-tooltip>
       </el-table-column>
       <el-table-column
@@ -261,11 +266,11 @@ export default {
   },
   components: { Pagination },
   created() {
-    // if(this.$route.query.status) {
-    //   this.saleType = this.$route.query.status
-    //   this.listQuery.status = this.$route.query.status
-    // }
-    // this.getList()
+    if(this.$route.query.status) {
+      this.saleType = this.$route.query.status
+      this.listQuery.status = this.$route.query.status
+    }
+    this.getList()
   },
   mounted() {
     this.pageId = this.$route.meta.id
@@ -310,16 +315,8 @@ export default {
         param.keywords = this.listQuery.keywords
       }
       if(Array.isArray(this.dateValue)) {
-        if(this.listQuery.status == '3') {
-          param.sellTimeStart = this.dateValue[0]
-          param.sellTimeEnd = this.dateValue[1]
-        } else if(this.listQuery.status == '1') {
-          param.createTimeStart = this.dateValue[0]
-          param.createTimeEnd = this.dateValue[1]
-        } else if(this.listQuery.status == '4') {
-          param.downTimeStart = this.dateValue[0]
-          param.sellTimeEnd = this.dateValue[1]
-        }
+        param.timeStart = this.dateValue[0]
+        param.timeEnd = this.dateValue[1]
       }
       this.listLoading = true
       this.disable = true
@@ -431,20 +428,13 @@ export default {
       // 已上架、待上架、已下架切换
       this.listQuery.pageIndex = 1
       this.listQuery.status = tab.name
-      if(tab.name === '3') {
+      if(tab.name === '0') {
         this.listQuery.sortColumn = 'sell_time'
-      } else if (tab.name === '1') {
+      } else if (tab.name === '2') {
         this.listQuery.sortColumn = 'create_time'
-      } else if(tab.name === '4') {
+      } else if(tab.name === '5') {
         this.listQuery.sortColumn = 'modify_time'
       }
-      this.listQuery.sortType = 0
-      this.listQuery.sellTimeStart = ''
-      this.listQuery.sellTimeEnd = ''
-      this.listQuery.createTimeStart = ''
-      this.listQuery.createTimeEnd = ''
-      this.listQuery.downTimeStart = ''
-      this.listQuery.downTimeEnd = ''
       this.dateValue = ''
       this.getList()
     },

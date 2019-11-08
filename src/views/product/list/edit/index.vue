@@ -346,9 +346,8 @@
           </el-upload>
           <div>
             <p style="margin: 0;">还能添加<span style="color: #ff0000">{{10 - addForm.imgsBox.length}}</span>张图片或视频；</p>
-            <p style="margin: 0;">* 仅支持3M以内jpg、jpeg、gif、png格式图片上传；图片建议尺寸500*500；</p>
             <p style="margin: 0;">* 仅支持10mb以内mp4视频上传；</p>
-            <p style="margin: 0;">* 文件大小不能超过3MB，包括图片和视频；图片建议尺寸500*500；支持JPG、GIF、PNG格式；</p>
+            <p style="margin: 0;">* 文件大小不能超过3MB，包括图片和视频；图片建议尺寸800*800；支持JPG、GIF、PNG格式；</p>
             <p style="margin: 0;">* 默认第一个文件为商品封面图，如果是视频则取第一帧画面作为封面图。</p>
           </div>
           <div v-if="showPackgeErr" class="el-form-item__error">
