@@ -10,7 +10,7 @@ import toolbar from './toolbar'
 import load from './dynamicLoadScript'
 import { fileUpload } from '@/api/goods/upload'
 
-const tinymceCDN = process.env.NODE_ENV === 'development' ? 'http://192.168.0.202/npm/tinymce.min.js' : location.origin + '/npm/tinymce.min.js'
+const tinymceCDN = process.env.NODE_ENV === 'development' ? 'http://192.168.0.202/pluginResource/tinymce.min.js' : location.origin + '/pluginResource/tinymce.min.js'
 
 export default {
   name: 'Tinymce',
