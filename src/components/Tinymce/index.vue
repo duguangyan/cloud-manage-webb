@@ -10,7 +10,7 @@ import toolbar from './toolbar'
 import load from './dynamicLoadScript'
 import { fileUpload } from '@/api/goods/upload'
 
-const tinymceCDN = 'https://cdn.jsdelivr.net/npm/tinymce-all-in-one@4.9.3/tinymce.min.js'
+const tinymceCDN = process.env.NODE_ENV === 'development' ? 'http://192.168.0.202/npm/tinymce.min.js' : location.origin + 'npm/tinymce.min.js'
 
 export default {
   name: 'Tinymce',
@@ -94,9 +94,6 @@ export default {
   },
   methods: {
     init() {
-      // console.log('tn')
-      // console.log(TN)
-      // this.initTinymce()
       load(tinymceCDN, (err) => {
         if (err) {
           this.$message.error(err.message)
@@ -107,7 +104,6 @@ export default {
     },
     initTinymce() {
       const _this = this
-      console.log(window.tinymce)
       window.tinymce.init({
         selector: `#${this.tinymceId}`,
         language: this.languageTypeList['zh'],

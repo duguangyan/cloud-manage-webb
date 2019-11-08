@@ -247,7 +247,7 @@ export default {
           }
         }]
       },
-      dateValue: '',
+      dateValue: null,
       saleType: "3",
       tableData: [],
       multipleSelection: [],
@@ -436,14 +436,10 @@ export default {
       } else if(tab.name === '4') {
         this.listQuery.sortColumn = 'modify_time'
       }
+      this.listQuery.keywords = ''
       this.listQuery.sortType = 0
-      this.listQuery.sellTimeStart = ''
-      this.listQuery.sellTimeEnd = ''
-      this.listQuery.createTimeStart = ''
-      this.listQuery.createTimeEnd = ''
-      this.listQuery.downTimeStart = ''
-      this.listQuery.downTimeEnd = ''
-      this.dateValue = ''
+      this.dateValue = null
+      this.treeValue = null
       this.getList()
     },
     handleSelectionChange(val) {

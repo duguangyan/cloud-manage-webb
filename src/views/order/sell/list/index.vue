@@ -268,7 +268,6 @@ export default {
         orderId: '',
         pageIndex: 1,
         pageSize: 10,
-        shopId: '',
         status: '',
         userId: '',
         userName: ''
@@ -281,6 +280,9 @@ export default {
       // 已上架、待上架、已下架切换
       this.order.status = tab.name === 'all' ? '' : parseInt(tab.name)
       this.order.pageIndex = 1
+      this.order.userId = ''
+      this.order.orderId = ''
+      this.order.userName = ''
       this.dateValue = null
       this.getOrderList()
     },

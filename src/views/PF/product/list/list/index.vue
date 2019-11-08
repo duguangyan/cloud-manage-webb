@@ -4,6 +4,8 @@
       <template v-if="btnsPermission.search.auth">
         商品ID/标题：
         <el-input v-model="listQuery.keywords"  placeholder="请输入商品ID/标题" style="width: 200px;" class="filter-item mr20" @keyup.enter.native="handleFilter" />
+         标题：
+        <el-input v-model="listQuery.keywords"  placeholder="请输入商品ID/标题" style="width: 200px;" class="filter-item mr20" @keyup.enter.native="handleFilter" />
         品种：
         <el-cascader
           v-model="treeValue"
@@ -21,6 +23,8 @@
       <el-button v-if="btnsPermission.add.auth"  @click="jump" v-waves class="filter-item add-btn">{{btnsPermission.add.name}}</el-button>
     </div>
     <div v-if="btnsPermission.search.auth" class="mb20">
+      货主名称：
+      <el-input v-model="listQuery.keywords"  placeholder="请输入商品ID/标题" style="width: 200px;" class="filter-item mr20" @keyup.enter.native="handleFilter" />
       <template v-if="saleType === '3'">
         上架时间：
       </template>
@@ -180,32 +184,33 @@ export default {
       btnsPermission: {
         search: {
           name: '搜索',
-          auth: false
+          auth: true
         },
         add: {
           name: '添加',
-          auth: false
+          auth: true
         },
         edit: {
           name: '编辑',
-          auth: false
+          auth: true
         },
         onSale: {
           name: '上架',
-          auth: false
+          auth: true
         },
         offSale: {
           name: '下架',
-          auth: false
+          auth: true
         },
         detail: {
           name: '查看',
-          auth: false
+          auth: true
         }
       },
       sortOrders: ['descending', 'ascending', null],
       disable: false,
       pageId: '',
+      listLoading: false,
       listQuery: {
         keywords: '',
         pageIndex: 1,
@@ -256,11 +261,11 @@ export default {
   },
   components: { Pagination },
   created() {
-    if(this.$route.query.status) {
-      this.saleType = this.$route.query.status
-      this.listQuery.status = this.$route.query.status
-    }
-    this.getList()
+    // if(this.$route.query.status) {
+    //   this.saleType = this.$route.query.status
+    //   this.listQuery.status = this.$route.query.status
+    // }
+    // this.getList()
   },
   mounted() {
     this.pageId = this.$route.meta.id

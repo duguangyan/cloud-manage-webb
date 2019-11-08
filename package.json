@@ -12,7 +12,8 @@
     "lint": "eslint --ext .js,.vue src",
     "test:unit": "jest --clearCache && vue-cli-service test:unit",
     "test:ci": "npm run lint && npm run test:unit",
-    "svgo": "svgo -f src/icons/svg --config=src/icons/svgo.yml"
+    "svgo": "svgo -f src/icons/svg --config=src/icons/svgo.yml",
+    "ts":  "vue-cli-service serve --process.env.NODE_ENV=test"
   },
   "dependencies": {
     "@tinymce/tinymce-vue": "^3.0.1",
