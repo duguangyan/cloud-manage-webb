@@ -11,8 +11,6 @@ import load from './dynamicLoadScript'
 import { fileUpload } from '@/api/goods/upload'
 
 const tinymceCDN = 'https://cdn.jsdelivr.net/npm/tinymce-all-in-one@4.9.3/tinymce.min.js'
-// import Editor from '@tinymce/tinymce-vue';
-//import TN from '@/assets/js/tinymce.min.js'
 
 export default {
   name: 'Tinymce',
@@ -96,6 +94,9 @@ export default {
   },
   methods: {
     init() {
+      // console.log('tn')
+      // console.log(TN)
+      // this.initTinymce()
       load(tinymceCDN, (err) => {
         if (err) {
           this.$message.error(err.message)
@@ -161,44 +162,44 @@ export default {
             console.log(err);
           });
         },
-        file_picker_callback(cb, value, meta) {
-          //当点击meidia图标上传时,判断meta.filetype == 'media'有必要，因为file_picker_callback是media(媒体)、image(图片)、file(文件)的共同入口
-          if (meta.filetype == 'media') {
-            let input = document.createElement('input')
-            input.setAttribute('type', 'file')
-            input.onchange = function(){
-              let file = this.files[0];//只选取第一个文件。如果要选取全部，后面注意做修改
-              if(file.type !== 'video/mp4') {
-                tinymce.activeEditor.windowManager.open({
-                  title: '上传视频只能是MP4格式!',
-                  buttons: [],
-                })
-                return false
-              }
-              if(file.size / 1024 / 1024 > 10) {
-                tinymce.activeEditor.windowManager.open({
-                  title: '上传视频大小不能超过 10MB!',
-                  buttons: [],
-                })
-                return false
-              } 
-              let formData = new FormData()
-              formData.append('file', file)
-              tinymce.activeEditor.setProgressState(true)
-              fileUpload(formData).then(response => {
-                tinymce.activeEditor.setProgressState(false)
-                let mediaLocation=response.data.url
-                //cb()回调函数，将mediaLocation显示在弹框输入框中
-                cb(mediaLocation, { title: file.name });
-              }).catch(err => {
-                tinymce.activeEditor.setProgressState(false)
-                _this.$message.error('视频上传失败！')
-                console.log(err)
-              })
-            }
-            input.click()
-          }
-        }
+        // file_picker_callback(cb, value, meta) {
+        //   //当点击meidia图标上传时,判断meta.filetype == 'media'有必要，因为file_picker_callback是media(媒体)、image(图片)、file(文件)的共同入口
+        //   if (meta.filetype == 'media') {
+        //     let input = document.createElement('input')
+        //     input.setAttribute('type', 'file')
+        //     input.onchange = function(){
+        //       let file = this.files[0];//只选取第一个文件。如果要选取全部，后面注意做修改
+        //       if(file.type !== 'video/mp4') {
+        //         tinymce.activeEditor.windowManager.open({
+        //           title: '上传视频只能是MP4格式!',
+        //           buttons: [],
+        //         })
+        //         return false
+        //       }
+        //       if(file.size / 1024 / 1024 > 10) {
+        //         tinymce.activeEditor.windowManager.open({
+        //           title: '上传视频大小不能超过 10MB!',
+        //           buttons: [],
+        //         })
+        //         return false
+        //       } 
+        //       let formData = new FormData()
+        //       formData.append('file', file)
+        //       tinymce.activeEditor.setProgressState(true)
+        //       fileUpload(formData).then(response => {
+        //         tinymce.activeEditor.setProgressState(false)
+        //         let mediaLocation=response.data.url
+        //         //cb()回调函数，将mediaLocation显示在弹框输入框中
+        //         cb(mediaLocation, { title: file.name });
+        //       }).catch(err => {
+        //         tinymce.activeEditor.setProgressState(false)
+        //         _this.$message.error('视频上传失败！')
+        //         console.log(err)
+        //       })
+        //     }
+        //     input.click()
+        //   }
+        // }
       })
     },
     destroyTinymce() {
