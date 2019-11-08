@@ -1211,13 +1211,16 @@ let vm = {
             return false
           }
         }
-        if(tableData.length > 1 && (tableData[tableData.length - 1].number < tableData[tableData.length - 2].number || tableData[tableData.length - 1].price > tableData[tableData.length - 2].price)) {
-          this.$message({
-            message: `阶梯${tableData.length}的起批数必须比阶梯${tableData.length - 1}的起批数大，阶梯${tableData.length}的单价必须比阶梯${tableData.length - 1}的单价小!`,
-            type: 'warning'
-          })
-          return false
+        if(this.showStyle.type === '2' ) {
+          if(tableData.length > 1 && (tableData[tableData.length - 1].number < tableData[tableData.length - 2].number || tableData[tableData.length - 1].price > tableData[tableData.length - 2].price)) {
+            this.$message({
+              message: `阶梯${tableData.length}的起批数必须比阶梯${tableData.length - 1}的起批数大，阶梯${tableData.length}的单价必须比阶梯${tableData.length - 1}的单价小!`,
+              type: 'warning'
+            })
+            return false
+          }
         }
+        
       } else if(this.activeName === 'second') {
         this.moreTableShow = false
         let tableData = this.addForm.moreSpecData

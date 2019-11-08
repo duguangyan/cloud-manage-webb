@@ -203,7 +203,7 @@ export function editGoods(data) {
 // 获取商品详情
 export function getGoodsDetail(query) {
   return request({
-    url: '/ws/goods/goods/findGoodsDetail',
+    url: '/ws/goods/findGoodsDetail',
     method: 'get',
     params: query
   })

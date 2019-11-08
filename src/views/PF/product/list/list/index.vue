@@ -51,8 +51,8 @@
       <el-tab-pane label="未通过" name="2"></el-tab-pane>
       <el-tab-pane label="已通过" name="5"></el-tab-pane>
     </el-tabs>
-    <el-button v-if="btnsPermission.onSale.auth && (saleType === '1' || saleType === '4')" type="primary" size="small" v-waves class="filter-item mb10" @click="saleChange('mul', 0, '')">批量{{btnsPermission.onSale.name}}</el-button>
-    <el-button v-if="btnsPermission.offSale.auth && saleType === '3'" size="small" v-waves class="filter-item mb10" @click="saleChange('mul', 1, '')">批量{{btnsPermission.offSale.name}}</el-button>
+    <!-- <el-button v-if="btnsPermission.onSale.auth && (saleType === '1' || saleType === '4')" type="primary" size="small" v-waves class="filter-item mb10" @click="saleChange('mul', 0, '')">批量{{btnsPermission.onSale.name}}</el-button>
+    <el-button v-if="btnsPermission.offSale.auth && saleType === '3'" size="small" v-waves class="filter-item mb10" @click="saleChange('mul', 1, '')">批量{{btnsPermission.offSale.name}}</el-button> -->
     <el-table
       ref="multipleTable"
       v-loading="listLoading"
@@ -63,11 +63,11 @@
       tooltip-effect="dark"
       style="width: 100%"
       @selection-change="handleSelectionChange">
-      <el-table-column
+      <!-- <el-table-column
         type="selection"
         align="center"
         width="55">
-      </el-table-column>
+      </el-table-column> -->
       <el-table-column
         align="center"
         prop="id"
@@ -98,6 +98,11 @@
         label="品种"
         show-overflow-tooltip>
       </el-table-column>
+       <el-table-column
+        prop="place"
+        label="产地"
+        show-overflow-tooltip>
+      </el-table-column>
       <el-table-column
         align="center"
         sortable="custom"
@@ -116,49 +121,50 @@
         align="center"
         sortable="custom"
         :sort-orders="sortOrders"
-        prop="spuSalesNum"
-        label="销量"
-        width="120"
-        show-overflow-tooltip>
-      </el-table-column>
-      <el-table-column
-        align="center"
-        sortable="custom"
-        :sort-orders="sortOrders"
-        prop="hits"
-        label="浏览量"
-        width="120"
-        show-overflow-tooltip>
-      </el-table-column>
-      <el-table-column
-        align="center"
-        sortable="custom"
-        :sort-orders="sortOrders"
         prop="totalStock"
         label="库存"
         width="120"
         show-overflow-tooltip>
       </el-table-column>
       <el-table-column
-        v-if="saleType === '3'"
+        v-if="saleType === '0'"
         align="center"
-        prop="sellTime"
-        label="上架时间"
+        prop="applyTime"
+        label="申请时间"
         width="160">
       </el-table-column>
       <el-table-column
-        v-if="saleType === '1'"
+        v-if="saleType === '2'"
         align="center"
-        prop="createTime"
-        label="创建时间"
+        prop="rejectTime"
+        label="审核时间"
         width="160">
       </el-table-column>
       <el-table-column
-        v-if="saleType === '4'"
+        v-if="saleType === '2'"
+        align="center"
+        prop="rejectReason"
+        label="原因"
+        width="160">
+      </el-table-column>
+      <el-table-column
+        v-if="saleType === '5'"
         align="center"
         prop="downTime"
-        label="下架时间"
+        label="上/下架时间"
         width="160">
+      </el-table-column>
+      <el-table-column
+        v-if="saleType === '3'||saleType === '4'"
+        label="状态"
+        width="180"
+        align="center"
+        column-key="date"
+        :filters="[{text: '上架', value: '3'}, {text: '下架', value: '4'}]"
+        :filter-method="filterHandler"
+      >
+        <span v-if="saleType === '3'">上架</span>
+        <span else>下架</span>
       </el-table-column>
       <el-table-column align="center" label="操作" width="300">
         <template slot-scope="scope">
@@ -258,7 +264,7 @@ export default {
         }]
       },
       dateValue: '',
-      saleType: "3",
+      saleType: "0",
       tableData: [],
       multipleSelection: [],
       total: 0
@@ -424,6 +430,10 @@ export default {
       this.saleType = '3'
       this.getList()
     },
+    filterHandler(value, row, column) {
+      const property = column['property'];
+      return row[property] === value;
+    },
     handleClick(tab, event) {
       // 已上架、待上架、已下架切换
       this.listQuery.pageIndex = 1
@@ -477,7 +487,7 @@ export default {
     },
     getDetail(scope) {
       // 查看商品详情
-      this.$router.push({path: 'list/detail', query:{ 
+      this.$router.push({path: '/PF/product/list/detail', query:{ 
         id: scope.row.categoryId,
         eid: scope.row.id,
         pageId: this.pageId

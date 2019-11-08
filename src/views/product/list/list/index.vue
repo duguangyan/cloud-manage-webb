@@ -481,7 +481,7 @@ export default {
     },
     getDetail(scope) {
       // 查看商品详情
-      this.$router.push({path: 'list/detail', query:{ 
+      this.$router.push({path: '/product/list/detail', query:{ 
         id: scope.row.categoryId,
         eid: scope.row.id,
         pageId: this.pageId
