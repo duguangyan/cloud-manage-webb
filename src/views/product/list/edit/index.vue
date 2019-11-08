@@ -2211,6 +2211,10 @@ export default vm;
   width: 100%;
   height: auto;
 }
+.edit-content video{
+  max-width: 100%;
+  height: auto;
+}
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
     -webkit-appearance: none;

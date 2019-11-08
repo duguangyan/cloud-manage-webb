@@ -12,6 +12,7 @@ import { fileUpload } from '@/api/goods/upload'
 
 const tinymceCDN = 'https://cdn.jsdelivr.net/npm/tinymce-all-in-one@4.9.3/tinymce.min.js'
 // import Editor from '@tinymce/tinymce-vue';
+//import TN from '@/assets/js/tinymce.min.js'
 
 export default {
   name: 'Tinymce',
@@ -105,6 +106,7 @@ export default {
     },
     initTinymce() {
       const _this = this
+      console.log(window.tinymce)
       window.tinymce.init({
         selector: `#${this.tinymceId}`,
         language: this.languageTypeList['zh'],
