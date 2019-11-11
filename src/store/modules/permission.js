@@ -67,42 +67,6 @@ const routeModule = [
     hidden: true,
     noCache: true
   },
-  { // 批发商品
-    name: 'PFproduct',
-    path: '/PF/product',
-    compare: 'PFproduct',
-    source: 'PFproduct',
-    isSource: false,
-    hidden: false,
-    redirect: '/PF/product/classify'
-  },
-  { // 批发商品分类
-    name: 'PFproductClassify',
-    path: '/PF/product/classify',
-    compare: 'PF/product/classify/index',
-    source: 'PF/product/classify/index',
-    isSource: true,
-    hidden: false,
-    noCache: false
-  },
-  { // 批发商品列表
-    name: 'PFproductList',
-    path: '/PF/product/list',
-    compare: 'PF/product/list/list/index',
-    source: 'PF/product/list/list/index',
-    isSource: true,
-    hidden: false,
-    noCache: true
-  },
-  { // 批发商品详情
-    name: 'PFproductDetail',
-    path: '/PF/product/list/detail',
-    compare: 'PF/product/list/detail/index',
-    source: 'PF/product/list/detail/index',
-    isSource: true,
-    hidden: true,
-    noCache: true
-  },
   {
     name: 'stat',
     path: '/stat',
@@ -130,24 +94,6 @@ const routeModule = [
     hidden: false,
     noCache: false
   },
-  { // 批发数据统计
-    name: 'PFstat',
-    path: '/PF/stat',
-    compare: 'PFstat',
-    source: 'PFstat',
-    isSource: false,
-    hidden: false,
-    redirect: '/PF/stat/general'
-  },
-  { // 批发数据概况
-    name: 'PFstatGeneral',
-    path: '/PF/stat/general',
-    compare: 'PF/stat/general/index',
-    source: 'PF/stat/general/index',
-    isSource: true,
-    hidden: false,
-    noCache: true
-  },
   {
     name: 'order',
     path: '/order',
@@ -171,33 +117,6 @@ const routeModule = [
     path: '/order/sell/detail',
     compare: 'order/sell/detail/index',
     source: 'order/sell/detail/index',
-    isSource: true,
-    hidden: true,
-    noCache: true
-  },
-  { // 批发订单
-    name: 'PForder',
-    path: '/PF/order',
-    compare: 'PForder',
-    source: 'PForder',
-    isSource: false,
-    hidden: false,
-    redirect: 'PF/order/sell/list'
-  },
-  { // 批发订单列表
-    name: 'PForderSellList',
-    path: '/PF/order/sell/list',
-    compare: 'PF/order/sell/list/index',
-    source: 'PF/order/sell/list/index',
-    isSource: true,
-    hidden: false,
-    noCache: true
-  },
-  { // 批发订单详情
-    name: 'PForderDetailList',
-    path: '/PF/order/sell/detail',
-    compare: 'PF/order/sell/detail/index',
-    source: 'PF/order/sell/detail/index',
     isSource: true,
     hidden: true,
     noCache: true
@@ -282,15 +201,6 @@ const routeModule = [
     isSource: false,
     hidden: false,
     redirect: '/system/menu'
-  },
-  { // 批发邀请码管理
-    name: 'invite',
-    path: '/system/invite',
-    compare: 'PF/invite/index',
-    source: 'PF/invite/index',
-    isSource: true,
-    hidden: false,
-    noCache: true
   },
   {
     name: 'systemMenu',
@@ -398,42 +308,6 @@ const routeModule = [
     source: 'wechat/list/index',
     isSource: true,
     hidden: false,
-    noCache: true
-  },
-  {
-    name: 'PFapprove',
-    path: '/PF/approve',
-    compare: 'PFapprove',
-    source: 'PFapprove',
-    isSource: false,
-    hidden: false,
-    redirect: '/PF/approve/list'
-  },
-  {
-    name: 'PFapproveList',
-    path: '/PF/approve/list',
-    compare: 'PF/approve/list/index',
-    source: 'PF/approve/list/index',
-    isSource: true,
-    hidden: false,
-    noCache: true
-  },
-  {
-    name: 'PFapproveDetail',
-    path: '/PF/approve/detail/1',
-    compare: 'PF/approve/owner/detail/index',
-    source: 'PF/approve/detail/index',
-    isSource: true,
-    hidden: true,
-    noCache: true
-  },
-  {
-    name: 'PFapproveDetail',
-    path: '/PF/approve/detail/2',
-    compare: 'PF/approve/commission/detail/index',
-    source: 'PF/approve/detail/index',
-    isSource: true,
-    hidden: true,
     noCache: true
   }
 ]
