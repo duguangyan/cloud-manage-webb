@@ -1011,13 +1011,22 @@ let vm = {
           this.$set(this.addForm, 'sku', skuInitObj)
         }
         if(msgObj !== undefined && this.showStyle.id && this.addForm.sku[this.showStyle.id]) {
-          this.addForm.sku[this.showStyle.id].showStyle = msgObj.showStyle
-          this.addForm.sku[this.showStyle.id].list = msgObj.skuArr
-          this.addForm.sku[this.showStyle.id].name = msgObj.name
-          if(msgObj.stock !== undefined) {
-            this.addForm.sku[this.showStyle.id].store = msgObj.stock
-          }
-          this.showStyle.type = msgObj.showStyle
+         if(this.showAble[this.showStyle.id] === msgObj.showStyle) {
+           this.addForm.sku[this.showStyle.id].showStyle = msgObj.showStyle
+            this.addForm.sku[this.showStyle.id].list = msgObj.skuArr
+            this.addForm.sku[this.showStyle.id].name = msgObj.name
+            if(msgObj.stock !== undefined) {
+              this.addForm.sku[this.showStyle.id].store = msgObj.stock
+            }
+            this.showStyle.type = msgObj.showStyle
+         } else {
+           if(this.showAble[this.showStyle.id]) {
+             this.showStyle.type = this.showAble[this.showStyle.id]
+           } else {
+             this.showAble[this.showStyle.id] = msgObj.showStyle
+             this.showStyle.type = msgObj.showStyle
+           }
+         }
         }
       })
     },
@@ -1053,7 +1062,6 @@ let vm = {
         if(Array.isArray(res.data)) {
           this.sellSpeData = res.data
         }
-        
       }).catch(err => {
         this.moreLoading = false
       })
@@ -1271,6 +1279,7 @@ let vm = {
         })
         return false
       } else {
+        let err = false
         baseData.forEach(item => {
           if(item.list.length > 0) {
             let obj = {}
@@ -1283,12 +1292,12 @@ let vm = {
             if(Array.isArray(item.list)) {
               let addRemark = ''
               if(item.isRemark) {
-                let err = false
                 let ref = String(item.id)
                 try {
                   this.$refs[ref][0].getCheckedNodes()[0].pathLabels.forEach(rItem => {
                     addRemark += addRemark.length === 0 ? rItem : ('-' + rItem)
                   })
+                  this.placeProduct = addRemark
                 } catch (error) {
                   err = true
                   this.$message({
@@ -1297,9 +1306,8 @@ let vm = {
                   });
                 }
                 if(err) {
-                  return false
+                  return false;
                 }
-                this.placeProduct = addRemark
               }
               item.list.forEach(itemList => {
                 let itemObj = {}
@@ -1319,6 +1327,9 @@ let vm = {
             goodsVO.goodsAttrList.push(obj)
           }
         })
+        if(err) {
+          return false;
+        }
       }
       // 商品sku信息
       goodsVO.goodsSkuList = []

@@ -346,7 +346,11 @@ let vm = {
           this.unitName = res.data.goodsDetailSpecList[0].name
           if (res.data.goods.showStyle === '1') {
             this.normalData = res.data.goodsSkuList
-            this.valueSuffix = res.data.goodsDetailSpecList[0].valueSuffix
+            if (res.data.goodsDetailSpecList[0].valueSuffix === null ) {
+               this.valueSuffix = ''
+            } else {
+               this.valueSuffix = res.data.goodsDetailSpecList[0].valueSuffix
+            }
           } else if(String(res.data.goods.showStyle) === '2') {
             let skuData = JSON.parse(res.data.goodsSkuList[0].priceExp)
             this.stairStock = res.data.goodsSkuList[0].stock
