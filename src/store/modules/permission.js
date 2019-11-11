@@ -283,6 +283,15 @@ const routeModule = [
     hidden: false,
     redirect: '/system/menu'
   },
+  { // 批发邀请码管理
+    name: 'invite',
+    path: '/system/invite',
+    compare: 'PF/invite/index',
+    source: 'PF/invite/index',
+    isSource: true,
+    hidden: false,
+    noCache: true
+  },
   {
     name: 'systemMenu',
     path: '/system/menu',

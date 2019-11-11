@@ -70,7 +70,7 @@
               border>
               <el-table-column  label="规格名称" width="220" align="center">
                   <template slot-scope="scope">
-                    <span>{{scope.row.attrValueList[0].value}}</span><span v-if="valueSuffix.length > 0">/{{valueSuffix}}</span>
+                    <span>{{scope.row.attrValueList[0].value}}</span><span v-if="valueSuffix.length > 0">{{valueSuffix}}</span>
                 </template>
               </el-table-column>
               <el-table-column label="起批量" prop="startNum" width="220" align="center"></el-table-column>
