@@ -1017,6 +1017,13 @@ export default {
         this.diaDisable = true
         this.diaLoading = true
         let valueStr = ''
+        if(this.prop.type === 1 || this.prop.type === 2 || this.prop.type === 3) {
+          this.prop.list.forEach(item => {
+            valueStr += valueStr.length === 0 ? item.value : ',' + item.value
+          })
+        } else if(this.prop.type === 0) {
+          valueStr = this.prop.level
+        }
         let insetParams = {
           categoryId: this.propId,
           name: this.prop.name,
@@ -1025,15 +1032,8 @@ export default {
           isRequire: this.prop.isRequire,
           isSearch: this.prop.isSearch,
           sort: this.prop.sort,
-          status: this.prop.status
-        }
-        if(this.prop.type === 1 || this.prop.type === 2 || this.prop.type === 3) {
-          this.prop.list.forEach(item => {
-            valueStr += valueStr.length === 0 ? item.value : ',' + item.value
-          })
-          insetParams.valueStr = valueStr
-        } else if(this.prop.type === 0) {
-          insetParams.valueStr = this.prop.level
+          status: this.prop.status,
+          valueStr: valueStr
         }
         // if(this.prop.type === 4) {
         //   insetParams.exp = this.prop.afterDes
