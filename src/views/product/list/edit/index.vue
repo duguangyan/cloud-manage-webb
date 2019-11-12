@@ -219,7 +219,7 @@
                 v-for="(item, index) in addForm.moreSpec[pIndex].list" :key="index"
                 placeholder="请输入规格值"
                 required
-                v-model="addForm.moreSpec[pIndex].list[index].value"
+                v-model.trim="addForm.moreSpec[pIndex].list[index].value"
                 size="mini"
                 class="table-input mr5"
                 clearable
@@ -877,7 +877,7 @@ let vm = {
           this.goodsSkuData = res.data.goodsSkuList
           this.addForm.moreSpec = specData
           this.specValueBlur('', 'true', true)
-        } else { 
+        } else {
           this.addForm.unit = res.data.goods.unit
           let msgObj = {}
           msgObj.skuArr = []
@@ -1428,6 +1428,19 @@ let vm = {
           goodsVO.goodsSpecList.push(speObj)
         }
       } else if(this.activeName === 'second') {
+        for(let i = 0; i < this.addForm.moreSpec.length; i++) {
+          if(Array.isArray(this.addForm.moreSpec[i].list)) {
+            for(let j = 0; j < this.addForm.moreSpec[i].list.length;j++) {
+              if(this.addForm.moreSpec[i].list[j].value === '') {
+                this.$message({
+                  type: 'warning',
+                  message: '更多报价方式的规格值不能为空!'
+                })
+                return false
+              }
+            }
+          }
+        }
         goodsVO.unit = this.addForm.unitMore
         let skuSort = 0
         // 起批量一致
@@ -1713,12 +1726,14 @@ let vm = {
     },
     createTree(obj, deep, limit, result, arr, isInit) {
       if(deep < limit) {
-        for(let i = 0; i < obj[deep].list.length; i++) {
-          result[deep] = {
-            name: obj[deep].selectValue,
-            value: obj[deep].list[i].value 
+        if(obj[deep] && obj[deep].list) {
+          for(let i = 0; i < obj[deep].list.length; i++) {
+            result[deep] = {
+              name: obj[deep].selectValue,
+              value: obj[deep].list[i].value 
+            }
+            this.createTree(obj, deep + 1, limit, result, arr, isInit)
           }
-          this.createTree(obj, deep + 1, limit, result, arr, isInit)
         }
       } else {
         let item = {}
@@ -1730,13 +1745,22 @@ let vm = {
             id: ''
           }
         } else {
-          item = {
-            startNum: this.goodsSkuData[this.skuCounter].startNum,
-            price: this.goodsSkuData[this.skuCounter].price,
-            store: this.goodsSkuData[this.skuCounter].stock,
-            skuId: this.goodsSkuData[this.skuCounter].id
+          if(this.goodsSkuData[this.skuCounter]) {
+            item = {
+              startNum: this.goodsSkuData[this.skuCounter].startNum,
+              price: this.goodsSkuData[this.skuCounter].price,
+              store: this.goodsSkuData[this.skuCounter].stock,
+              skuId: this.goodsSkuData[this.skuCounter].id
+            }
+            this.skuCounter++
+          } else {
+            item = {
+              startNum: '',
+              price: '',
+              store: '',
+              id: ''
+            }
           }
-          this.skuCounter++
         }
         let [...itemV] = result
         item.itemValue = itemV
