@@ -173,7 +173,7 @@ const routeModule = [
     source: 'activity/manage/detail/add/index',
     isSource: true,
     hidden: true,
-    noCache: false
+    noCache: true
   },
   {
     name: 'permissionUser',

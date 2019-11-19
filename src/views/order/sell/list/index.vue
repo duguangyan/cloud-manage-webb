@@ -47,7 +47,12 @@
           border
           tooltip-effect="dark"
           style="width: 100%"
+          @selection-change="handleSelectionChange"
           :header-cell-style="{background: '#f3f3f3'}">
+           <el-table-column
+            type="selection"
+            width="55">
+          </el-table-column>
           <el-table-column
             prop="orderId"
             label="订单编号"
@@ -230,8 +235,10 @@ export default {
         status: this.order.status,
         pageIndex : this.order.pageIndex,
         pageSize: this.order.pageSize,
-        shopId: this.order.shopId,
-        userId: this.order.userId
+        shopId: this.order.shopId
+      }
+      if(this.order.userId.length > 0) {
+        param.userId = this.order.userId;
       }
       if(Array.isArray(this.dateValue)) {
         param.createTimeBegin = this.dateValue[0]
@@ -309,17 +316,52 @@ export default {
       this.order.pageIndex = data.page
       this.getOrderList()
     },
+    handleSelectionChange(val) {
+      // 多选数据
+      this.multipleSelection = val;
+    },
     exportMsg() {
       this.downloadLoading = true
-      exportOrder({
+      let param = {
         shopId: this.order.shopId,
-        createTimeBegin: this.order.createTimeBegin,
-        createTimeEnd: this.order.createTimeEnd,
-        orderId: this.order.orderId,
+        pageIndex: this.order.pageIndex,
+        pageSize: this.order.pageSize,
         status: this.order.status,
-        userId: this.order.userId,
-        userName: this.order.userName
-      }).then(res => {
+      }
+      if(Array.isArray(this.dateValue)) {
+        param.createTimeBegin = this.dateValue[0]
+        param.createTimeEnd = this.dateValue[1]
+      }
+      if(this.order.orderId.length > 0) {
+        param.orderId = this.order.orderId;
+      }
+      if(this.order.userId.length > 0) {
+        param.userId = this.order.userId;
+      }
+      if(this.order.userName.length > 0) {
+        param.userName = this.order.userName;
+      }
+      if (this.multipleSelection.length > 0) {
+        let exportArr = [];
+        this.multipleSelection.forEach(item => {
+          exportArr.push(item.orderId);
+        });
+        param.expIds = exportArr;
+      }
+      let x = {
+      "createTimeBegin": "2019-01-01 00:00:00",
+      "createTimeEnd": "2019-12-01 00:00:00",
+      "expIds": null,
+      "orderId": "",
+      "pageIndex": 1,
+      "pageSize": 10,
+      "shopId": "1",
+      "status": 0,
+      "userId": "",
+      "userName": ""
+    }
+      exportOrder(x).then(res => {
+        
         this.downloadLoading = false
         window.open(res.request.responseURL)
         window.href = res.request.responseURL

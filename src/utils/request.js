@@ -29,6 +29,7 @@ service.interceptors.request.use(
       config.headers['Content-Type'] = 'application/x-www-form-urlencoded'
     } else {
       config.headers['Content-Type'] = 'application/json'
+      config.params = JSON.stringify(config.params)
     }
     if (config.method === 'post') {
       if (config.type === 'upload') {
@@ -55,7 +56,7 @@ service.interceptors.request.use(
     config.headers['user_id'] = store.getters.userId
     config.headers['client_id'] = 'cmanager'
     config.headers['device_id'] = store.getters.deviceId
-
+    console.log(config);
     return config
   },
   error => {
