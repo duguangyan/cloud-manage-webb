@@ -4,9 +4,6 @@ import store from '@/store'
 import { getToken } from '@/utils/auth'
 import QS from 'qs'
 
-// 此处更换要链接的的IP
-// var target = 'http://192.168.0.113:8000'
-// var target = 'http://192.168.0.117:9002'
 var target = '/api'
 
 // 调试借口
@@ -29,8 +26,7 @@ service.interceptors.request.use(
       config.headers['Content-Type'] = 'application/x-www-form-urlencoded'
     } else {
       config.headers['Content-Type'] = 'application/json'
-      config.params = JSON.stringify(config.params)
-    }
+    } 
     if (config.method === 'post') {
       if (config.type === 'upload') {
         config.headers['Content-Type'] = 'application/multipart/form-data'
@@ -39,10 +35,11 @@ service.interceptors.request.use(
           config.data = QS.stringify({
             ...config.data // 将参数变成  a=xx&b=xx&c=xx这样的参数列表
           })
+        } else if (config.isBlob) {
+          config.responseType = 'arraybuffer'
         }
       }
     }
-
     if (+config.debug === 1) {
       config.baseURL = debugUrl
     }
@@ -56,7 +53,6 @@ service.interceptors.request.use(
     config.headers['user_id'] = store.getters.userId
     config.headers['client_id'] = 'cmanager'
     config.headers['device_id'] = store.getters.deviceId
-    console.log(config);
     return config
   },
   error => {
@@ -81,7 +77,7 @@ service.interceptors.response.use(
     const res = response.data
     // if the custom code is not 20000, it is judged as an error.
     if (res.code !== '1000') {
-      if (res.access_token || typeof (res) === 'string') {
+      if (res.access_token || !res.code) {
         return response
       }
       Message({

@@ -19,12 +19,13 @@ export function getOrderDetail(query) {
 }
 
 // 导出订单
-export function exportOrder(params) {
+export function exportOrder(data) {
   return request({
     url: '/order/order/expSaleOrder',
-    method: 'get',
+    method: 'post',
     type: 'json',
-    params
+    isBlob: true,
+    data
   })
 }
 

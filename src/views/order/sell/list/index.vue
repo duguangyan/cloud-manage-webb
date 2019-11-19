@@ -267,6 +267,7 @@ export default {
       } else {
         this.orderStatus = String(this.order.status)
       }
+      this.order.pageIndex = 1;
       this.getOrderList()
     },
     resetOrder() {
@@ -348,26 +349,31 @@ export default {
         });
         param.expIds = exportArr;
       }
-      let x = {
-      "createTimeBegin": "2019-01-01 00:00:00",
-      "createTimeEnd": "2019-12-01 00:00:00",
-      "expIds": null,
-      "orderId": "",
-      "pageIndex": 1,
-      "pageSize": 10,
-      "shopId": "1",
-      "status": 0,
-      "userId": "",
-      "userName": ""
-    }
-      exportOrder(x).then(res => {
-        
+      
+      exportOrder(param).then(res => {
         this.downloadLoading = false
-        window.open(res.request.responseURL)
-        window.href = res.request.responseURL
+        // window.open(res.request.responseURL)
+        // window.href = res.request.responseURL
+        let blob = new Blob([res.data], { type: 'application/vnd.ms-excel' }); // 将服务端返回的文件流（二进制）excel文件转化为blob
+        let d = new Date();
+        let fileName = '订单' + d.getFullYear() + (d.getMonth() + 1) + d.getDate();
+        if (window.navigator && window.navigator.msSaveOrOpenBlob) { // IE
+          window.navigator.msSaveOrOpenBlob(blob, fileName)
+        } else {
+          let objectUrl = (window.URL || window.webkitURL).createObjectURL(blob);
+          let downFile = document.createElement('a');
+          downFile.style.display = 'none';
+          downFile.href = objectUrl;
+          downFile.download = fileName; // 下载后文件名
+          document.body.appendChild(downFile);
+          downFile.click();
+          document.body.removeChild(downFile); // 下载完成移除元素
+          // window.location.href = objectUrl
+          window.URL.revokeObjectURL(objectUrl);  // 只要映射存在，Blob就不能进行垃圾回收，因此一旦不再需要引用，就必须小心撤销URL，释放掉blob对象。
+        }
       }).catch(err => {
         this.downloadLoading = false
-        this.$message.error('导出失败！');
+        // this.$message.error('导出失败！');
       })
     }
   }
