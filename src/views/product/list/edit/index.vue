@@ -1220,7 +1220,7 @@ let vm = {
           }
         }
         if(this.showStyle.type === '2' ) {
-          if(tableData.length > 1 && (tableData[tableData.length - 1].number < tableData[tableData.length - 2].number || tableData[tableData.length - 1].price > tableData[tableData.length - 2].price)) {
+          if(tableData.length > 1 && (Number(tableData[tableData.length - 1].number) < Number(tableData[tableData.length - 2].number) || Number(tableData[tableData.length - 1].price) > Number(tableData[tableData.length - 2].price))) {
             this.$message({
               message: `阶梯${tableData.length}的起批数必须比阶梯${tableData.length - 1}的起批数大，阶梯${tableData.length}的单价必须比阶梯${tableData.length - 1}的单价小!`,
               type: 'warning'
