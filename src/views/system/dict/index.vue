@@ -669,7 +669,7 @@ export default {
            this.resetResource()
           } else {
             if(this.isSearch) {
-              this.searchData = this.filterData(this.searchData, parem, 2)
+              this.searchData = this.filterData(this.searchData, param, 2)
             } else {
               this.handleLoad(this.role.id, this.role.parentId, 2)
             }
