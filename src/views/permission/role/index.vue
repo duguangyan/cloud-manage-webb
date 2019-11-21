@@ -262,7 +262,7 @@ export default {
         },
         user: {
           name: '分配用户',
-          auth: true
+          auth: false
         },
         delete: {
           name: '删除',
