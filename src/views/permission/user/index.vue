@@ -428,27 +428,28 @@ export default {
         this.listLoading = false
       })
     },
-    async getRoleList() {
+    getRoleList() {
       this.roleListLoading = true
-      const { data } = await  getRoleList(this.roleListQuery).catch(err => {
+      getRoleList(this.roleListQuery).then(res => {
+        this.roleListLoading = false
+        this.roleTotal = res.data.total
+        this.addLen = 0
+        this.$refs.roleMmulTable.clearSelection()
+        if(Array.isArray(res.data.records)) {
+          this.roleTable = res.data.records
+          this.roleTable.map((val, index) => {
+            if(this.addObj.has(val.id) || (!this.deleteObj.has(val.id) && val.userHave === 1)) {
+              ++this.addLen
+              this.$nextTick(() => {
+                this.$refs.roleMmulTable.toggleRowSelection(val, true);//默认选中   
+              })
+            }
+            
+          })
+        }
+      }).catch(err => {
         this.roleListLoading = false
       })
-      this.roleTotal = data.total
-      this.addLen = 0
-      this.$refs.roleMmulTable.clearSelection()
-      if(Array.isArray(data.records)) {
-        this.roleTable = data.records
-        this.roleTable.map((val, index) => {
-          if(this.addObj.has(val.id) || (!this.deleteObj.has(val.id) && val.userHave === 1)) {
-            ++this.addLen
-            this.$nextTick(() => {
-              this.$refs.roleMmulTable.toggleRowSelection(val, true);//默认选中   
-            })
-          }
-          
-        })
-      }
-      this.roleListLoading = false
     },
     async getSystem() {
       this.listLoading = true

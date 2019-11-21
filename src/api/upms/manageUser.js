@@ -89,3 +89,22 @@ export function processUserRoleBatch(data) {
     data
   })
 }
+
+// 给用户添加一个角色
+export function addUserRole(data) {
+  return request({
+    url: '/upms/user/addUserRole',
+    method: 'post',
+    type: 'json',
+    data
+  })
+}
+
+// 给用户删除一个角色
+export function delUserRole(query) {
+  return request({
+    url: '/upms/user/delUserRole',
+    method: 'get',
+    params: query
+  })
+}

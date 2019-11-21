@@ -482,6 +482,7 @@ export default {
     async addBanner() {
       this.banner = Object.assign({}, defaultBanner)
       this.banner.pathBox = []
+      this.uploadDisabled = false
       this.banner.dateValue = []
       this.selectPid = ''
       this.dialogType = 'new'

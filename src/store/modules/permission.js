@@ -441,7 +441,9 @@ const actions = {
       let accessedRouters = []
       getRoles({ userId: this.getters.userId }).then(res => {
         location.urls = {}
-        accessedRouters = filterAsyncRouter(res.data, 0)
+        if (filterAsyncRouter != null) {
+          accessedRouters = filterAsyncRouter(res.data, 0)
+        }
         commit('SET_ROUTES', accessedRouters)
         resolve()
       })

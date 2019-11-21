@@ -39,6 +39,7 @@
         <template slot-scope="scope">
           <el-button v-if="btnsPermission.edit.auth" type="primary" size="small" @click="msgEdit(scope)">{{btnsPermission.edit.name}}</el-button>
           <el-button v-if="btnsPermission.role.auth" type="primary" size="small" @click="handleEdit(scope)">{{btnsPermission.role.name}}</el-button>
+          <el-button v-if="btnsPermission.user.auth" type="primary" size="small" @click="setUser(scope)">{{btnsPermission.user.name}}</el-button>
           <el-button v-if="btnsPermission.delete.auth" type="danger" size="small" @click="handleDelete(scope)">{{btnsPermission.delete.name}}</el-button>
         </template>
       </el-table-column>
@@ -77,6 +78,44 @@
               </el-option>
             </el-select>
           </el-form-item>
+        </template>
+        <template v-else-if="dialogType === 'user'">
+          <el-form label-width="80px" label-position="left" >
+            <el-form-item label="角色名称">
+                <span>{{checkRoleName}}</span>
+              </el-form-item>
+              <el-form-item label="用户列表">
+                <el-table
+                  v-loading="userListLoading"
+                  border
+                  ref="userMmulTable"
+                  :data="userTable"
+                  tooltip-effect="dark"
+                  style="width: 100%"
+                  >
+                  <el-table-column
+                    align="center"
+                    width="55">
+                    <template slot-scope="scope">
+                      <el-checkbox v-model="userCheck[scope.row.index]" @change="(val) => userCheckChange(val, scope.row)"></el-checkbox>
+                    </template>
+                  </el-table-column>
+                  <el-table-column
+                    prop="nickName"
+                    label="用户名">
+                  </el-table-column>
+                  <el-table-column
+                    prop="realName"
+                    label="真实姓名">
+                  </el-table-column>
+                  <el-table-column
+                    prop="username"
+                    label="所属系统">
+                  </el-table-column>
+                </el-table>
+              </el-form-item>
+            <pagination v-show="userTotal>0" :total="userTotal" :page.sync="userListQuery.pageIndex" :limit.sync="userListQuery.pageSize"  @pagination="getUserByRole" />
+          </el-form>
         </template>
         <template v-else>
           <el-form-item label="角色名称">
@@ -159,7 +198,7 @@
       </div>
       <div v-else style="text-align:right;">
         <el-button type="danger" @click="dialogVisible=false">取消</el-button>
-        <el-button type="primary" :disabled="diaDisable" @click="regFun">确定</el-button>
+        <el-button v-show="dialogType != 'user'" type="primary" :disabled="diaDisable" @click="regFun">确定</el-button>
       </div>
     </el-dialog>
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageIndex" :limit.sync="listQuery.pageSize"  @pagination="getList" />
@@ -171,16 +210,17 @@ import path from 'path'
 import { deepClone } from '@/utils'
 import waves from '@/directive/waves'
 import { getUserBtnByPId } from '@/api/upms/menu'
-import { getRoles, addRole, deleteRole, updateRole, getRoleList, addResource, deleteResource, getRoleResources, getRoleResourceTree } from '@/api/upms/manageRole'
+import { getRoles, addRole, deleteRole, updateRole, getRoleList, addResource, deleteResource, getRoleResources, getRoleResourceTree, getUserByRole } from '@/api/upms/manageRole'
 import { getSystem } from '@/api/upms/systemList'
 import Pagination from '@/components/Pagination'
+import { addUserRole, delUserRole } from '@/api/upms/manageUser'
 const defaultRole = {
   id: '',
   name: '',
   remark: '',
   systemId: '',
   systemName: '',
-  userHave: ''
+  checked: ''
 }
 
 export default {
@@ -193,12 +233,16 @@ export default {
       diaLoading: false,
       diaDisable: false,
       treeLoading: false,
+      userListLoading: false,
       canCheck: false,
       systemData: [],
       rolesList: [],
       rolesData: [],
+      userTable: [],
       checkRoleId: '',
+      checkUserId: '',
       checkRoleName: '',
+      userCheck: '',
       btnsPermission: {
         search: {
           name: '搜索',
@@ -216,6 +260,10 @@ export default {
           name: '分配',
           auth: false
         },
+        user: {
+          name: '分配用户',
+          auth: true
+        },
         delete: {
           name: '删除',
           auth: false
@@ -230,14 +278,26 @@ export default {
       dialogType: 'new',
       dialogTitle: '新增角色',
       total: 0,
+      userTotal: 0,
       allPages: 0,
       listQuery: {
         name: '',
         pageIndex: 1,
         pageSize: 10
       },
+      userListQuery: {
+        roleId: '',
+        pageIndex: 1,
+        pageSize: 10
+      },
+      userMulSelect: [],
       multipleSelection: [],
-      num: 0
+      num: 0,
+      selectObj: {},
+      selectData: [],
+      addObj: new Set(),
+      deleteObj: new Set(),
+      addLen: 0
     }
   },
   components: { Pagination },
@@ -258,14 +318,51 @@ export default {
   },
   methods: {
     getRoleList() {
+      let param = {
+        pageIndex: this.listQuery.pageIndex,
+        pageSize: this.listQuery.pageSize
+      }
+      if(this.listQuery.name.length > 0) {
+        param.name = this.listQuery.name;
+      }
       this.listLoading = true
-      getRoleList(this.listQuery).then(res => {
+      getRoleList(param).then(res => {
         this.listLoading = false
         if(Array.isArray(res.data.records)) {
           this.rolesData = res.data.records
         }
         this.total = res.data.total != null? res.data.total: 0
         this.allPages = res.data.pages != null? res.data.pages: 0
+      })
+    },
+    getUserByRole() {
+      this.userListLoading = true
+      getUserByRole(this.userListQuery).then(res => {
+        this.userListLoading = false
+        this.userTotal = res.data.total
+        this.addLen = 0
+        this.$refs.userMmulTable.clearSelection()
+        this.userCheck = []
+        let userData = []
+        if (Array.isArray(res.data.records)) {
+          res.data.records.forEach((item, index) => {
+            this.userCheck[index] = item.checked == 1 ? true : false
+            userData[index] = item
+            userData[index].index = index
+          })
+          this.userTable = userData
+          // this.userTable.map((val, index) => {
+          //   if(this.addObj.has(val.id) || (!this.deleteObj.has(val.id) && val.checked === 1)) {
+          //     ++this.addLen
+          //     this.$nextTick(() => {
+          //       this.$refs.userMmulTable.toggleRowSelection(val, true);//默认选中   
+          //     })
+          //   }
+            
+          // })
+        }
+      }).catch(err => {
+        this.userListLoading = false
       })
     },
     getList(data) {
@@ -336,6 +433,56 @@ export default {
           })
         })
       }
+    },
+    userCheckChange(val, row) {
+      if (val) {
+        addUserRole({
+          userId: row.id,
+          roleId: this.checkUserId
+        }).then(res => {
+          this.treeLoading = false
+          let nickName = ''
+          if (row.nickName) {
+            nickName = row.nickName
+          }
+          this.$notify({
+            title: '分配用户成功',
+            message: '已为角色分配' + nickName + '用户',
+            type: 'success'
+          })
+        })
+      } else {
+        delUserRole({
+          userId: row.id,
+          roleId: this.checkUserId
+        }).then(res => {
+          this.treeLoading = false
+          let nickName = ''
+          if (row.nickName) {
+            nickName = row.nickName
+          }
+          this.$notify({
+            title: '取消用户分配成功',
+            message: '已取消角色用户' + nickName + '分配',
+            type: 'success'
+          })
+        })
+      }
+    },
+    async setUser(scope) {
+      // 分配用户
+      this.dialogType = 'user'
+      this.dialogTitle = '分配用户'
+      this.checkUserId = scope.row.id
+      this.userListQuery.pageIndex = 1
+      this.checkRoleName = scope.row.name
+      this.userListQuery.roleId  = scope.row.id
+      this.dialogVisible = true
+      this.checkStrictly = true
+      this.userTable = []
+      // this.addObj = new Set()
+      // this.deleteObj = new Set()
+      this.getUserByRole()
     },
     async getSystem() {
       this.listLoading = true
@@ -451,7 +598,7 @@ export default {
         this.diaDisable = false
         this.diaLoading = false
         this.getRoleList()
-      } 
+      }
       const { description, key, name } = this.role
       this.dialogVisible = false
       this.$notify({

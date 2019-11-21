@@ -88,3 +88,12 @@ export function getRoleResources(query) {
   })
 }
 
+// 查询拥有该角色的用户列表
+export function getUserByRole(query) {
+  return request({
+    url: '/upms/role/getUserByRole',
+    method: 'get',
+    params: query
+  })
+}
+
