@@ -568,20 +568,21 @@ export default {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
-      }).then(async() => {
+      }).then(() => {
           this.listLoading = true
-          await userDelete({id: row.id}).catch(err => {
+          userDelete({id: row.id}).then(res => {
+            this.listLoading = false
+            this.$message({
+              type: 'success',
+              message: '用户删除成功!'
+            })
+            if(this.userData.length === 1 && this.allPages - 1 > 0) {
+              --this.listQuery.pageIndex
+            }
+            this.getUserList()
+          }).catch(err => {
             this.listLoading = false
           })
-          this.listLoading = false
-          this.$message({
-            type: '成功',
-            message: '用户删除成功!'
-          })
-          if(this.userData.length === 1 && this.allPages - 1 > 0) {
-            --this.listQuery.pageIndex
-          }
-          this.getUserList()
         }).catch(err => { console.error(err) })
     },
     regFun () {

@@ -538,20 +538,21 @@ export default {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
-      }).then(async() => {
+      }).then(() => {
         this.listLoading = true
-        await deleteRole({id: row.id}).catch(err => {
+        deleteRole({id: row.id}).then(res => {
+          this.listLoading = false
+          this.$message({
+            type: 'success',
+            message: '角色删除成功!'
+          })
+          if(this.rolesData.length === 1 && this.allPages - 1 > 0) {
+            --this.listQuery.pageIndex
+          }
+          this.getRoleList()
+        }).catch(err => {
           this.listLoading = false
         })
-        this.listLoading = false
-        this.$message({
-          type: '成功',
-          message: '角色删除成功!'
-        })
-        if(this.rolesData.length === 1 && this.allPages - 1 > 0) {
-          --this.listQuery.pageIndex
-        }
-        this.getRoleList()
       }).catch(err => { console.error(err) })
     },
     regFun() {
