@@ -212,7 +212,7 @@
       <div v-loading="wechatLoading" class="menu_setting_area js_editBox">
         <div class="menu_preview_area">
           <div class="mobile_menu_preview">
-            <div class="mobile_hd tc">沁绿农业</div>
+            <div class="mobile_hd tc">上上农夫</div>
             <div class="mobile_bd">
               <ul class="pre_menu_list grid_line ui-sortable ui-sortable-disabled" :class="{ no_menu: menuList.length === 0 }">
                 <li v-for="(item, index) in menuList" :key="index" class="jsMenu pre_menu_item grid_item jslevel1 ui-sortable ui-sortable-disabled" :class="{'size1of1': menuList.length === 0, 'size1of2': menuList.length === 1, 'size1of3': menuList.length > 1, 'current': isSelectMenu && !isSelectMenuChild && selectMenuIndex === index}" @click="selectMenu(index, item.id)">

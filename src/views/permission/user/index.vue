@@ -139,7 +139,7 @@
           <el-form-item label="手机号码" prop="phone">
             <el-input v-model.trim="role.phone" maxlength="20" placeholder="请输入手机号码" />
           </el-form-item>
-          <el-form-item label="系统" prop="systemId">
+          <el-form-item v-if="dialogType === 'new'" label="系统" prop="systemId">
             <el-select v-model.trim="role.systemId" placeholder="请选择">
               <el-option
                 v-for="item in systemData"
@@ -603,11 +603,10 @@ export default {
       if ( this.dialogType === 'edit') {
         this.roleListLoading = true
         let param = {
-           systemId: this.role.systemId,
            username: this.role.username,
            id: this.role.id,
            phone: this.role.phone,
-           nickName: this.roleClone.nickName
+           nickName: this.role.nickName
          }
          if(this.role.realName && this.role.realName !== this.roleClone.realName) {
            param.realName = this.role.realName
