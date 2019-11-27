@@ -658,7 +658,7 @@ export default {
         parentId: this.checkParentName.length > 0? this.checkParentId: this.role.parentId,
         name: this.role.name,
         code: this.role.code,
-        status: (this.role.status === '启用'? 1: 0),
+        status: this.role.status,
         value: this.role.value,
         remark: this.role.remark
         }).catch(err => {
