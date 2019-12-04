@@ -527,6 +527,9 @@ export default vm;
   .detial-content p{
     margin: 0;
   }
+  .detial-content p img{
+    vertical-align: top;
+  }
 </style>
 <style lang="scss" scoped>
 .imgs-item{

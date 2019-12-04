@@ -2247,6 +2247,7 @@ export default vm;
 .edit-content img{
   width: 100%;
   height: auto;
+  vertical-align: top;
 }
 .edit-content video{
   max-width: 100%;
