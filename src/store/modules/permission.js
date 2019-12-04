@@ -92,7 +92,7 @@ const routeModule = [
     source: 'stat/analyze/index',
     isSource: true,
     hidden: false,
-    noCache: false
+    noCache: true
   },
   {
     name: 'order',
@@ -137,7 +137,7 @@ const routeModule = [
     source: 'activity/banner/index',
     isSource: true,
     hidden: false,
-    noCache: false
+    noCache: true
   },
   {
     name: 'activityColumn',
@@ -146,7 +146,7 @@ const routeModule = [
     source: 'activity/column/index',
     isSource: true,
     hidden: false,
-    noCache: false
+    noCache: true
   },
   {
     name: 'activityManageList',
@@ -182,7 +182,7 @@ const routeModule = [
     source: 'permission/user/index',
     isSource: true,
     hidden: false,
-    noCache: false
+    noCache: true
   },
   {
     name: 'permissionRole',
@@ -191,7 +191,7 @@ const routeModule = [
     source: 'permission/role/index',
     isSource: true,
     hidden: false,
-    noCache: false
+    noCache: true
   },
   {
     name: 'system',

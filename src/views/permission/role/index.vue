@@ -3,11 +3,11 @@
 
     <div v-if="btnsPermission.search.auth" class="filter-container">
       角色名称：
-      <el-input v-model="listQuery.name" maxlength="64"  placeholder="请输入角色名" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+      <el-input v-model="listQuery.name" maxlength="64"  placeholder="请输入角色名" style="width: 200px;" @keyup.enter.native="handleFilter" />
+      <el-button v-waves type="primary" icon="el-icon-search" @click="handleFilter">
       {{btnsPermission.search.name}}
       </el-button>
-      <el-button v-waves class="filter-item" @click="resetSearch">重置</el-button>
+      <el-button v-waves @click="resetSearch">重置</el-button>
     </div>
 
     <el-button v-if="btnsPermission.add.auth" type="primary" size="small" @click="handleAddRole">{{btnsPermission.add.name}}</el-button>
@@ -81,6 +81,14 @@
         </template>
         <template v-else-if="dialogType === 'user'">
           <el-form label-width="80px" label-position="left" >
+              用户名：
+              <el-input v-model="userListQuery.name" maxlength="64" size="medium"  placeholder="请输入用户名" style="width: 200px;margin: 0 10px 10px 0;"  @keyup.enter.native="handleFilterUser" />
+              账号：
+              <el-input v-model="userListQuery.username" maxlength="64" size="medium"  placeholder="请输入账号" style="width: 200px;margin: 0 10px 10px 0;"  @keyup.enter.native="handleFilterUser" />
+              手机号码：
+              <el-input v-model="userListQuery.phone" maxlength="64" size="medium"  placeholder="请输入手机号码" style="width: 200px;margin: 0 10px 10px 0;" @keyup.enter.native="handleFilterUser" />
+              <el-button v-waves size="medium" type="primary" icon="el-icon-search" @click="handleFilterUser"> 搜索</el-button>
+              <el-button v-waves size="medium" @click="resetSearchUser">重置</el-button>
             <el-form-item label="角色名称">
                 <span>{{checkRoleName}}</span>
               </el-form-item>
@@ -110,7 +118,11 @@
                   </el-table-column>
                   <el-table-column
                     prop="username"
-                    label="所属系统">
+                    label="账号">
+                  </el-table-column>
+                  <el-table-column
+                    prop="phone"
+                    label="手机号码">
                   </el-table-column>
                 </el-table>
               </el-form-item>
@@ -286,6 +298,9 @@ export default {
         pageSize: 10
       },
       userListQuery: {
+        username: '',
+        name: '',
+        phone: '',
         roleId: '',
         pageIndex: 1,
         pageSize: 10
@@ -373,6 +388,10 @@ export default {
     handleFilter() {
       this.listQuery.pageIndex = 1
       this.getRoleList()
+    },
+    handleFilterUser() {
+      this.userListQuery.pageIndex = 1
+      this.getUserByRole();
     },
     async getRoles() {
       const res = await getRoles({id: 1})
@@ -615,6 +634,8 @@ export default {
         pageSize: 10
       },
       this.getRoleList()
+    },
+    resetSearchUser() {
     }
   }
 }
