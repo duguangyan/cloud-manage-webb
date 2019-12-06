@@ -309,6 +309,24 @@ const routeModule = [
     isSource: true,
     hidden: false,
     noCache: true
+  },
+  {
+    name: 'page',
+    path: '/page',
+    compare: 'page',
+    source: 'page',
+    isSource: false,
+    hidden: false,
+    redirect: '/page/home'
+  },
+  {
+    name: 'homePage',
+    path: '/page/home',
+    compare: 'page/home/index',
+    source: 'page/home/index',
+    isSource: true,
+    hidden: false,
+    noCache: true
   }
 ]
 

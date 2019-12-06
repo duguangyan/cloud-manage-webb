@@ -1192,12 +1192,13 @@ export default {
 
 <style lang="scss" scoped>
   .left{
-    width: 40%;
+    width: 30%;
     float: left;
   }
   .right{
-    width: 60%;
+    width: 70%;
     float: left;
+    overflow-x: auto;
   }
   .mb5{
     margin-bottom: 5px;
