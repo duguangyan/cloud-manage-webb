@@ -459,9 +459,10 @@ const actions = {
       let accessedRouters = []
       getRoles({ userId: this.getters.userId }).then(res => {
         location.urls = {}
-        if (res.data != null) {
+        if (Array.isArray(res.data)) {
           accessedRouters = filterAsyncRouter(res.data, 0)
         }
+        accessedRouters.push({ path: '*', redirect: '/404', hidden: true })
         commit('SET_ROUTES', accessedRouters)
         resolve()
       })

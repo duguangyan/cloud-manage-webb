@@ -24,6 +24,13 @@ export const constantRoutes = [
         meta: { title: '主页', icon: 'dashboard', affix: true }
       }
     ]
+  },
+  {
+    path: '/404',
+    component: () => import('@/views/404'),
+    name: 'Page404',
+    meta: { title: '404', affix: false },
+    hidden: true
   }
 
 ]
