@@ -294,14 +294,17 @@
                       <template v-if="(isSelectMenu && menuList[selectMenuIndex].menuChild.length === 0) || isSelectMenuChild">
                         <el-form-item prop="type" :label="isSelectMenuChild?'子菜单名称':'菜单名称'">
                           <el-radio-group v-model="menuForm.type">
-                            <el-radio label="click">发送消息</el-radio>
+                            <el-radio label="click">点击事件</el-radio>
                             <el-radio label="view">跳转网页</el-radio>
                             <el-radio label="miniprogram">小程序</el-radio>
                           </el-radio-group>
                         </el-form-item>
                         <template v-if="menuForm.type === 'click'">
                           <div>
-                            富文本
+                           <p class="wechat-des">菜单KEY值，用于消息接口推送</p>
+                            <el-form-item prop="menuKey" label="运行代号">
+                              <el-input class="w300" v-model="menuForm.menuKey" maxlength="64" />
+                            </el-form-item>
                           </div>
                         </template>
                         <template v-else-if="menuForm.type=== 'view'">
@@ -477,7 +480,7 @@ export default {
             required: true,
             trigger: 'change',
             message: '请选择类型'
-        }],
+        }]
       },
       temp: {
         appId : '',
@@ -540,6 +543,7 @@ export default {
       menuForm: {
         menuName: '',
         menuChildName: '',
+        menuKey: '',
         appId: '',
         url: '',
         link: '',
@@ -587,6 +591,11 @@ export default {
           trigger: 'blur',
           message: '请输入小程序路径'
         }],
+        menuKey: [{
+          required: true,
+          trigger: 'blur',
+          message: '请填写运行代号'
+        }]
       },
       isSelectMenu: false,
       isSelectMenuChild: false,
@@ -894,6 +903,8 @@ export default {
             param.pagePath = this.menuForm.pagePath
           } else if(this.menuForm.type === 'view') {
             param.url = this.menuForm.link
+          } else if(this.menuForm.type === 'click') {
+            param.menuKey = this.menuForm.menuKey
           }
           
           updateMenu(param).then(res => {
@@ -937,6 +948,8 @@ export default {
           this.menuForm.link = ''
           this.menuForm.url = res.data.url
           this.menuForm.pagePath = res.data.pagePath
+        } else if(res.data.type === 'click') {
+          this.menuForm.menuKey = res.data.menuKey
         }
       })
       this.isSelectMenu = true
@@ -1016,10 +1029,12 @@ export default {
         if(res.data.type === 'view') {
           this.menuForm.link = res.data.url
           this.menuForm.url = ''
-        } else {
+        } else if(res.data.type === 'miniprogram') {
           this.menuForm.link = ''
           this.menuForm.url = res.data.url 
           this.menuForm.pagePath = res.data.pagePath
+        } else if(res.data.type === 'click') {
+          this.menuForm.menuKey = res.data.menuKey
         }
       })
     },
@@ -1231,7 +1246,7 @@ export default {
   }
 
   .wechat-des{
-    margin-bottom: 10px;
+    margin-bottom: 10px!important;
     color: #9a9a9a;
     font-size: 14px;
   }

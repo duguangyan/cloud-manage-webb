@@ -217,7 +217,7 @@
       </div>
     </div>
 
-    <el-dialog :visible.sync="dialogVisible" :closeOnClickModal="false" :title="dialogMsg">
+    <el-dialog :visible.sync="dialogVisible" :closeOnClickModal="false" :title="dialogMsg" :before-close="beforeClose">
       <template v-if="dialogType === 'unit'">
         <el-form v-loading="diaLoading" ref="unitForm" :model="unit" label-width="100px" label-position="left" :rules="unitRules">
           <el-form-item label="名称" prop="name">
@@ -314,7 +314,7 @@
         </el-form>
       </template>
       <div style="text-align:right;">
-        <el-button type="danger" @click="dialogVisible=false">取消</el-button>
+        <el-button type="danger" @click="dialogVisible=false;dialogType=''">取消</el-button>
         <el-button type="primary" :disabled="diaDisable" @click="regFun">确定</el-button>
       </div>
     </el-dialog>
@@ -1186,6 +1186,11 @@ export default {
         });          
       });
     },
+    beforeClose(done) {
+      // 模态框关闭置空
+      done();
+      this.dialogType='';
+    }
   }
 }
 </script>

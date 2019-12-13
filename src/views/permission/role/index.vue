@@ -81,8 +81,8 @@
         </template>
         <template v-else-if="dialogType === 'user'">
           <el-form label-width="80px" label-position="left" >
-              用户名：
-              <el-input v-model="userListQuery.name" maxlength="64" size="medium"  placeholder="请输入用户名" style="width: 200px;margin: 0 10px 10px 0;"  @keyup.enter.native="handleFilterUser" />
+              真实姓名：
+              <el-input v-model="userListQuery.realName" maxlength="64" size="medium"  placeholder="请输入真实姓名" style="width: 200px;margin: 0 10px 10px 0;"  @keyup.enter.native="handleFilterUser" />
               账号：
               <el-input v-model="userListQuery.username" maxlength="64" size="medium"  placeholder="请输入账号" style="width: 200px;margin: 0 10px 10px 0;"  @keyup.enter.native="handleFilterUser" />
               手机号码：
@@ -103,6 +103,7 @@
                   >
                   <el-table-column
                     align="center"
+                    label="分配"
                     width="55">
                     <template slot-scope="scope">
                       <el-checkbox v-model="userCheck[scope.row.index]" @change="(val) => userCheckChange(val, scope.row)"></el-checkbox>
@@ -135,7 +136,6 @@
           </el-form-item>
           <el-form-item label="权限列表">
             <el-table
-              ref="tableTree"
               v-loading="treeLoading"
               :data="tableData"
               style="width: 100%;margin-bottom: 20px;"
@@ -153,8 +153,7 @@
                 </template>
               </el-table-column>
               <el-table-column
-                label="名称"
-                show-overflow-tooltip>
+                label="名称">
                 <template slot-scope="{ row }">
                   <svg-icon v-if="row.icon" :icon-class="row.icon" />
                   <span>{{row.name}}</span>
@@ -171,10 +170,9 @@
               </template>
               </el-table-column>
               <el-table-column
-                prop="url"
+                prop="remark"
                 align="center"
-                label="链接地址"
-                show-overflow-tooltip>
+                label="备注">
               </el-table-column>
               <el-table-column
                 width="50"
@@ -299,9 +297,9 @@ export default {
       },
       userListQuery: {
         username: '',
-        name: '',
         phone: '',
         roleId: '',
+        realName: '',
         pageIndex: 1,
         pageSize: 10
       },
@@ -351,8 +349,23 @@ export default {
       })
     },
     getUserByRole() {
+      // 获取分配用户列表
       this.userListLoading = true
-      getUserByRole(this.userListQuery).then(res => {
+      let param = {
+        roleId: this.userListQuery.roleId,
+        pageIndex: this.userListQuery.pageIndex,
+        pageSize: this.userListQuery.pageSize
+      }
+      if (this.userListQuery.realName) {
+        param.realName = this.userListQuery.realName;
+      }
+      if (this.userListQuery.username) {
+        param.username = this.userListQuery.username;
+      }
+      if (this.userListQuery.phone) {
+        param.phone = this.userListQuery.phone;
+      }
+      getUserByRole(param).then(res => {
         this.userListLoading = false
         this.userTotal = res.data.total
         this.addLen = 0
@@ -411,6 +424,7 @@ export default {
           auth: route.auth,
           icon: route.icon,
           checked: route.checked,
+          remark: route.remark,
           index: this.checkIndex
         }
         this.checkRoleArr[this.checkIndex] = route.checked === 1
@@ -636,6 +650,12 @@ export default {
       this.getRoleList()
     },
     resetSearchUser() {
+      this.userListQuery.username = '';
+      this.userListQuery.realName = '';
+      this.userListQuery.phone = '';
+      this.userListQuery.pageIndex = 1;
+      this.userListQuery.pageSize = 10;
+      this.getUserByRole();
     }
   }
 }

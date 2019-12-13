@@ -235,6 +235,16 @@
             </el-option>
           </el-select>
         </el-form-item>
+        <el-form-item label="系统" prop="systemId">
+            <el-select v-model="role.systemId" placeholder="请选择">
+              <el-option
+                v-for="item in systemData"
+                :key="item.id"
+                :label="item.name"
+                :value="item.id">
+              </el-option>
+            </el-select>
+          </el-form-item>
         <el-form-item v-if="role.type === 1" label="按钮code">
           <el-input v-model="role.code" maxlength="32" placeholder="请输入按钮code" />
         </el-form-item>
@@ -340,6 +350,7 @@ import { getSystem } from '@/api/upms/systemList'
 import Pagination from '@/components/Pagination'
 import svgIcons from './svg-icons'
 const defaultRole = {
+  systemId: '',
   name: '',
   status: '',
   url: '',
@@ -404,6 +415,11 @@ export default {
             required: true,
             trigger: 'change',
             message: '请选择类型'
+        }],
+        systemId: [{
+          required: true,
+          trigger: 'change',
+          message: '请选择所属系统'
         }],
         sort: [{
             required: false,
@@ -492,7 +508,8 @@ export default {
       iconShow: '',
       multipleSelection: [],
       loadNodeMap: new Map(),
-      isSearch: false
+      isSearch: false,
+      systemData: [],
     }
   },
   components: { Pagination },
@@ -529,6 +546,7 @@ export default {
             let obj = {
               name: res.data[i].name,
               id: res.data[i].id,
+              systemId: res.data[i].systemId,
               parentId: res.data[i].parentId,
               parentName: '',
               code: res.data[i].code,
@@ -560,6 +578,7 @@ export default {
             let obj = {
               name: res.data[i].name,
               id: res.data[i].id,
+              systemId: res.data[i].systemId,
               parentId: res.data[i].parentId,
               parentName: tree.name,
               code: res.data[i].code,
@@ -766,6 +785,7 @@ export default {
     },
     async handleAddResource() {
       // 添加顶级资源
+      this.getSystem();
       this.isChangeParent = false
       this.role = Object.assign({}, defaultRole)
       this.dialogType = 'new'
@@ -779,6 +799,7 @@ export default {
     },
     msgEdit(row) {
       // 编辑资源
+      this.getSystem()
       this.isChangeParent = false
       this.dialogVisible = true
       this.checkStrictly = true
@@ -792,6 +813,7 @@ export default {
     },
     msgAdd(row) {
       // 添加资源
+      this.getSystem();
       this.isChangeParent = false
       this.dialogType = 'new'
       const pName = row.name
@@ -904,6 +926,7 @@ export default {
         this.diaDisable = true
         this.diaLoading = true
         let param = {
+          systemId: this.role.systemId,
           name: this.role.name,
           sort: this.role.sort,
           parentId: this.checkParentId,
@@ -955,7 +978,23 @@ export default {
       // 选择父级确认
       this.isChangeParent = true
       this.prarentDialogVisible = false
-    }
+    },
+    getSystem() {
+      // 获取系统
+      this.diaLoading = true
+      this.diaDisable = true
+      getSystem({
+        pageIndex: 1,
+        pageSize: 500
+      }).then(res => {
+        this.diaLoading = false
+        this.diaDisable = false
+        this.systemData = res.data.records
+      }).catch(err => {
+        this.diaLoading = false
+        this.diaDisable = false
+      })
+    },
   }
 }
 </script>
