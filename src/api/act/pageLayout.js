@@ -3,7 +3,7 @@ import request from '@/utils/request'
 // 新增数据
 export function insertPage(data) {
   return request({
-    url: '/ws/act/pageLayout/insert',
+    url: '/act/pageLayout/insert',
     method: 'post',
     data
   })
@@ -12,7 +12,7 @@ export function insertPage(data) {
 // 更新数据
 export function updatePage(data) {
   return request({
-    url: '/ws/act/pageLayout/update',
+    url: '/act/pageLayout/update',
     method: 'post',
     data
   })
@@ -21,7 +21,7 @@ export function updatePage(data) {
 // 根据父ID获取子集
 export function getPageByPid(query) {
   return request({
-    url: '/ws/act/pageLayout/getByParentId',
+    url: '/act/pageLayout/getByParentId',
     method: 'get',
     params: query
   })
@@ -30,7 +30,7 @@ export function getPageByPid(query) {
 // 根据ID获取对象
 export function getPageItemByid(query) {
   return request({
-    url: '/ws/act/pageLayout/getById',
+    url: '/act/pageLayout/getById',
     method: 'get',
     params: query
   })
@@ -39,7 +39,7 @@ export function getPageItemByid(query) {
 // 根据ID删除数据
 export function deletePageByid(query) {
   return request({
-    url: '/ws/act/pageLayout/delete',
+    url: '/act/pageLayout/delete',
     method: 'get',
     params: query
   })
@@ -48,7 +48,7 @@ export function deletePageByid(query) {
 // 根据父级ID获取页面组件List
 export function getPageListByPid(query) {
   return request({
-    url: '/ws/act/pageLayout/getListByParentId',
+    url: '/act/pageLayout/getListByParentId',
     method: 'get',
     params: query
   })
@@ -57,10 +57,8 @@ export function getPageListByPid(query) {
 // 获取配置树
 export function getPageLayoutTree(query) {
   return request({
-    url: '/ws/act/pageLayout/getPageLayoutTree',
+    url: '/act/pageLayout/getPageLayoutTree',
     method: 'get',
     params: query
   })
 }
-
-

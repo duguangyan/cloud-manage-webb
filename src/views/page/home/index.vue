@@ -110,6 +110,7 @@
         </el-form-item>
         <el-form-item v-if="page.componentType == 3" prop="treeValue" label="分类菜单">
           <el-cascader
+            ref="refHandle"
             v-model="page.treeValue"
             :options="treeOptions"
             :props="treeProps"
@@ -299,7 +300,9 @@ export default {
       uploadDisabled: false,
       treeProps: {
         label: 'name',
-        value: 'id'
+        value: 'id',
+        expandTrigger: 'hover',
+        checkStrictly: true
       },
       // treeProps: {
       //   lazy: true,
@@ -461,6 +464,17 @@ export default {
     this.getManageList();
     this.getProductTree();
   },
+  watch: {
+    'page.treeValue': {
+      handler(newName, oldName) {
+        if(this.$refs.refHandle) {
+          this.$refs.refHandle.dropDownVisible = false; //监听值发生变化就关闭它
+        }
+      },
+      immediate: true,
+      // deep: true
+    }
+  },
   mounted() {
     getUserBtnByPId({ parentId: this.$route.meta.id }).then(res => {
       if(Array.isArray(res.data)) {
@@ -489,7 +503,8 @@ export default {
       getProductTree().then(res => {
         this.listLoading = false
         if(Array.isArray(res.data)) {
-          this.treeOptions = this.filterTree(res.data, -1)
+          this.treeOptions = res.data
+          // this.treeOptions = this.filterTree(res.data, -1)
         }
       }).catch(err => {
         this.listLoading = false
@@ -815,11 +830,11 @@ export default {
           } else if (this.page.componentType == 3) {
             // 分类
             param.imgPath = this.page.imgPath;
-            if (Array.isArray(this.page.treeValue) && this.page.treeValue.length == 3) {
-              param.componentId = this.page.treeValue[2];
+            if (Array.isArray(this.page.treeValue) && this.page.treeValue.length > 0) {
+              param.componentId = this.page.treeValue[this.page.treeValue.length - 1];
             } else {
               this.$message({
-                message: '请选择三级分类菜单',
+                message: '请选择分类菜单',
                 type: 'warning'
               });
               this.diaDisable = false
@@ -894,11 +909,11 @@ export default {
           } else if (this.page.componentType == 3) {
             // 分类
             param.imgPath = this.page.imgPath;
-            if (Array.isArray(this.page.treeValue) && this.page.treeValue.length == 3) {
-              param.componentId = this.page.treeValue[2];
+            if (Array.isArray(this.page.treeValue) && this.page.treeValue.length > 0) {
+              param.componentId = this.page.treeValue[this.page.treeValue.length - 1];
             } else {
               this.$message({
-                message: '请选择三级分类菜单',
+                message: '请选择分类菜单',
                 type: 'warning'
               });
               this.diaDisable = false

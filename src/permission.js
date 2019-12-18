@@ -70,3 +70,20 @@ router.afterEach(() => {
   // finish progress bar
   NProgress.done()
 })
+
+router.onError(err => {
+  const pattern = /^Loading chunk (\d)+ failed\./
+  const isChunkLoadingFailed = pattern.test(err.message)
+
+  if (isChunkLoadingFailed) {
+    Message({
+      type: 'error',
+      message: '服务器版本已更新，正在刷新本地缓存，请稍后...',
+      duration: 3000
+    })
+
+    window.location.replace(window.location.href)
+  }
+
+  console.log('出错了', err)
+})

@@ -5,7 +5,7 @@
             订单编号 
             <el-input v-model="order.orderId"  placeholder="请输入订单号" style="width: 200px;margin-right: 20px;" @keyup.enter.native="handleFilter" />
             订单状态
-            <el-select v-model="order.status" placeholder="请选择" style="width: 200px;margin-right: 20px;">
+            <el-select v-model="order.searchStatus" placeholder="请选择" style="width: 200px;margin-right: 20px;">
               <el-option
                 v-for="item in orderOption"
                 :key="item.value"
@@ -135,7 +135,8 @@ export default {
         shopId: localStorage.getItem('shopId') || this.$store.state.user.shop.id,
         status: '',
         userId: '',
-        userName: ''
+        userName: '',
+        searchStatus: ''
       },
       downloadLoading: false,
       btnsPermission: {
@@ -149,19 +150,19 @@ export default {
         }
       },
       orderOption: [{
-        value: '',
+        value: 'all',
         label: '全部'
       }, {
-        value: 0,
+        value: '0',
         label: '待支付'
       }, {
-        value: 2,
+        value: '2',
         label: '待发货'
       }, {
-        value: 3,
+        value: '3',
         label: '待收货'
       }, {
-        value: 4,
+        value: '4',
         label: '已完成'
       }],
       orderValue: '',
@@ -199,19 +200,17 @@ export default {
     }
   },
   components: { Pagination },
-  computed: {
-
-  },
   created() {
     if(this.$route.query.orderStatus !== undefined) {
       this.orderStatus = this.$route.query.orderStatus
-      this.order.pageIndex = this.$route.query.pageIndex
-      this.order.pageSize = this.$route.query.pageSize
+      this.order.pageIndex = Number(this.$route.query.pageIndex)
+      this.order.pageSize = Number(this.$route.query.pageSize)
       this.order.userId = this.$route.query.userId
       this.order.userName = this.$route.query.userName
       this.order.status = this.$route.query.status
       this.dateValue = this.$route.query.dateValue
       this.order.orderId = this.$route.query.orderId
+      this.order.searchStatus = this.$route.query.searchStatus
     }
     this.getOrderList()
   },
@@ -262,36 +261,30 @@ export default {
     },
     handleFilter() {
       // 搜索
-      if(this.order.status === '') {
-        this.orderStatus = 'all'
-      } else {
-        this.orderStatus = String(this.order.status)
-      }
+      if (this.order.searchStatus !== '') {
+        this.order.status = this.order.searchStatus === 'all' ? '' : this.order.searchStatus;
+        this.orderStatus = this.order.searchStatus;
+      } 
       this.order.pageIndex = 1;
       this.getOrderList()
     },
+    clearList() {
+      this.order.orderId = '';
+      this.order.pageIndex = 1;
+      this.order.userId = '';
+      this.order.userName = '';
+      this.order.searchStatus = '';
+      this.dateValue = null
+    },
     resetOrder() {
       // 重置
-      this.order = {
-        orderId: '',
-        pageIndex: 1,
-        pageSize: 10,
-        status: '',
-        userId: '',
-        userName: ''
-      }
-      this.orderStatus = 'all'
-      this.dateValue = null
+      this.clearList();
       this.getOrderList()
     },
     handleClick(tab, event) {
-      // 已上架、待上架、已下架切换
-      this.order.status = tab.name === 'all' ? '' : parseInt(tab.name)
-      this.order.pageIndex = 1
-      this.order.userId = ''
-      this.order.orderId = ''
-      this.order.userName = ''
-      this.dateValue = null
+      // 订单状态切换
+      this.clearList();
+      this.order.status = tab.name === 'all' ? '' : tab.name
       this.getOrderList()
     },
     orderDetail(row) {
@@ -308,7 +301,8 @@ export default {
           shopId: this.order.shopId,
           userId: this.order.userId,
           status: this.order.status,
-          orderStatus: this.orderStatus
+          orderStatus: this.orderStatus,
+          searchStatus: this.order.searchStatus
         }
       })
     },

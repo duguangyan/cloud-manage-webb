@@ -287,7 +287,8 @@ export default {
         shopId: '',
         status: '',
         userId: '',
-        userName: ''
+        userName: '',
+        searchStatus: ''
       },
       expressData: [],
       expressHistory: [],
@@ -329,6 +330,7 @@ export default {
     this.order.status = this.$route.query.status
     this.order.pageSize = this.$route.query.pageSize
     this.order.userId = this.$route.query.userId
+    this.order.searchStatus = this.$route.query.searchStatus
     this.getOrderDetail()
   },
    mounted() {
@@ -479,7 +481,8 @@ export default {
         shopId: this.order.shopId,
         status: this.order.status,
         pageSize: this.order.pageSize,
-        orderStatus: this.order.orderStatus
+        orderStatus: this.order.orderStatus,
+        searchStatus: this.order.searchStatus
       }})
     },
     regFun() {
