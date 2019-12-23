@@ -125,3 +125,12 @@ export function clearMenu(query) {
     params: query
   })
 }
+
+// 获取微信素材列表
+export function getMediaList(query) {
+  return request({
+    url: '/wechat/menu/wechatMediaList',
+    method: 'get',
+    params: query
+  })
+}

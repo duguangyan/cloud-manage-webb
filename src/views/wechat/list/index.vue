@@ -291,44 +291,126 @@
                       <el-form-item v-else prop="menuName" label="菜单名称">
                         <el-input class="w300" v-model="menuForm.menuName" maxlength="8"/>
                       </el-form-item>
-                      <template v-if="(isSelectMenu && menuList[selectMenuIndex].menuChild.length === 0) || isSelectMenuChild">
+                      <template v-show="(isSelectMenu && menuList[selectMenuIndex].menuChild.length === 0) || isSelectMenuChild">
                         <el-form-item prop="type" :label="isSelectMenuChild?'子菜单名称':'菜单名称'">
                           <el-radio-group v-model="menuForm.type">
-                            <el-radio label="click">点击事件</el-radio>
+                            <el-radio label="click">发送消息</el-radio>
                             <el-radio label="view">跳转网页</el-radio>
                             <el-radio label="miniprogram">小程序</el-radio>
                           </el-radio-group>
                         </el-form-item>
-                        <template v-if="menuForm.type === 'click'">
-                          <div>
-                           <p class="wechat-des">菜单KEY值，用于消息接口推送</p>
-                            <el-form-item prop="menuKey" label="运行代号">
-                              <el-input class="w300" v-model="menuForm.menuKey" maxlength="64" />
-                            </el-form-item>
+                        <div v-show="menuForm.type === 'click'" class="msg_sender">
+                          <div class="msg_tab">
+                            <div class="tab_navs_panel">
+                              <div class="tab_navs_wrp" style="width: 514px;">
+                                  <ul class="tab_navs js_tab_navs" style="margin-left:0;">
+                                      
+                                      <li class="tab_nav tab_appmsg width5" :class="{'selected' : sendType === 'news'}" @click="sendChange('news')">
+                                          <a href="javascript:void(0);" onclick="return false;">&nbsp;<i class="icon_msg_sender"></i><span class="msg_tab_title">图文消息</span></a>
+                                      </li>
+                                      
+                                      <li class="tab_nav tab_text width5" :class="{'selected' : sendType === 'word'}" @click="sendChange('word')">
+                                          <a href="javascript:void(0);" onclick="return false;">&nbsp;<i class="icon_msg_sender"></i><span class="msg_tab_title">文字</span></a>
+                                      </li>
+                                      
+                                      <li class="tab_nav tab_img width5" :class="{'selected' : sendType === 'pic'}" @click="sendChange('pic')">
+                                          <a href="javascript:void(0);" onclick="return false;">&nbsp;<i class="icon_msg_sender"></i><span class="msg_tab_title">图片</span></a>
+                                      </li>
+                                      
+                                      <li class="tab_nav tab_audio width5" :class="{'selected' : sendType === 'audio'}" @click="sendChange('audio')">
+                                          <a href="javascript:void(0);" onclick="return false;">&nbsp;<i class="icon_msg_sender"></i><span class="msg_tab_title">音频</span></a>
+                                      </li>
+                                      
+                                      <li class="tab_nav tab_video width5 no_extra" :class="{'selected' : sendType === 'video'}" @click="sendChange('video')">
+                                          <a href="javascript:void(0);" onclick="return false;">&nbsp;<i class="icon_msg_sender"></i><span class="msg_tab_title">视频</span></a>
+                                      </li>
+                                      
+                                  </ul>
+                              </div>
+                            </div>
+                            <div class="tab_panel">
+                              <div v-show="sendType === 'news'" class="tab_content">
+                                <div class="js_appmsgArea inner">
+                                  <div class="tab_cont_cover create-type__list jsMsgSendTab" data-index="0">
+                                    <div class="create-type__item" @click="sendSelect('news')">
+                                        <a href="javascript:;" class="create-type__link jsMsgSenderPopBt" data-type="10" data-index="0">
+                                            <i class="create-type__icon file"></i>
+                                            <strong class="create-type__title">从素材库选择</strong>
+                                        </a>
+                                    </div>
+                                    <!-- <div class="create-type__item">
+                                        <a target="_blank" href="https://mp.weixin.qq.com/cgi-bin/appmsg?t=media/appmsg_edit&amp;action=edit&amp;type=10&amp;isMul=1&amp;isNew=1&amp;lang=zh_CN&amp;token=269385525" class="create-type__link js_MsgSenderLinkBt js_new_appmsg" data-type="10" data-index="0">
+                                            <i class="create-type__icon new"></i>
+                                            <strong class="create-type__title">自建图文</strong>
+                                        </a>
+                                    </div>
+                                    <div class="create-type__item">
+                                        <a target="_blank" href="https://mp.weixin.qq.com/cgi-bin/appmsg?t=media/appmsg_edit&amp;action=edit&amp;type=10&amp;isMul=1&amp;isNew=1&amp;share=1&amp;lang=zh_CN&amp;token=269385525" class="create-type__link js_MsgSenderLinkBt js_share_appmsg" data-type="10" data-index="0">
+                                            <i class="create-type__icon share"></i>
+                                            <strong class="create-type__title">转载文章</strong>
+                                        </a>
+                                    </div> -->
+                                  </div>
+                                </div>
+                              </div>
+                              <div v-show="sendType === 'word'" class="tab_content">
+                                <div class="js_textArea inner no_extra">
+                                  <div class="emotion_editor">
+                                    <div class="edit_area js_editorArea" contenteditable="true" ref="sendEdit">
+
+                                    </div>
+                                    <div class="editor_toolbar">
+                                      <p class="editor_tip js_editorTip">还可以输入<em>600</em>字</p>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div v-show="sendType === 'pic'" class="tab_content">
+                                <div class="js_appmsgArea inner">
+                                  <div class="tab_cont_cover create-type__list jsMsgSendTab" data-index="0">
+                                    <div class="create-type__item" @click="sendSelect('image')">
+                                        <a href="javascript:;" class="create-type__link jsMsgSenderPopBt" data-type="10" data-index="0">
+                                            <i class="create-type__icon file"></i>
+                                            <strong class="create-type__title">从素材库选择</strong>
+                                        </a>
+                                    </div>
+                                    <!-- <div class="create-type__item">
+                                        <a target="_blank" href="https://mp.weixin.qq.com/cgi-bin/appmsg?t=media/appmsg_edit&amp;action=edit&amp;type=10&amp;isMul=1&amp;isNew=1&amp;lang=zh_CN&amp;token=269385525" class="create-type__link js_MsgSenderLinkBt js_new_appmsg" data-type="10" data-index="0">
+                                            <i class="create-type__icon new"></i>
+                                            <strong class="create-type__title">自建图文</strong>
+                                        </a>
+                                    </div>
+                                    <div class="create-type__item">
+                                        <a target="_blank" href="https://mp.weixin.qq.com/cgi-bin/appmsg?t=media/appmsg_edit&amp;action=edit&amp;type=10&amp;isMul=1&amp;isNew=1&amp;share=1&amp;lang=zh_CN&amp;token=269385525" class="create-type__link js_MsgSenderLinkBt js_share_appmsg" data-type="10" data-index="0">
+                                            <i class="create-type__icon share"></i>
+                                            <strong class="create-type__title">转载文章</strong>
+                                        </a>
+                                    </div> -->
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                        </template>
-                        <template v-else-if="menuForm.type=== 'view'">
-                          <div>
-                            <p class="wechat-des">订阅者点击该子菜单会跳到以下链接</p>
-                            <el-form-item prop="link" label="页面地址">
-                              <el-input class="w300" v-model="menuForm.link" maxlength="64" />
-                            </el-form-item>
-                          </div>
-                        </template>
-                        <template v-else-if="menuForm.type=== 'miniprogram'">
-                          <div>
-                            <p class="wechat-des">订阅者点击该子菜单会跳到以下小程序</p>
-                            <el-form-item prop="appId" label="小程序ID">
-                              <el-input class="w300" v-model="menuForm.appId" maxlength="64"/>
-                            </el-form-item>
-                            <el-form-item prop="url" label="首页地址">
-                              <el-input class="w300" v-model="menuForm.url" maxlength="64"/>
-                            </el-form-item>
-                            <el-form-item prop="pagePath" label="小程序路径">
-                              <el-input class="w300" v-model="menuForm.pagePath" maxlength="64"/>
-                            </el-form-item>
-                          </div>
-                        </template>
+                          <p class="profile_link_msg_global menu_send mini_tips warn dn js_warn"></p>
+                        </div>
+                        <div v-show="menuForm.type=== 'view'">
+                          <p class="wechat-des">订阅者点击该子菜单会跳到以下链接</p>
+                          <el-form-item prop="link" label="页面地址">
+                            <el-input class="w300" v-model="menuForm.link" maxlength="64" />
+                          </el-form-item>
+                        </div>
+                        <div v-show="menuForm.type=== 'miniprogram'">
+                          <p class="wechat-des">订阅者点击该子菜单会跳到以下小程序</p>
+                          <el-form-item prop="appId" label="小程序ID">
+                            <el-input class="w300" v-model="menuForm.appId" maxlength="64"/>
+                          </el-form-item>
+                          <el-form-item prop="url" label="首页地址">
+                            <el-input class="w300" v-model="menuForm.url" maxlength="64"/>
+                          </el-form-item>
+                          <el-form-item prop="pagePath" label="小程序路径">
+                            <el-input class="w300" v-model="menuForm.pagePath" maxlength="64"/>
+                          </el-form-item>
+                        </div>
                       </template>
                 </el-form>
                 <div class="save-button">
@@ -343,12 +425,182 @@
       </div>
       <div class="create-button"><el-button type="primary" size="medium" :disabled="wechatAble" @click="createMenu()">发布</el-button></div>
     </el-dialog>
+
+    <el-dialog title="选择素材" width="60%" :closeOnClickModal="false" :visible.sync="dialogSendVisible">
+      <div v-if="sendType === 'news'" class="dialog_bd">
+        <div class="dialog_media_container appmsg_media_dialog">
+            <div class="sub_title_bar in_dialog">
+                <div class="search_bar">
+                  <el-input v-model="richInput" placeholder="搜索图文消息" size="small"></el-input>
+                </div>
+                <div class="appmsg_create tr">
+                  <el-button type="primary" size="small">新建图文消息</el-button>
+                </div>
+            </div>
+            <div class="dialog_media_inner">
+              <div class="js_appmsg_list appmsg_list media_dialog">
+                <div v-for="(item, index) in newsData" :key="index" class="appmsg_col"><div class="inner">
+                  <div>
+                    <div class="appmsg single has_first_cover" :class="{'selected' : newsSelect[index]}" @click="selsectMedia(1, item.id, index)">
+                      <div class="appmsg_content">
+                        <div class="appmsg_info">
+                          <em class="appmsg_date">更新于 {{item.update_time}}</em>
+                        </div>
+                        <div class="appmsg_item simple_card_media">
+                          <!-- 图文  -->
+                          <div class="card_appmsg">
+                            <div class="card_appmsg_inner">
+                              <div class="weui-desktop-vm_primary card_appmsg_hd">
+                                <strong class="card_appmsg_title js_title">
+                                  <a href="" v-if="item.content && item.content.news_item" target="_blank" data-msgid="100000007" data-idx="0">{{item.content.news_item[0].title}}</a>
+                                  
+                                </strong>
+                              <div class="weui-desktop-vm_default card_appmsg_bd">
+                               
+                                <div v-if="item.content && item.content.news_item" class="card_appmsg_thumb" :style="'background-image:url(' + item.content.news_item[0].url +')'"></div>
+                              </div>
+                            </div>
+                          </div>   
+                          <a href="" class="edit_mask preview_mask js_preview" data-msgid="100000007" data-idx="0">
+                            <div class="edit_mask_content">
+                              <p class="">预览文章</p>
+                            </div>
+                            <span class="vm_box"></span>
+                          </a>
+                        </div>
+                      </div>
+                      <div class="edit_mask appmsg_mask">
+                        <!-- <i class="icon_card_selected">已选择</i> -->
+                        <i class="el-icon-check icon_card_selected"></i>
+                      </div>   
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>                  
+          </div>
+              <!-- <div class="no_media_wrp">
+                  <p class="tips">暂无素材</p>
+              </div>
+              <span class="vm_box"></span> -->
+              
+          </div>
+        </div>
+      </div>
+      <div v-else-if="sendType === 'pic'" class="weui-desktop-step__panel">
+        <div class="weui-desktop-img-picker weui-desktop-grid">
+          <div class="weui-desktop-grid__item weui-desktop-img-category">
+            <ul class="weui-desktop-menu">
+              <li class="weui-desktop-menu__item">
+                <a href="javascript:;" class="weui-desktop-menu__link weui-desktop-menu__link_current">
+                  <strong class="weui-desktop-img-category__title">全部图片</strong>
+                  <em class="weui-desktop-img-category__size">(1)</em>
+                </a>
+              </li>
+              <li class="weui-desktop-menu__item">
+                <a href="javascript:;" class="weui-desktop-menu__link">
+                  <strong class="weui-desktop-img-category__title">未分组</strong>
+                  <em class="weui-desktop-img-category__size">(1)</em>
+                </a>
+              </li>
+              <li class="weui-desktop-menu__item">
+                <a href="javascript:;" class="weui-desktop-menu__link">
+                  <strong class="weui-desktop-img-category__title">文章配图</strong>
+                  <em class="weui-desktop-img-category__size">(0)</em>
+                </a>
+              </li>
+            </ul>
+            <div class="weui-desktop-img-category__add">
+              <div class="weui-desktop-popover__wrp">
+                <span class="weui-desktop-popover__target">
+                  <a href="javascript:;">新建分组</a>
+                </span>
+                <div class="weui-desktop-popover weui-desktop-popover_pos-up-center" style="display: none;">
+                  <div class="weui-desktop-popover__inner">
+                    <div class="weui-desktop-popover__desc">
+                      <div>
+                        <form weui="true"><div class="weui-desktop-form__control-group">
+                          <label class="weui-desktop-form__label">创建分组</label>
+                          <div class="weui-desktop-form__controls">
+                            <div class="weui-desktop-form__input-area">
+                              <span class="weui-desktop-form__input-wrp">
+                                <input type="text" name="group_name" placeholder="" class="weui-desktop-form__input">
+                              </span>
+                              </div>
+                            </div>
+                          </div>
+                        </form>
+                      </div>
+                    </div>
+                    <div class="weui-desktop-popover__bar">
+                      <div>
+                        <button type="button" class="weui-desktop-btn weui-desktop-btn_primary">确定</button>
+                        <button type="button" class="weui-desktop-btn weui-desktop-btn_default">取消</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            </div>
+            <div class="weui-desktop-grid__item">
+              <div class="weui-desktop-img-picker__list__area">
+                <!-- <div class="weui-desktop-global-mod weui-desktop-media-global-bar">
+                  <div class="weui-desktop-global__extra">
+                    <div class="weui-desktop-upload weui-desktop-upload_global-media">
+                      <div class="weui-desktop-upload__tips">
+                        <span class="weui-desktop-tips weui-desktop-tips_icon-after">大小不超过5M，已开启图片水印
+                          <div class="weui-desktop-popover__wrp">
+                            <span class="weui-desktop-popover__target">
+                              <i class="icon-svg-common-ask"></i></span>
+                              <div class="weui-desktop-popover weui-desktop-popover_pos-up-center img_water" style="display: none;">
+                                <div class="weui-desktop-popover__inner">
+                                  <div class="weui-desktop-popover__desc">
+                                    <div>
+                                      <p>水印类型：公众号名称</p>
+                                      <p><span>已开启水印，所有上传的图片都会带有水印。</span>若需修改请前往<a target="_blank" href="/cgi-bin/settingpage?t=setting/function&amp;action=function&amp;set_water=1">公众号设置/功能设置</a>设置图片水印</p>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </span>
+                        </div>
+                        <div class="js_upload_btn_container weui-desktop-upload-input__wrp webuploader-container">
+                        <div class="weui-desktop-btn weui-desktop-btn_default weui-desktop-btn_disabled" style="display: none;"><span>上传文件</span></div>
+                        <a href="javascript:;" id="upload_0.5583989179968321" class="weui-desktop-btn weui-desktop-btn_default webuploader-pick"><span>上传文件</span></a>
+                        <div id="rt_rt_1dsoqem12uhe1v8m1sa71k7518d918" style="position: absolute; top: 0px; left: 0px; width: 102px; height: 36px; overflow: hidden; bottom: auto; right: auto;">
+                          <input type="file" multiple="multiple" accept="image/bmp, image/png, image/jpeg, image/jpg, image/gif" style="display: none;">
+                          <label style="opacity: 0; width: 100%; height: 100%; display: block; cursor: pointer; background: rgb(255, 255, 255);"></label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div> -->
+                  <div class="weui-desktop-media-list-wrp weui-desktop-img-picker__list__wrp js_img-picker_wrapper" style="height: 790px;">
+                    <div class="weui-desktop-img-picker__list">
+                      <div v-for="(item, index) in imageData" :key="index" class="weui-desktop-img-picker__item" :class="{'selected' : newsSelect[index]}" @click="selsectMedia(2, item.id, index)">
+                        <i role="img" aria-describedby="图片描述" title="图片描述" class="weui-desktop-img-picker__img-thumb" :style="'background-image: url(' + item.url + ')'">
+                        <span class="image_dialog__checkbox" style="display: none;"></span></i>
+                        <strong class="weui-desktop-img-picker__img-title">{{item.name}}</strong>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+      <div class="dialog_ft">
+        <el-button type="primary" size="small">确定</el-button>
+        <el-button size="small" @click="dialogSendVisible = false">取消</el-button>
+		  </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import { getUserBtnByPId } from '@/api/upms/menu'
-import { addWechat, deleteWechat, updateWechat, getWechatList, getWechatById, getMenuById, addMenu, updateMenu, getMenuListById, checkMenu, clearMenu, deleteMenu, createMenuById } from '@/api/wechat/list'
+import { addWechat, deleteWechat, updateWechat, getWechatList, getWechatById, getMenuById, addMenu, updateMenu, getMenuListById, checkMenu, clearMenu, deleteMenu, createMenuById, getMediaList } from '@/api/wechat/list'
 import { getSystem } from '@/api/upms/systemList'
 import Pagination from '@/components/Pagination'
 import waves from '@/directive/waves' // waves directive
@@ -603,7 +855,20 @@ export default {
       selectMenuId: '',
       selectMenuChildId: '',
       selectMenuIndex: 0,
-      selectMenuChildIndex: 0
+      selectMenuChildIndex: 0,
+      sendType: 'news',
+      dialogSendVisible: false,
+      richInput: '',
+      newsData: [],
+      newsSelect: [],
+      newsSelectId: '',
+      mediaList: {
+        accessToken: '28_ETlGPkeQ8AyBEFxDAneGpqkwDjJEjjzCJ7094ygLcs9Md4yLVn3M8RJJr1k0doeneOoYJurdFhTnN-qxkQE74KJllosTNUJ2BXL-MD70fkEPnoqy-6_hgD1iLj2nmJk-4gNwLSNjksAGGDyIZOPjAFAETU',
+        count: 20,
+        offset: 0,
+        type: ''
+      },
+      imageData: [],
     }
   },
   components: { Pagination },
@@ -1078,6 +1343,37 @@ export default {
           message: '已取消删除'
         })   
       })
+    },
+    sendChange(val) {
+      // 发送消息类型选择
+      this.sendType = val;
+      this.newsSelect = [];
+      if (val === 'word') {
+        this.$nextTick(() => {
+          this.$refs['sendEdit'].focus();
+        })
+      }
+    },
+    sendSelect(val) {
+      // 选择素材
+      this.mediaList.type = val;
+      this.dialogSendVisible = true;
+      getMediaList(this.mediaList).then(res => {
+        if (Array.isArray(res.data.item)) {
+          if (this.mediaList.type === 'news') {
+            this.newsData = res.data.item;
+          } else if (this.mediaList.type === 'image') {
+            this.imageData = res.data.item;
+          }
+        }
+      })
+    },
+    selsectMedia(type, id, index) {
+      this.newsSelect = [];
+      this.newsSelect[index] = true;
+      if (type === 1) {
+        this.newsSelectId = id;
+      }
     }
   }
 }
@@ -1487,5 +1783,739 @@ export default {
     position: absolute;
     left: 50%;
     margin-left: -6px;
+  }
+
+  .msg_sender {
+    border: 1px solid #e7e7eb;
+  }
+
+  .msg_tab {
+    background-color: #fff;
+  }
+
+  .msg_sender .tab_navs_panel {
+    overflow: hidden;
+    *zoom: 1;
+    background-color: #f6f8f9;
+  }
+
+  .msg_sender .tab_panel {
+    border-bottom-left-radius: 3px;
+    -moz-border-radius-bottomleft: 3px;
+    -webkit-border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+    -moz-border-radius-bottomright: 3px;
+    -webkit-border-bottom-right-radius: 3px;
+  }
+
+  .tab_panel {
+    background-color: #fff;
+    min-height: 216px;
+  }
+
+  .profile_link_msg_global.menu_send{
+    margin-top: 4px;
+  }
+
+  .mini_tips.warn {
+    color: #fa5151;
+  }
+
+  .menu_form_area .msg_sender .tab_navs_wrp{
+      width: 384px;
+  }
+  
+  .menu_form_area .msg_sender .tab_navs_wrp {
+    width: 420px;
+  }
+
+  .msg_sender .tab_navs_wrp {
+    overflow: hidden;
+    *zoom: 1;
+  }
+
+  .msg_sender .tab_navs{
+    background-color: #f6f8f9;
+    line-height: 60px;
+    height: 60px;
+  }
+
+  .msg_sender .tab_navs {
+    white-space: nowrap;
+    text-align: left;
+    font-size: 0;
+    border-bottom-width: 0;
+    box-shadow: none;
+  }
+
+  .msg_sender .tab_navs {
+      border-top-width: 0;
+  }
+
+  .tab_nav {
+      float: left;
+      font-size: 14px;
+  }
+
+  .tab_navs {
+    *zoom: 1;
+    text-align: center;
+    line-height: 30px;
+    border-bottom: 1px solid #e7e7eb;
+    box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.5);
+    -moz-box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.5);
+    -webkit-box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.5);
+  }
+
+  .tab_nav.selected {
+    background-color: #d4d5d5;
+  }
+
+  .msg_sender .tab_nav.selected {
+    background-color: transparent;
+  }
+
+  .msg_sender .tab_nav {
+    float: none;
+    display: inline-block;
+    *display: inline;
+    *zoom: 1;
+    vertical-align: top;
+  }
+
+  .tab_nav a {
+    display: block;
+    *height: 1%;
+    text-decoration: none;
+    color: #222;
+    outline: 0;
+    padding: 0 20px;
+  }
+
+  .tab_appmsg .icon_msg_sender {
+    background-image: url(~@/assets/img/rich.svg);
+  }
+
+  .tab_appmsg.selected .icon_msg_sender, .tab_appmsg:hover .icon_msg_sender {
+    background-image: url(~@/assets/img/rich_s.svg);
+  }
+
+  .tab_text .icon_msg_sender {
+    background-image: url(~@/assets/img/word.svg);
+  }
+
+  .tab_text.selected .icon_msg_sender, .tab_text:hover .icon_msg_sender{
+    background-image: url(~@/assets/img/word_s.svg);
+  }
+
+  .tab_img .icon_msg_sender {
+    background-image: url(~@/assets/img/pic.svg);
+  }
+
+  .tab_img.selected .icon_msg_sender, .tab_img:hover .icon_msg_sender{
+    background-image: url(~@/assets/img/pic_s.svg);
+  }
+
+  .tab_audio .icon_msg_sender {
+    background-image: url(~@/assets/img/voice.svg);
+  }
+
+  .tab_audio.selected .icon_msg_sender, .tab_audio:hover .icon_msg_sender{
+    background-image: url(~@/assets/img/voice_s.svg);
+  }
+
+  .tab_video .icon_msg_sender {
+    background-image: url(~@/assets/img/video.svg);
+  }
+
+  .tab_video.selected .icon_msg_sender, .tab_video:hover .icon_msg_sender {
+    background-image: url(~@/assets/img/video_s.svg);
+  }
+
+  .icon_msg_sender {
+    margin-right: 3px;
+    margin-top: -2px;
+    *margin-top: 2px;
+    display: inline-block;
+    vertical-align: middle;
+    width: 22px;
+    height: 20px;
+  }
+
+  .msg_sender .tab_nav.selected .msg_tab_title, .msg_sender .tab_nav:hover .msg_tab_title {
+    color: #44b549;
+  }
+
+  .msg_sender .tab_nav .msg_tab_title {
+    color: #9a9a9a;
+  }
+
+  .msg_sender .tab_content {
+    padding: 0;
+  }
+
+  .msg_sender .tab_content .inner {
+    border-width: 0;
+  }
+
+  .tab_content .inner {
+    border: 1px solid #c6c6c6;
+    border-radius: 3px;
+    padding: 20px;
+  }
+
+  .menu_form_area .msg_sender .tab_cont_cover {
+    padding: 20px;
+  }
+
+  .create-type__list {
+    text-align: center;
+    padding: 45px 0;
+  }
+
+  .tab_cont_cover {
+    overflow: hidden;
+  }
+
+  .create-type__list .create-type__item {
+    display: inline-block;
+    width: 130px;
+    color: #9a9a9a;
+    vertical-align: top;
+    margin: 0 10px;
+    -webkit-transition: all .3s;
+    transition: all .3s;
+  }
+
+  .create-type__list .create-type__item:hover {
+    text-decoration: none;
+    background-color: #f6f8f9;
+  }
+
+  .create-type__list .create-type__item a {
+    color: #9a9a9a;
+    display: block;
+    height: 100%;
+    padding-top: 28px;
+    padding-bottom: 34px;
+    box-sizing: border-box;
+  }
+
+  .create-type__list .create-type__item .create-type__icon {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+  }
+
+  .create-type__icon.file {
+    background: url(~@/assets/img/msg_sender_z_@all49d030.png) 0 -44px no-repeat;
+  }
+
+  .create-type__list .create-type__item strong {
+    font-weight: normal;
+    display: block;
+  }
+
+  .tab_content .inner.no_extra {
+    padding: 0;
+    border-width: 0;
+  }
+
+  .msg_sender .emotion_editor {
+    border-width: 0;
+  }
+
+  .emotion_editor {
+    position: relative;
+    z-index: 1;
+    border: 1px solid #e7e7eb;
+    border-radius: 0;
+    -moz-border-radius: 0;
+    -webkit-border-radius: 0;
+  }
+
+  .menu_form_area .msg_sender .emotion_editor .edit_area {
+    height: 151px;
+  }
+
+  .emotion_editor .edit_area {
+    padding: 14px 20px;
+    outline: 0;
+    word-wrap: break-word;
+    word-break: break-all;
+    border-top-left-radius: 0;
+    -moz-border-radius-topleft: 0;
+    -webkit-border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    -moz-border-radius-topright: 0;
+    -webkit-border-top-right-radius: 0;
+    background-color: #fff;
+    height: 188px;
+  }
+
+  .menu_form_area .msg_sender .editor_toolbar {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .editor_toolbar {
+    *zoom: 1;
+    padding: 0 20px;
+    line-height: 36px;
+    background-color: #fff;
+    border-top: 1px solid #e7e7eb;
+  }
+
+  .msg_sender .editor_tip.opr_tips {
+      display: none;
+  }
+
+  .editor_tip {
+    float: right;
+    color: #9a9a9a;
+  }
+
+  .appmsg_media_dialog {
+      height: auto;
+  }
+
+  .dialog_media_container {
+    position: relative;
+    height: 498px;
+  }
+
+  .appmsg_media_dialog>.sub_title_bar {
+      text-align: right;
+  }
+
+  .sub_title_bar.in_dialog {
+    background-color: #fff;
+    padding: 0 20px;
+    border-bottom: 1px solid #e7e7eb;
+  }
+
+  .sub_title_bar {
+    padding: 0 30px;
+    line-height: 55px;
+  }
+
+  .appmsg_media_dialog .dialog_media_inner {
+    height: 453px;
+    position: relative;
+  }
+
+  .dialog_media_container .search_bar, .dialog_media_container .appmsg_create {
+    display: inline-block;
+    vertical-align: middle;
+  }
+
+  .dialog_media_container .search_bar .frm_input_box {
+    width: 140px;
+  }
+
+  .frm_input_box.search.with_del {
+    padding-right: 60px;
+  }
+
+
+  .appmsg_media_dialog .dialog_media_inner {
+    height: 453px;
+    position: relative;
+  }
+
+  .no_media_wrp {
+    display: inline-block;
+    *display: inline;
+    *zoom: 1;
+    vertical-align: middle;
+    text-align: center;
+    width: 99%;
+  }
+
+  .vm_box {
+    display: inline-block;
+    height: 100%;
+    vertical-align: middle;
+  }
+
+  .no_media_wrp .tips {
+    margin-bottom: 40px;
+    color: #9a9a9a;
+  }
+
+  .dialog_ft {
+    margin: 0;
+    padding-top: 25px;
+    text-align: center;
+    border-top: 1px solid transparent;
+    box-shadow: none;
+    -moz-box-shadow: none;
+    -webkit-box-shadow: none;
+  }
+
+  .weui-desktop-img-picker {
+    display: -ms-flexbox;
+    display: flex;
+  }
+
+  .weui-desktop-img-picker > .weui-desktop-grid__item:first-child {
+    width: 190px;
+    margin-right: -1px;
+  }
+
+  .weui-desktop-img-category {
+    border-right: 1px solid #E4E8EB;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-direction: column;
+    flex-direction: column;
+  }
+
+  .weui-desktop-grid__item {
+    float: left;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .weui-desktop-img-category .weui-desktop-menu {
+    height: 400px;
+    overflow-y: auto;
+    -ms-flex-positive: 1;
+    flex-grow: 1;
+  }
+
+  .weui-desktop-img-category__add {
+    display: block;
+    line-height: 40px;
+    padding-left: 32px;
+  }
+
+  .weui-desktop-img-category .weui-desktop-menu__item .weui-desktop-menu__link_current {
+    border-left-color: transparent;
+    background-color: rgba(0, 0, 0, 0.03);
+  }
+
+  .weui-desktop-img-category .weui-desktop-menu__link {
+    padding-left: 28px;
+    line-height: 40px;
+  }
+
+  .weui-desktop-menu__item>.weui-desktop-menu__link_current {
+    border-left-color: #44b549;
+  }
+
+  .weui-desktop-menu__item>.weui-desktop-menu__link {
+    padding-left: 20px;
+    line-height: 50px;
+  }
+
+  .weui-desktop-menu__link_current {
+    color: #44b549;
+  }
+
+  .weui-desktop-menu__link {
+    color: #222;
+    display: block;
+    border-left: 4px solid transparent;
+  }
+
+  .weui-desktop-img-category__title {
+    color: #353535;
+    width: auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    word-wrap: normal;
+    max-width: 8em;
+    font-weight: 400;
+  }
+
+  .weui-desktop-img-category__size {
+    color: #9A9A9A;
+    font-style: normal;
+  }
+
+  .weui-desktop-img-category .weui-desktop-popover__wrp {
+    display: inline-block;
+    vertical-align: top;
+  }
+
+  .weui-desktop-popover__wrp {
+    display: inline;
+    position: relative;
+    font-size: 14px;
+  }
+
+  .weui-desktop-popover {
+    width: 280px;
+    position: absolute;
+    z-index: 500;
+    text-align: left;
+    color: #353535;
+    line-height: 1.6;
+    white-space: normal;
+    word-wrap: break-word;
+    -webkit-hyphens: auto;
+    -ms-hyphens: auto;
+    hyphens: auto;
+  }
+
+  .weui-desktop-img-picker__list__area {
+    border-left: 1px solid #E4E8EB;
+  }
+
+  .weui-desktop-img-picker__list__wrp {
+    position: relative;
+    margin-top: 30px;
+    overflow: auto;
+  }
+
+  .weui-desktop-img-picker__list {
+    margin: 0 auto;
+    width: 725px;
+    overflow: auto;
+  }
+
+  .weui-desktop-img-picker__item {
+    cursor: pointer;
+    position: relative;
+    float: left;
+    width: 110px;
+    margin: 0 13px 20px 0;
+  }
+
+  .weui-desktop-img-picker__item.selected .weui-desktop-img-picker__img-thumb::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: #44B549;
+    opacity: 0.1;
+  }
+
+  .weui-desktop-img-picker__item.selected .weui-desktop-img-picker__img-thumb {
+    box-shadow: 0 0 0 2px #44B549 inset;
+  }
+
+  .weui-desktop-img-picker__item {
+    cursor: pointer;
+    position: relative;
+    float: left;
+    width: 110px;
+    margin: 0 13px 20px 0;
+  }
+
+  .weui-desktop-img-picker__img-thumb {
+    position: relative;
+    display: block;
+    width: 110px;
+    height: 110px;
+    -webkit-background-size: contain;
+    background-size: contain;
+    background-position: 50% 50%;
+    background-repeat: no-repeat;
+    box-sizing: border-box;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .weui-desktop-img-picker__img-title {
+    margin-top: 8px;
+    display: block;
+    width: auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    word-wrap: normal;
+    font-weight: 400;
+    line-height: 20px;
+    text-align: center;
+  }
+
+  .image_dialog__checkbox, .image_dialog__radio {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    width: 20px;
+    height: 20px;
+    border: 1px solid #fff;
+    border-radius: 1px;
+    background-color: rgba(0, 0, 0, 0.2);
+  }
+
+  .media_dialog.appmsg_list {
+      position: relative;
+      padding: 28px 140px;
+      height: 345px;
+      margin: 0;
+      overflow-y: auto;
+  }
+
+  .media_dialog .appmsg_col {
+    width: 48%;
+  }
+
+  .appmsg_col {
+    display: inline-block;
+    *display: inline;
+    *zoom: 1;
+    vertical-align: top;
+    width: 32%;
+    text-align: left;
+    font-size: 14px;
+    letter-spacing: normal;
+  }
+
+  .appmsg {
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 20px;
+    border: 1px solid #e7e7eb;
+    background-color: #fff;
+    color: #9a9a9a;
+  }
+
+  .appmsg_content {
+    position: relative;
+    *zoom: 1;
+  }
+
+  .appmsg_info {
+    -moz-text-align-last: auto;
+    text-align-last: auto;
+    font-size: 13px;
+    line-height: 20px;
+    margin: 0 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid #e7e7eb;
+  }
+
+  .appmsg_item {
+    position: relative;
+    padding: 12px 14px;
+  }
+
+  .appmsg_mask {
+    display: none;
+    font-size: 50px;
+  }
+
+  .appmsg_date {
+    font-weight: 400;
+    font-style: normal;
+  }
+
+  .card_appmsg_inner {
+    position: relative;
+    padding-top: 56.25%;
+  }
+
+  .edit_mask.preview_mask {
+    display: none;
+    color: rgba(255,255,255,0.8);
+  }
+
+  .edit_mask {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.6)!important;
+    filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr='#99000000',endcolorstr = '#99000000');
+    color: #fff;
+    z-index: 1;
+    text-align: center;
+    padding: 14px;
+  }
+
+  .simple_card_media .card_appmsg_hd {
+    padding: 15px;
+  }
+
+  .weui-desktop-vm_primary {
+    width: 2000px;
+  }
+
+  .weui-desktop-vm_default, .weui-desktop-vm_primary {
+    display: table-cell;
+    vertical-align: middle;
+    word-wrap: break-word;
+    word-break: break-all;
+  }
+
+  .simple_card_media .card_appmsg_title {
+      position: static;
+      color: #353535;
+  }
+
+  .card_appmsg_title {
+    position: absolute;
+    left: 15px;
+    right: 15px;
+    bottom: 15px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    color: #fff;
+    font-weight: 400;
+    z-index: 1;
+  }
+
+  .simple_card_media .card_appmsg_title a {
+    color: #353535;
+  }
+
+  .card_appmsg_title a {
+    color: #fff;
+  }
+
+  .simple_card_media .card_appmsg_bd {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding-top: 56.25%;
+  }
+
+  .weui-desktop-vm_default {
+    white-space: nowrap;
+  }
+
+  .card_appmsg_thumb {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: auto;
+    height: auto;
+    background-size: cover;
+    background-position: 50% 50%;
+    background-repeat: no-repeat;
+    background-color: #f6f8f9;
+  }
+
+  .card_appmsg_thumb:before {
+    content: " ";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-color: rgba(0,0,0,0.3);
+  }
+
+  .appmsg.selected .appmsg_mask,.appmsg:hover .appmsg_mask {
+    display: block;
+  }
+
+  .appmsg .icon_card_selected {
+    margin-top: 100px;
   }
 </style>
