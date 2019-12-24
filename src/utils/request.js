@@ -5,15 +5,9 @@ import { getToken } from '@/utils/auth'
 import QS from 'qs'
 
 var target = '/api'
-
-// 调试借口
-var debugUrl = 'http://192.168.0.117:9002'
-
 const baseURL = process.env.NODE_ENV === 'development' ? target : '/'
 // create an axios instance
 const service = axios.create({
-  // baseURL: 'http://192.168.0.202:8000',
-  // baseURL: process.env.VUE_APP_BASE_API,
   baseURL,
   timeout: 5000 // request timeout
 })
@@ -33,15 +27,12 @@ service.interceptors.request.use(
       } else {
         if (config.type !== 'json') {
           config.data = QS.stringify({
-            ...config.data // 将参数变成  a=xx&b=xx&c=xx这样的参数列表
+            ...config.data
           })
         } else if (config.isBlob) {
           config.responseType = 'arraybuffer'
         }
       }
-    }
-    if (+config.debug === 1) {
-      config.baseURL = debugUrl
     }
 
     // do something before request is sent
@@ -63,16 +54,6 @@ service.interceptors.request.use(
 
 // response interceptor
 service.interceptors.response.use(
-  /**
-   * If you want to get http information such as headers or status
-   * Please return  response => response
-   */
-
-  /**
-   * Determine the request status by custom code
-   * Here is just an example
-   * You can also judge the status by HTTP Status Code
-   */
   response => {
     const res = response.data
     // if the custom code is not 20000, it is judged as an error.

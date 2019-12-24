@@ -212,7 +212,7 @@
       <div v-loading="wechatLoading" class="menu_setting_area js_editBox">
         <div class="menu_preview_area">
           <div class="mobile_menu_preview">
-            <div class="mobile_hd tc">上上农夫</div>
+            <div class="mobile_hd tc">{{wechatName}}</div>
             <div class="mobile_bd">
               <ul class="pre_menu_list grid_line ui-sortable ui-sortable-disabled" :class="{ no_menu: menuList.length === 0 }">
                 <li v-for="(item, index) in menuList" :key="index" class="jsMenu pre_menu_item grid_item jslevel1 ui-sortable ui-sortable-disabled" :class="{'size1of1': menuList.length === 0, 'size1of2': menuList.length === 1, 'size1of3': menuList.length > 1, 'current': isSelectMenu && !isSelectMenuChild && selectMenuIndex === index}" @click="selectMenu(index, item.id)">
@@ -294,12 +294,13 @@
                       <template v-show="(isSelectMenu && menuList[selectMenuIndex].menuChild.length === 0) || isSelectMenuChild">
                         <el-form-item prop="type" :label="isSelectMenuChild?'子菜单名称':'菜单名称'">
                           <el-radio-group v-model="menuForm.type">
-                            <el-radio label="click">发送消息</el-radio>
+                            <el-radio label="media_id">发送消息</el-radio>
                             <el-radio label="view">跳转网页</el-radio>
                             <el-radio label="miniprogram">小程序</el-radio>
+                            <el-radio label="click">点击事件</el-radio>
                           </el-radio-group>
                         </el-form-item>
-                        <div v-show="menuForm.type === 'click'" class="msg_sender">
+                        <div v-if="menuForm.type === 'media_id'" class="msg_sender">
                           <div class="msg_tab">
                             <div class="tab_navs_panel">
                               <div class="tab_navs_wrp" style="width: 514px;">
@@ -309,15 +310,15 @@
                                           <a href="javascript:void(0);" onclick="return false;">&nbsp;<i class="icon_msg_sender"></i><span class="msg_tab_title">图文消息</span></a>
                                       </li>
                                       
-                                      <li class="tab_nav tab_text width5" :class="{'selected' : sendType === 'word'}" @click="sendChange('word')">
+                                      <!-- <li class="tab_nav tab_text width5" :class="{'selected' : sendType === 'word'}" @click="sendChange('word')">
                                           <a href="javascript:void(0);" onclick="return false;">&nbsp;<i class="icon_msg_sender"></i><span class="msg_tab_title">文字</span></a>
-                                      </li>
+                                      </li> -->
                                       
                                       <li class="tab_nav tab_img width5" :class="{'selected' : sendType === 'pic'}" @click="sendChange('pic')">
                                           <a href="javascript:void(0);" onclick="return false;">&nbsp;<i class="icon_msg_sender"></i><span class="msg_tab_title">图片</span></a>
                                       </li>
                                       
-                                      <li class="tab_nav tab_audio width5" :class="{'selected' : sendType === 'audio'}" @click="sendChange('audio')">
+                                      <li class="tab_nav tab_audio width5" :class="{'selected' : sendType === 'voice'}" @click="sendChange('voice')">
                                           <a href="javascript:void(0);" onclick="return false;">&nbsp;<i class="icon_msg_sender"></i><span class="msg_tab_title">音频</span></a>
                                       </li>
                                       
@@ -331,7 +332,7 @@
                             <div class="tab_panel">
                               <div v-show="sendType === 'news'" class="tab_content">
                                 <div class="js_appmsgArea inner">
-                                  <div class="tab_cont_cover create-type__list jsMsgSendTab" data-index="0">
+                                  <div v-show="newsObj.id === null" class="tab_cont_cover create-type__list jsMsgSendTab" data-index="0">
                                     <div class="create-type__item" @click="sendSelect('news')">
                                         <a href="javascript:;" class="create-type__link jsMsgSenderPopBt" data-type="10" data-index="0">
                                             <i class="create-type__icon file"></i>
@@ -351,9 +352,40 @@
                                         </a>
                                     </div> -->
                                   </div>
+                                  <div v-show="newsObj.id !== null">
+                                    <div class="appmsg single has_first_cover">
+                                      <div class="appmsg_content">
+                                        <div class="appmsg_info">
+                                          <em class="appmsg_date">更新于 {{newsObj.update | dateFormat}}</em>  
+                                        </div>
+                                        <div class="appmsg_item simple_card_media">
+                                          <!-- 图文  -->
+                                          <div class="card_appmsg">
+                                            <div class="card_appmsg_inner">
+                                                <div class="weui-desktop-vm_primary card_appmsg_hd">
+                                                  <strong class="card_appmsg_title js_title">
+                                                    <a href="" target="_blank" data-msgid="100000007" data-idx="0">{{newsObj.title}}</a>
+                                                  </strong>
+                                                  <div class="weui-desktop-vm_default card_appmsg_bd">
+                                                    <div class="card_appmsg_thumb" :style="'background-image:url(' + newsObj.url + ')'"></div>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                              <a href="" class="edit_mask preview_mask js_preview" data-msgid="100000007" data-idx="0">
+                                                <div class="edit_mask_content">
+                                                  <p class="">预览文章</p>
+                                                </div>
+                                                <span class="vm_box"></span>
+                                              </a>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    <span class="jsmsgSenderDelBt link_dele" @click="deleteSelect(1)">删除</span>
+                                    </div>
+                                  </div>
                                 </div>
-                              </div>
-                              <div v-show="sendType === 'word'" class="tab_content">
+                              <!-- <div v-show="sendType === 'word'" class="tab_content">
                                 <div class="js_textArea inner no_extra">
                                   <div class="emotion_editor">
                                     <div class="edit_area js_editorArea" contenteditable="true" ref="sendEdit">
@@ -364,10 +396,10 @@
                                     </div>
                                   </div>
                                 </div>
-                              </div>
+                              </div> -->
                               <div v-show="sendType === 'pic'" class="tab_content">
                                 <div class="js_appmsgArea inner">
-                                  <div class="tab_cont_cover create-type__list jsMsgSendTab" data-index="0">
+                                  <div v-show="imageObj.id === null" class="tab_cont_cover create-type__list jsMsgSendTab" data-index="0">
                                     <div class="create-type__item" @click="sendSelect('image')">
                                         <a href="javascript:;" class="create-type__link jsMsgSenderPopBt" data-type="10" data-index="0">
                                             <i class="create-type__icon file"></i>
@@ -387,19 +419,135 @@
                                         </a>
                                     </div> -->
                                   </div>
+
+                                  <div v-show="imageObj.id !== null">
+                                    <div data-type="2" class="js_previe_media_box">
+                                      <div class="preview_media_context">
+                                        <div class="preview_img_context">
+                                          <img class="preview_img" :src="imageObj.url" alt="">
+                                        </div>
+                                        <span class="jsmsgSenderDelBt link_dele" @click="deleteSelect(2)">删除</span>      
+                                      </div>
+                                    </div>
+                                  </div>
                                 </div>
                               </div>
+
+                              <div v-show="sendType === 'voice'" class="tab_content">
+                                <div class="js_appmsgArea inner">
+                                  <div v-show="voiceObj.id === null" class="tab_cont_cover create-type__list jsMsgSendTab" data-index="0">
+                                    <div class="create-type__item" @click="sendSelect('voice')">
+                                        <a href="javascript:;" class="create-type__link jsMsgSenderPopBt" data-type="10" data-index="0">
+                                            <i class="create-type__icon file"></i>
+                                            <strong class="create-type__title">从素材库选择</strong>
+                                        </a>
+                                    </div>
+                                    <!-- <div class="create-type__item">
+                                        <a target="_blank" href="https://mp.weixin.qq.com/cgi-bin/appmsg?t=media/appmsg_edit&amp;action=edit&amp;type=10&amp;isMul=1&amp;isNew=1&amp;lang=zh_CN&amp;token=269385525" class="create-type__link js_MsgSenderLinkBt js_new_appmsg" data-type="10" data-index="0">
+                                            <i class="create-type__icon new"></i>
+                                            <strong class="create-type__title">自建图文</strong>
+                                        </a>
+                                    </div>
+                                    <div class="create-type__item">
+                                        <a target="_blank" href="https://mp.weixin.qq.com/cgi-bin/appmsg?t=media/appmsg_edit&amp;action=edit&amp;type=10&amp;isMul=1&amp;isNew=1&amp;share=1&amp;lang=zh_CN&amp;token=269385525" class="create-type__link js_MsgSenderLinkBt js_share_appmsg" data-type="10" data-index="0">
+                                            <i class="create-type__icon share"></i>
+                                            <strong class="create-type__title">转载文章</strong>
+                                        </a>
+                                    </div> -->
+                                  </div>
+
+                                  <div v-show="voiceObj.id !== null">
+                                    <div>
+                                      <div class="js_previe_media_box">
+                                        <div class="preview_media_context">
+                                          <div class="preview_audio_context">
+                                            <div class="preview_audio_hd">
+                                              <em class="preview_audio_player">这是一个音频</em>
+                                            </div>
+                                            <div class="preview_audio_bd">
+                                              <strong class="preview_audio_title">{{voiceObj.title}}</strong>
+                                              <p class="preview_audio_desc"></p>
+                                            </div>
+                                          </div>
+                                        </div>
+                                        <span class="jsmsgSenderDelBt link_dele" @click="deleteSelect(3)">删除</span>    
+                                      </div>
+                                    </div>                                   
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div v-show="sendType === 'video'" class="tab_content">
+                                <div class="js_appmsgArea inner">
+                                  <div v-show="videoObj.id === null" class="tab_cont_cover create-type__list jsMsgSendTab" data-index="0">
+                                    <div class="create-type__item" @click="sendSelect('video')">
+                                        <a href="javascript:;" class="create-type__link jsMsgSenderPopBt" data-type="10" data-index="0">
+                                            <i class="create-type__icon file"></i>
+                                            <strong class="create-type__title">从素材库选择</strong>
+                                        </a>
+                                    </div>
+                                    <!-- <div class="create-type__item">
+                                        <a target="_blank" href="https://mp.weixin.qq.com/cgi-bin/appmsg?t=media/appmsg_edit&amp;action=edit&amp;type=10&amp;isMul=1&amp;isNew=1&amp;lang=zh_CN&amp;token=269385525" class="create-type__link js_MsgSenderLinkBt js_new_appmsg" data-type="10" data-index="0">
+                                            <i class="create-type__icon new"></i>
+                                            <strong class="create-type__title">自建图文</strong>
+                                        </a>
+                                    </div>
+                                    <div class="create-type__item">
+                                        <a target="_blank" href="https://mp.weixin.qq.com/cgi-bin/appmsg?t=media/appmsg_edit&amp;action=edit&amp;type=10&amp;isMul=1&amp;isNew=1&amp;share=1&amp;lang=zh_CN&amp;token=269385525" class="create-type__link js_MsgSenderLinkBt js_share_appmsg" data-type="10" data-index="0">
+                                            <i class="create-type__icon share"></i>
+                                            <strong class="create-type__title">转载文章</strong>
+                                        </a>
+                                    </div> -->
+                                  </div>
+
+                                  <div v-show="videoObj.id !== null">
+                                    <div id="msgSender_media_1_15"><!-- 标题 -->
+                                      <div id="js_title_main" class="js_title_main frm_input_box media_input_box">
+                                        <!-- <input type="text" id="js_video_title" placeholder="请在这里输入标题" class="frm_input js_title js_counter js_field" name="title"> -->
+                                        <p>{{videoObj.title}}</p>
+                                        <!-- <em class="frm_input_append frm_counter" style="display: none;">4/30</em> -->
+                                      </div>
+                                      <div data-type="15" class="js_previe_media_box">
+                                        <div class="preview_media_context">
+                                          <div class="preview_video_context">
+                                            <div class="js_preview_hd preview_video_hd" :style="'background-image: url(' + videoObj.url + ')'">
+                                              <!-- <i class="js_preview_video_play preview_video_length">02:10</i> -->
+                                            </div>
+                                            <!-- <div class="preview_video_ft">
+                                              <strong class="preview_video_title">{{videoObj.title}}</strong>
+                                            </div> -->
+                                            <!-- <div class="preview_media_opr weui-desktop-link-group">
+                                              <div class="weui-desktop-tooltip__wrp weui-desktop-link">
+                                                <button class="js_replace_media weui-desktop-circle-btn">
+                                                  <svg xmlns="http://www.w3.org/2000/svg" width="16.001" height="13.597" viewBox="0 0 16.001 13.597">
+                                                    <path fill="#9A9A9A" fill-rule="evenodd" d="M3.531 3.799h12.47v1.5H.5a.5.5 0 0 1-.33-.876L5.103.099a.4.4 0 0 1 .594.527L3.531 3.799zm8.939 6H0v-1.5h15.501a.5.5 0 0 1 .33.876l-4.933 4.323a.4.4 0 0 1-.594-.526l2.166-3.173z"></path>
+                                                  </svg>
+                                                </button>
+                                              </div>
+                                            </div> -->
+                                          </div>
+                                        </div>
+                                        <span class="jsmsgSenderDelBt link_dele" @click="deleteSelect(4)">删除</span> 
+                                      </div>
+                                    </div>                                        
+
+
+                                  </div>
+                                  
+                                </div>
+                              </div>
+
                             </div>
                           </div>
                           <p class="profile_link_msg_global menu_send mini_tips warn dn js_warn"></p>
                         </div>
-                        <div v-show="menuForm.type=== 'view'">
+                        <div v-else-if="menuForm.type=== 'view'">
                           <p class="wechat-des">订阅者点击该子菜单会跳到以下链接</p>
                           <el-form-item prop="link" label="页面地址">
                             <el-input class="w300" v-model="menuForm.link" maxlength="64" />
                           </el-form-item>
                         </div>
-                        <div v-show="menuForm.type=== 'miniprogram'">
+                        <div v-else-if="menuForm.type=== 'miniprogram'">
                           <p class="wechat-des">订阅者点击该子菜单会跳到以下小程序</p>
                           <el-form-item prop="appId" label="小程序ID">
                             <el-input class="w300" v-model="menuForm.appId" maxlength="64"/>
@@ -411,13 +559,18 @@
                             <el-input class="w300" v-model="menuForm.pagePath" maxlength="64"/>
                           </el-form-item>
                         </div>
+                        <div v-if="menuForm.type === 'click'">
+                          <p class="wechat-des">菜单KEY值，用于消息接口推送</p>
+                          <el-form-item prop="menuKey" label="运行代号">
+                            <el-input class="w300" v-model="menuForm.menuKey" maxlength="64" />
+                          </el-form-item>
+                        </div>
                       </template>
                 </el-form>
-                <div class="save-button">
-                  <el-button type="primary" size="medium" :disabled="wechatAble" @click="saveMenu()">保存</el-button>
-                </div>
-
               </div>
+            </div>
+            <div class="save-button">
+              <el-button type="primary" size="medium" :disabled="wechatAble" @click="saveMenu()">保存</el-button>
             </div>
             <span class="editor_arrow_wrp"><i class="editor_arrow editor_arrow_out"></i><i class="editor_arrow editor_arrow_in"></i></span>
           </div>
@@ -429,22 +582,22 @@
     <el-dialog title="选择素材" width="60%" :closeOnClickModal="false" :visible.sync="dialogSendVisible">
       <div v-if="sendType === 'news'" class="dialog_bd">
         <div class="dialog_media_container appmsg_media_dialog">
-            <div class="sub_title_bar in_dialog">
+            <!-- <div class="sub_title_bar in_dialog">
                 <div class="search_bar">
                   <el-input v-model="richInput" placeholder="搜索图文消息" size="small"></el-input>
                 </div>
                 <div class="appmsg_create tr">
                   <el-button type="primary" size="small">新建图文消息</el-button>
                 </div>
-            </div>
+            </div> -->
             <div class="dialog_media_inner">
               <div class="js_appmsg_list appmsg_list media_dialog">
                 <div v-for="(item, index) in newsData" :key="index" class="appmsg_col"><div class="inner">
                   <div>
-                    <div class="appmsg single has_first_cover" :class="{'selected' : newsSelect[index]}" @click="selsectMedia(1, item.id, index)">
+                    <div class="appmsg single has_first_cover" :class="{'selected' : mediaSelect[index]}" @click="selsectMedia(1, item, index)">
                       <div class="appmsg_content">
                         <div class="appmsg_info">
-                          <em class="appmsg_date">更新于 {{item.update_time}}</em>
+                          <em class="appmsg_date">更新于 {{item.update_time | dateFormat}}</em>
                         </div>
                         <div class="appmsg_item simple_card_media">
                           <!-- 图文  -->
@@ -579,7 +732,7 @@
                   </div> -->
                   <div class="weui-desktop-media-list-wrp weui-desktop-img-picker__list__wrp js_img-picker_wrapper" style="height: 790px;">
                     <div class="weui-desktop-img-picker__list">
-                      <div v-for="(item, index) in imageData" :key="index" class="weui-desktop-img-picker__item" :class="{'selected' : newsSelect[index]}" @click="selsectMedia(2, item.id, index)">
+                      <div v-for="(item, index) in imageData" :key="index" class="weui-desktop-img-picker__item" :class="{'selected' : mediaSelect[index]}" @click="selsectMedia(2, item, index)">
                         <i role="img" aria-describedby="图片描述" title="图片描述" class="weui-desktop-img-picker__img-thumb" :style="'background-image: url(' + item.url + ')'">
                         <span class="image_dialog__checkbox" style="display: none;"></span></i>
                         <strong class="weui-desktop-img-picker__img-title">{{item.name}}</strong>
@@ -590,8 +743,189 @@
               </div>
             </div>
           </div>
+      
+      <div v-else-if="sendType === 'voice'" class="weui-desktop-dialog__bd">
+        <div class="audio_music_dialog_content">
+          <div class="weui-desktop-tab weui-desktop-tab_dialog weui-desktop-tab_title">
+            <ul class="weui-desktop-tab__navs">
+              <li class="weui-desktop-tab__nav weui-desktop-tab__nav_current"><a href="javascript:void(0);" target="">素材库</a></li>
+            </ul>
+          </div>
+          <div class="weui-desktop-media-area">
+            <div class="weui-desktop-media-area_audio">
+              <!-- <div class="weui-desktop-media-area__hd weui-desktop-global-mod weui-desktop-media-global-bar">
+                <div class="weui-desktop-global__info">
+                  <p class="gap_top_item tips_global">由于版本兼容的原因,你暂时只可以选择60秒内的音频发送</p>
+                </div>
+                <div class="weui-desktop-global__extra">
+                  <button type="button" class="weui-desktop-btn weui-desktop-btn_default">上传音频</button>
+                </div>
+              </div> -->
+              <div class="weui-desktop-media__list-wrp weui-desktop-media-area__bd">
+                <p class="weui-desktop-media-tips weui-desktop-media-tips_loading" style="height: 645px; display: none;">加载中</p>
+                <p class="weui-desktop-media-tips" style="height: 645px; display: none;">暂无数据</p>
+                <ul class="weui-desktop-media__list" style="height: 645px;">
+                  <div class="tbody-list">
+                    <label v-for="(item, index) in voiceData" :key="index" class="audio_item_wrp">
+                      <div class="frm_checkbox_label audio_item" :class="{'checked' : mediaSelect[index]}" @click="selsectMedia(3, item, index)">
+                        <div class="lbl_content clear_float">
+                          <label class="weui-desktop-form__check-label audio_checkout" style="display: none;">
+                            <input type="checkbox" checking="" class="weui-desktop-form__checkbox"> <i class="weui-desktop-icon-checkbox"></i>
+                            <span class="weui-desktop-form__check-content"></span>
+                          </label>
+                          <div class="audio_item_left">
+                            <span class="audio_title ">{{item.name}}</span>
+                            <div class="audio_item_left_bottom">
+                              <span class="audio_date">{{item.update_time | dateFormat}}</span>
+                              <span class="audio_tip" style="display: none;">转码中</span>
+                              <span class="audio_tip" style="display: none;">转码失败</span>
+                            </div>
+                          </div>
+                          <div class="audio_item_right">
+                            <div class="audio_play audio_default">
+                              <div class="weui-desktop-audio-player weui-desktop-audio_stopped undefined">
+                                <em title="点击播放" class="weui-desktop-audio-player__switch"></em>
+                              </div>
+                            </div>
+                            <div class="audio_length"></div>
+                          </div>
+                          <div class="checked_layer" style="display: none;"></div>
+                          <div class="checked_layer_gray" style="display: none;"></div>
+                          <div class="transcoding_top_tip" style="display: none;">转码完成后才可以使用</div>
+                          <div class="transcoding_top_tip" style="display: none;">转码失败，不可以使用</div>
+                          <div class="transcoding_top_tip" style="display: none;">该音频超过60秒，不可以使用</div>
+                        </div>
+                      </div>
+                      <div class="frm_checkbox_label audio_item checked">
+                        <div class="lbl_content clear_float">
+                          <label class="weui-desktop-form__check-label audio_checkout" style="display: none;">
+                            <input type="checkbox" checking="" class="weui-desktop-form__checkbox"> <i class="weui-desktop-icon-checkbox"></i>
+                            <span class="weui-desktop-form__check-content"></span>
+                          </label>
+                          <div class="audio_item_left">
+                            <span class="audio_title ">音频测试</span>
+                            <div class="audio_item_left_bottom">
+                              <span class="audio_date">2019-12-24</span>
+                              <span class="audio_tip" style="display: none;">转码中</span>
+                              <span class="audio_tip" style="display: none;">转码失败</span>
+                            </div>
+                          </div>
+                          <div class="audio_item_right">
+                            <div class="audio_play audio_default">
+                              <div class="weui-desktop-audio-player weui-desktop-audio_stopped undefined">
+                                <em title="点击播放" class="weui-desktop-audio-player__switch"></em>
+                              </div>
+                            </div>
+                            <div class="audio_length">00:16</div>
+                          </div>
+                          <div class="checked_layer" style="display: none;"></div>
+                          <div class="checked_layer_gray" style="display: none;"></div>
+                          <div class="transcoding_top_tip" style="display: none;">转码完成后才可以使用</div>
+                          <div class="transcoding_top_tip" style="display: none;">转码失败，不可以使用</div>
+                          <div class="transcoding_top_tip" style="display: none;">该音频超过60秒，不可以使用</div>
+                        </div>
+                      </div>
+                      
+                    </label>
+                    
+                    
+                  </div>
+                  <div class="tbody-list" style="display: none;"></div>
+                </ul>
+              </div>
+            </div>
+            <div class="weui-desktop-media-area_music js_music_block" style="display: none;">
+              <div class="weui-desktop-media-area__hd weui-desktop-global-mod weui-desktop-media-global-bar search_before">
+                <div class="weui-desktop-global__info">
+                  <div class="weui-desktop-search weui-desktop-form__input_clear">
+                    <span class="weui-desktop-form__input-wrp">
+                      <span class="weui-desktop-form__input-append-in">
+                        <button type="button" class="weui-desktop-icon-btn weui-desktop-search__btn">
+                          <div class="weui-desktop-icon weui-desktop-icon__inputSearch weui-desktop-icon__small">
+                            <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M11.33 10.007l4.273 4.273a.502.502 0 0 1 .005.709l-.585.584a.499.499 0 0 1-.709-.004L10.046 11.3a6.278 6.278 0 1 1 1.284-1.294zm.012-3.729a5.063 5.063 0 1 0-10.127 0 5.063 5.063 0 0 0 10.127 0z"></path></svg>
+                          </div>
+                        </button>
+                      </span>
+                      <input placeholder="输入歌名/歌手搜索" type="text" class="weui-desktop-form__input">
+                    </span>
+                    <div class="weui-desktop-search__panel" style="display: none;"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="weui-desktop-media__list-wrp weui-desktop-media-area__bd">
+                <p class="weui-desktop-media-tips weui-desktop-media-tips_loading" style="height: 645px; display: none;">加载中</p>
+                <p class="weui-desktop-media-tips" style="height: 645px; display: none;">没有相关搜索结果</p>
+                <ul class="weui-desktop-media__list qqmusic_list" style="height: 645px; display: none;">
+                  <div class="tbody-list"></div> <div class="tbody-list" style="display: none;"></div>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div v-else-if="sendType === 'video'" class="weui-desktop-dialog__bd">
+        <div class="more-video__wrp">
+          <div class="more-video__lib">
+            <!-- <div class="more-video__title">
+              <button type="button" class="weui-desktop-btn weui-desktop-btn_default">本地上传</button>
+            </div> -->
+            <p class="weui-desktop-media-tips weui-desktop-media-tips_loading" style="height: 936.5px; display: none;">加载中</p>
+            <ul class="more-video__list" style="height: 912px;">
+              <li v-for="(item, index) in videoData" :key="index" class="more-video__item more-video__item_selected">
+                <div class="more-video__item-wrp" :class="{'selected' : mediaSelect[index]}" @click="selsectMedia(4, item, index)">
+                  <div class="more-video__item-img" :style="'background-image: url(' + item.url + ');background-color: #eee;'"></div>
+                  <div class="more-video__item-content">
+                    <div class="more-video__item-title">
+                      <b class="weui-desktop-key-tag" style="display: none;"></b><span>{{item.name}}</span>
+                    </div>
+                    <div class="more-video__item-desc">{{item.update_time | dateFormat}}<span class="more-video__item-status"></span></div>
+                  </div>
+                  <div class="more-video__item-status-desc" style="display: none;"></div>
+                  <!-- <label class="weui-desktop-form__check-label" style="display: none;">
+                    <input type="checkbox" checking="" class="weui-desktop-form__checkbox"> <i class="weui-desktop-icon-checkbox"></i> <span class="weui-desktop-form__check-content"></span>
+                  </label>
+                  <span class="weui-desktop-simple-video__mask weui-desktop-simple-video__mask_suc"><i class="icon-svg-modules-media-vedio-player"></i><em class="weui-desktop-simple-video__duration">02:10</em></span> -->
+                </div>
+              </li>
+            </ul>
+          </div>
+          <!-- <div class="more-video__link" style="height: 888px; display: none;">
+            <form>
+              <div class="weui-desktop-form__control-group">
+                <label class="weui-desktop-form__label">视频/图文网址</label>
+                <div class="weui-desktop-form__controls">
+                  <div class="weui-desktop-form__input-area">
+                    <span class="weui-desktop-form__input-wrp"><input type="text" name="" placeholder="支持微信公众号文章链接，视频详情页链接和腾讯视频链接" require="true" class="weui-desktop-form__input"></span>
+                  </div>
+                  <button type="button" class="weui-desktop-btn weui-desktop-btn_default weui-desktop-btn_disabled">确定</button>
+                </div>
+              </div>
+            </form> 
+            <p class="weui-desktop-media-tips weui-desktop-media-tips_loading" style="height: 385px; display: none;">加载中</p>
+            <ul class="more-video__list" style="display: none;">
+              <li class="more-video__empty">暂无视频</li>
+            </ul>
+            <ul class="more-video__list" style="display: none;">
+              <li class="more-video__item more-video__item_selected">
+                <div class="more-video__item-wrp">
+                  <div class="more-video__item-img" style="background-image: url(&quot;http://mmbiz.qpic.cn/mmbiz_jpg/Iubm4YfIbdAII10RFOFLztibW2GTdy8KssaDa3HIkTsSozVky8L7LjfPjFIhibhRwsVYP4YqUHRlfjMmumblShGw/0?wx_fmt=jpeg&quot;);"></div>
+                  <div class="more-video__item-content">
+                    <div class="more-video__item-title">测试视频</div>
+                    <div class="more-video__item-desc">2019-12-24 10:18</div>
+                  </div>
+                  <label class="weui-desktop-form__check-label"><input type="checkbox" checking="" class="weui-desktop-form__checkbox"> <i class="weui-desktop-icon-checkbox"></i> <span class="weui-desktop-form__check-content"></span></label>
+                  <span class="weui-desktop-simple-video__mask weui-desktop-simple-video__mask_suc"><i class="icon-svg-modules-media-vedio-player"></i><em class="weui-desktop-simple-video__duration">02:10</em></span>
+                </div>
+              </li>
+            </ul>
+          </div> -->
+        </div>
+      </div>
+      
+
       <div class="dialog_ft">
-        <el-button type="primary" size="small">确定</el-button>
+        <el-button type="primary" size="small" @click="confirmSend">确定</el-button>
         <el-button size="small" @click="dialogSendVisible = false">取消</el-button>
 		  </div>
     </el-dialog>
@@ -800,10 +1134,12 @@ export default {
         url: '',
         link: '',
         type: '',
-        pagePath: ''
+        pagePath: '',
+        mediaId: '',
       },
       wechatType: 1,
       wechatLoading: false,
+      wechatName: '',
       wechatAble: false,
       menuClass: ['size1of1', 'size1of2', 'size1of3', 'size1of3'],
       wechatRules: {},
@@ -856,19 +1192,41 @@ export default {
       selectMenuChildId: '',
       selectMenuIndex: 0,
       selectMenuChildIndex: 0,
-      sendType: 'news',
+      sendType: '',
       dialogSendVisible: false,
       richInput: '',
-      newsData: [],
-      newsSelect: [],
+      mediaSelect: [],
       newsSelectId: '',
       mediaList: {
-        accessToken: '28_ETlGPkeQ8AyBEFxDAneGpqkwDjJEjjzCJ7094ygLcs9Md4yLVn3M8RJJr1k0doeneOoYJurdFhTnN-qxkQE74KJllosTNUJ2BXL-MD70fkEPnoqy-6_hgD1iLj2nmJk-4gNwLSNjksAGGDyIZOPjAFAETU',
+        accessToken: '28_6CQ1MpCq_cWsjImX3gEG2Uo4ElRZylexr3rOQ2Nui9X0KKrA0iD2fQCuU--27ecP6rAKS9ENJqn1C1Gc7a5JIsT1EvxDb0O-o10usVdkENO0hKedJtpFQM5Q6BlgCWa46KuhHK-2eZGYcuLrARKgAAAHYR',
         count: 20,
         offset: 0,
         type: ''
       },
+      newsData: [],
       imageData: [],
+      voiceData: [],
+      videoData: [],
+      newsObj: {
+        id: null,
+        update: '',
+        url: '',
+        title: '',
+      },
+      imageObj: {
+        id: null,
+        url: '',
+      },
+      voiceObj: {
+        id: null,
+        title: '',
+      },
+      videoObj: {
+        id: null,
+        update: '',
+        url: '',
+        title: '',
+      }
     }
   },
   components: { Pagination },
@@ -1039,6 +1397,7 @@ export default {
       this.selectMenuChildId = ''
       this.selectMenuIndex = 0
       this.selectMenuChildIndex = 0
+      this.wechatName = row.name
       this.getMenuListById()
     },
     getMenuListById(type, name) {
@@ -1170,6 +1529,16 @@ export default {
             param.url = this.menuForm.link
           } else if(this.menuForm.type === 'click') {
             param.menuKey = this.menuForm.menuKey
+          } else if(this.menuForm.type === 'media_id') {
+            if (this.sendType === 'news') {
+              param.mediaId = this.newsObj.id;
+            } else if (this.sendType === 'pic') {
+              param.mediaId = this.imageObj.id;
+            } else if (this.sendType === 'voice') {
+              param.mediaId = this.voiceObj.id;
+            } else if (this.sendType === 'video') {
+              param.mediaId = this.videoObj.id;
+            }
           }
           
           updateMenu(param).then(res => {
@@ -1215,6 +1584,18 @@ export default {
           this.menuForm.pagePath = res.data.pagePath
         } else if(res.data.type === 'click') {
           this.menuForm.menuKey = res.data.menuKey
+        } else if(res.data.type === 'media_id') {
+          // if (this.sendType === 'news') {
+          //   param.media_id = this.newsObj.id;
+          // } else if (this.sendType === 'word') {
+          
+          // } else if (this.sendType === 'pic') {
+          //   param.media_id = this.imageObj.id;
+          // } else if (this.sendType === 'voice') {
+          //   param.media_id = this.voiceObj.id;
+          // } else if (this.sendType === 'video') {
+          //   param.media_id = this.videoObj.id;
+          // }
         }
       })
       this.isSelectMenu = true
@@ -1294,12 +1675,14 @@ export default {
         if(res.data.type === 'view') {
           this.menuForm.link = res.data.url
           this.menuForm.url = ''
+        } else if(res.data.type === 'click') {
+          this.menuForm.menuKey = res.data.menuKey
         } else if(res.data.type === 'miniprogram') {
           this.menuForm.link = ''
           this.menuForm.url = res.data.url 
           this.menuForm.pagePath = res.data.pagePath
-        } else if(res.data.type === 'click') {
-          this.menuForm.menuKey = res.data.menuKey
+        } else if(res.data.type === 'media_id') {
+
         }
       })
     },
@@ -1347,16 +1730,18 @@ export default {
     sendChange(val) {
       // 发送消息类型选择
       this.sendType = val;
-      this.newsSelect = [];
-      if (val === 'word') {
-        this.$nextTick(() => {
-          this.$refs['sendEdit'].focus();
-        })
-      }
+      this.mediaSelect = [];
+      this.menuForm.mediaId = '';
+      // if (val === 'word') {
+      //   this.$nextTick(() => {
+      //     this.$refs['sendEdit'].focus();
+      //   })
+      // }
     },
     sendSelect(val) {
       // 选择素材
       this.mediaList.type = val;
+      this.menuForm.mediaId = '';
       this.dialogSendVisible = true;
       getMediaList(this.mediaList).then(res => {
         if (Array.isArray(res.data.item)) {
@@ -1364,15 +1749,66 @@ export default {
             this.newsData = res.data.item;
           } else if (this.mediaList.type === 'image') {
             this.imageData = res.data.item;
+          } else if (this.mediaList.type === 'voice') {
+            this.voiceData = res.data.item;
+          } else if (this.mediaList.type === 'video') {
+            this.videoData = res.data.item;
           }
         }
       })
     },
-    selsectMedia(type, id, index) {
-      this.newsSelect = [];
-      this.newsSelect[index] = true;
+    selsectMedia(type, item, index) {
+      this.mediaSelect = [];
+      this.mediaSelect[index] = true;
       if (type === 1) {
-        this.newsSelectId = id;
+        this.newsObj.id = item.id;
+        this.newsObj.update = item.update_time;
+        if (item.content && Array.isArray(item.content.news_item) && item.content.news_item.length > 0) {
+          this.newsObj.title = item.content.news_item[0].title;
+          this.newsObj.url = item.content.news_item[0].url;
+        }
+      } else if (type === 2) {
+        this.imageObj.id = item.media_id;
+        this.imageObj.url = item.url;
+      } else if (type === 3) {
+        this.voiceObj.id = item.media_id;
+        this.voiceObj.title = item.name;
+      } else if (type === 4) {
+        this.videoObj.id = item.media_id;
+        this.videoObj.title = item.name;
+        this.videoObj.update = item.update_time;
+        this.videoObj.url = item.url;
+      }
+      console.log(this.mediaSelect);
+      console.log(this.videoObj);
+    },
+    confirmSend() {
+      // 选择素材
+      this.dialogSendVisible = false;
+      if (this.menuForm.mediaId === null || this.menuForm.mediaId === '') {
+        
+      } else {
+        this.dialogSendVisible = false;
+      }
+    },
+    deleteSelect(type) {
+      // 删除选中素材
+      if (type === 1) {
+        this.newsObj.id = null;
+        this.newsObj.title = '';
+        this.newsObj.url = '';
+        this.newsObj.update = '';
+      } else if (type === 2) {
+        this.imageObj.id = null;
+        this.imageObj.url = '';
+      } else if (type === 3) {
+        this.voiceObj.id = null;
+        this.voiceObj.title = '';
+      } else if (type === 4) {
+        this.videoObj.id = null;
+        this.videoObj.title = '';
+        this.videoObj.url = '';
+        this.videoObj.update = '';
       }
     }
   }
@@ -1558,12 +1994,8 @@ export default {
   }
 
   .save-button{
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
     text-align: right;
-    padding: 0 15px 15px 0;
+    padding: 10px;
   }
 
   .menu_preview_area .sub_pre_menu_list li:first-child {
@@ -1964,6 +2396,16 @@ export default {
     padding: 20px;
   }
 
+  .tab_content .appmsg {
+    width: 320px;
+    margin-bottom: 0;
+  }
+
+  .msg_sender .preview_media_context {
+    width: 320px;
+    display: inline-block;
+  }
+
   .menu_form_area .msg_sender .tab_cont_cover {
     padding: 20px;
   }
@@ -1973,8 +2415,18 @@ export default {
     padding: 45px 0;
   }
 
+  .preview_img {
+    width: 100%;
+  }
+  
   .tab_cont_cover {
     overflow: hidden;
+  }
+
+  .msg_sender .audio_msg, .msg_sender .appmsg, .msg_sender .richvideo, .msg_sender .msg_card {
+    display: inline-block;
+    *display: inline;
+    *zoom: 1;
   }
 
   .create-type__list .create-type__item {
@@ -2397,6 +2849,14 @@ export default {
     padding: 12px 14px;
   }
 
+  .link_dele {
+    display: inline-block;
+    vertical-align: bottom;
+    padding-left: 10px;
+    margin-bottom: 5px;
+    cursor: pointer;
+  }
+
   .appmsg_mask {
     display: none;
     font-size: 50px;
@@ -2517,5 +2977,326 @@ export default {
 
   .appmsg .icon_card_selected {
     margin-top: 100px;
+  }
+ 
+  .preview_img_context {
+    display: inline-block;
+  }
+
+  .weui-desktop-tab_title .weui-desktop-tab__navs {
+    text-align: left;
+    line-height: 40px;
+    border-bottom: 1px solid #E0E1E2;
+    font-size: 16px;
+  }
+
+  .weui-desktop-media-area_audio .weui-desktop-media__list-wrp {
+    min-height: 250px;
+    overflow: hidden;
+    border: 0px;
+  }
+
+  .weui-desktop-media__list-wrp .weui-desktop-media-tips.weui-desktop-media-tips_loading {
+    position: relative;
+    top: 0;
+    left: 0;
+    margin: 0;
+  }
+
+  .weui-desktop-media__list {
+    position: relative;
+    padding: 0 40px;
+  }
+
+  .weui-desktop-media-area{
+    width: 740px;
+  }
+
+  .audio_item_wrp:nth-child(odd) {
+    margin-right: 10px;
+  }
+
+  .audio_item_wrp {
+    position: relative;
+    overflow: hidden;
+    *zoom: 1;
+    margin: 4px 0 0;
+    box-sizing: border-box;
+    display: inline-block;
+    width: 325px;
+    height: 119px;
+  }
+
+  .audio_item.frm_checkbox_label {
+    position: relative;
+    overflow: hidden;
+    *zoom: 1;
+    margin: 0;
+    padding: 14px 15px;
+    box-sizing: border-box;
+    display: inline-block;
+    width: 325px;
+    height: 119px;
+    border: 1px solid #E4E8EB;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+
+  .audio_item .lbl_content {
+    display: inline-block;
+  }
+
+  .audio_checkout, .weui-desktop-media-area_music .audio_checkout {
+    z-index: 9999;
+    position: absolute;
+    top: 10px;
+    left: 12px;
+    width: 20px;
+    height: 20px;
+  }
+
+  .weui-desktop-form__check-label {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 30px;
+    cursor: pointer;
+  }
+
+  .audio_item_left, .weui-desktop-media-area_music .qqmusic_left {
+    position: relative;
+    width: 190px;
+    height: 89px;
+    margin-right: 12px;
+    font-size: 14px;
+    float: left;
+  }
+
+  .audio_item_right {
+    float: right;
+    box-sizing: border-box;
+    width: 89px;
+    height: 89px;
+    padding: 20px 0 10px;
+    text-align: center;
+    background: #FAFAFA;
+  }
+
+  .audio_title {
+    width: 420px;
+  }
+
+  .audio_item_left .audio_title, .weui-desktop-media-area_music .qqmusic_left .audio_title, .audio_item_left .songname, .weui-desktop-media-area_music .qqmusic_left .songname {
+      width: 190px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      word-break: break-all;
+      text-align: justify;
+      -webkit-line-clamp: 2;
+  }
+
+  .audio_item.frm_checkbox_label .audio_item_left_bottom {
+    position: absolute;
+    bottom: 0;
+    width: 190px;
+    color: #9A9A9A;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+  }
+
+  .audio_item_right .audio_play,.audio_item_right .audio_length {
+    width: 100%;
+    text-align: center;
+  }
+
+  .audio_item_right .weui-desktop-audio-player__switch {
+    width: 32px;
+    height: 32px;
+    background-size: cover;
+  }
+
+  .weui-desktop-audio-player__switch {
+    background: transparent url(~@/assets/img/audio.png) no-repeat 0 0;
+    width: 42px;
+    height: 42px;
+    vertical-align: middle;
+    display: inline-block;
+    background-size: 42px auto;
+    cursor: pointer;
+  }
+
+  .audio_item_right .audio_length {
+    padding-top: 8px;
+    font-size: 12px;
+    color: #9A9A9A;
+  }
+
+  .audio_item.frm_checkbox_label.checked {
+    padding: 13px 14px;
+    border: 2px solid #1AAD19;
+  }
+
+  .preview_audio_context, .preview_audio_bd {
+    overflow: hidden;
+  }
+
+  .preview_audio_context {
+    padding: 28px 22px;
+    background-color: #f6f8f9;
+  }
+
+  .preview_audio_hd {
+      float: left;
+      margin-right: 20px;
+  }
+
+  .preview_audio_player {
+    background: #f6f8f9 url(~@/assets/img/audio.png) no-repeat 50% 50%;
+    width: 44px;
+    height: 44px;
+    vertical-align: middle;
+    display: inline-block;
+    background-size: 100% auto;
+    cursor: pointer;
+    line-height: 300px;
+    overflow: hidden;
+  }
+
+  .more-video__lib {
+    padding: 0 32px;
+  }
+
+  .more-video__list {
+    height: 440px;
+    overflow-y: hidden;
+    overflow-x: hidden;
+    margin-right: -20px;
+  }
+
+  .more-video__item_selected {
+    border-color: transparent;
+  }
+
+  .more-video__item {
+    border: 2px solid transparent;
+    box-sizing: border-box;
+    float: left;
+    height: 94px;
+    position: relative;
+    margin-bottom: 20px;
+    width: 50%;
+  }
+
+  .more-video__item-wrp {
+    height: 100%;
+    display: -ms-flexbox;
+    display: flex;
+    margin-right: 20px;
+    border-radius: 2px;
+    border: 2px solid #E5E5E5;
+    box-sizing: border-box;
+    position: relative;
+    z-index: 2;
+    cursor: pointer;
+  }
+
+  .more-video__item-wrp:hover,.more-video__item-wrp.selected {
+    border: 2px solid #07C160;
+  }
+
+  .more-video__item-img {
+    width: 160px;
+    height: 100%;
+    background-position: center center;
+    background-size: cover;
+    -ms-flex-negative: 0;
+    flex-shrink: 0;
+  }
+
+  .more-video__item-content {
+    padding: 10px 20px;
+    height: 100%;
+    box-sizing: border-box;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    -ms-flex: 1;
+    flex: 1;
+  }
+
+  .more-video__item-title {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: break-all;
+  }
+
+  .more-video__item-desc {
+    color: #9A9A9A;
+  }
+
+  .weui-desktop-key-tag {
+    display: inline-block;
+    vertical-align: middle;
+    padding: 2px .5em;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.3;
+    background-color: #f1f1f1;
+    color: #9a9a9a;
+    border-radius: 2px;
+    margin-right: 8px;
+    margin-top: -0.2em;
+  }
+
+  .more-video__item-status {
+    margin-left: 5px;
+    float: right;
+  }
+
+  .menu_content .frm_input_box {
+    width: 260px;
+  }
+
+  .media_input_box {
+    display: block;
+    width: auto;
+    border-width: 0;
+    padding-left: 0;
+    font-size: 20px;
+    height: auto;
+  }
+
+  .media_input_box {
+    display: block;
+    width: auto;
+    border-width: 0;
+    padding-left: 0;
+    font-size: 20px;
+    height: auto;
+  }
+
+  .preview_video_context {
+    border: 1px solid #e4e8eb;
+    cursor: pointer;
+  }
+
+  .preview_video_hd {
+    position: relative;
+    width: auto;
+    height: auto;
+    background-size: contain;
+    background-position: 50% 50%;
+    background-repeat: no-repeat;
+    padding-bottom: 56.25%;
+    background-color: #000;
   }
 </style>
