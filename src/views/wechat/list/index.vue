@@ -579,123 +579,125 @@
       <div class="create-button"><el-button type="primary" size="medium" :disabled="wechatAble" @click="createMenu()">发布</el-button></div>
     </el-dialog>
 
-    <el-dialog title="选择素材" width="60%" :closeOnClickModal="false" :visible.sync="dialogSendVisible">
-      <div v-if="sendType === 'news'" class="dialog_bd">
-        <div class="dialog_media_container appmsg_media_dialog">
-            <!-- <div class="sub_title_bar in_dialog">
-                <div class="search_bar">
-                  <el-input v-model="richInput" placeholder="搜索图文消息" size="small"></el-input>
-                </div>
-                <div class="appmsg_create tr">
-                  <el-button type="primary" size="small">新建图文消息</el-button>
-                </div>
-            </div> -->
-            <div class="dialog_media_inner">
-              <div class="js_appmsg_list appmsg_list media_dialog">
-                <div v-for="(item, index) in newsData" :key="index" class="appmsg_col"><div class="inner">
-                  <div>
-                    <div class="appmsg single has_first_cover" :class="{'selected' : mediaSelect[index]}" @click="selsectMedia(1, item, index)">
-                      <div class="appmsg_content">
-                        <div class="appmsg_info">
-                          <em class="appmsg_date">更新于 {{item.update_time | dateFormat}}</em>
-                        </div>
-                        <div class="appmsg_item simple_card_media">
-                          <!-- 图文  -->
-                          <div class="card_appmsg">
-                            <div class="card_appmsg_inner">
-                              <div class="weui-desktop-vm_primary card_appmsg_hd">
-                                <strong class="card_appmsg_title js_title">
-                                  <a href="" v-if="item.content && item.content.news_item" target="_blank" data-msgid="100000007" data-idx="0">{{item.content.news_item[0].title}}</a>
-                                  
-                                </strong>
-                              <div class="weui-desktop-vm_default card_appmsg_bd">
-                               
-                                <div v-if="item.content && item.content.news_item" class="card_appmsg_thumb" :style="'background-image:url(' + item.content.news_item[0].url +')'"></div>
+    <el-dialog title="选择素材" :width="dialogSendWidth" :closeOnClickModal="false" :visible.sync="dialogSendVisible">
+      <div v-loading="sendLoading">
+        <div v-if="sendType === 'news'" class="dialog_bd">
+          <div class="dialog_media_container appmsg_media_dialog">
+              <!-- <div class="sub_title_bar in_dialog">
+                  <div class="search_bar">
+                    <el-input v-model="richInput" placeholder="搜索图文消息" size="small"></el-input>
+                  </div>
+                  <div class="appmsg_create tr">
+                    <el-button type="primary" size="small">新建图文消息</el-button>
+                  </div>
+              </div> -->
+              <div class="dialog_media_inner">
+                <div class="js_appmsg_list appmsg_list media_dialog">
+                  <div v-for="(item, index) in newsData" :key="index" class="appmsg_col"><div class="inner">
+                    <div>
+                      <div class="appmsg single has_first_cover" :class="{'selected' : mediaSelect[index]}" @click="selsectMedia(1, item, index)">
+                        <div class="appmsg_content">
+                          <div class="appmsg_info">
+                            <em class="appmsg_date">更新于 {{item.update_time | dateFormat}}</em>
+                          </div>
+                          <div class="appmsg_item simple_card_media">
+                            <!-- 图文  -->
+                            <div class="card_appmsg">
+                              <div class="card_appmsg_inner">
+                                <div class="weui-desktop-vm_primary card_appmsg_hd">
+                                  <strong class="card_appmsg_title js_title">
+                                    <a>{{item.title}}</a>
+                                    
+                                  </strong>
+                                <div class="weui-desktop-vm_default card_appmsg_bd">
+                                
+                                  <div class="card_appmsg_thumb" :style="'background-image:url(' + item.url +')'"></div>
+                                </div>
                               </div>
-                            </div>
-                          </div>   
-                          <a href="" class="edit_mask preview_mask js_preview" data-msgid="100000007" data-idx="0">
-                            <div class="edit_mask_content">
-                              <p class="">预览文章</p>
-                            </div>
-                            <span class="vm_box"></span>
-                          </a>
+                            </div>   
+                            <a href="" class="edit_mask preview_mask js_preview" data-msgid="100000007" data-idx="0">
+                              <div class="edit_mask_content">
+                                <p class="">预览文章</p>
+                              </div>
+                              <span class="vm_box"></span>
+                            </a>
+                          </div>
                         </div>
+                        <div class="edit_mask appmsg_mask">
+                          <!-- <i class="icon_card_selected">已选择</i> -->
+                          <i class="el-icon-check icon_card_selected"></i>
+                        </div>   
                       </div>
-                      <div class="edit_mask appmsg_mask">
-                        <!-- <i class="icon_card_selected">已选择</i> -->
-                        <i class="el-icon-check icon_card_selected"></i>
-                      </div>   
                     </div>
                   </div>
                 </div>
+              </div>       
+              <div v-show="!newsData || newsData.length === 0" class="no_media_wrp">
+                <p class="tips">暂无素材</p>
               </div>
-            </div>                  
-          </div>
-              <!-- <div class="no_media_wrp">
-                  <p class="tips">暂无素材</p>
-              </div>
-              <span class="vm_box"></span> -->
-              
+              <span class="vm_box"></span>           
+            </div>
+                
+            </div>
           </div>
         </div>
-      </div>
-      <div v-else-if="sendType === 'pic'" class="weui-desktop-step__panel">
-        <div class="weui-desktop-img-picker weui-desktop-grid">
-          <div class="weui-desktop-grid__item weui-desktop-img-category">
-            <ul class="weui-desktop-menu">
-              <li class="weui-desktop-menu__item">
-                <a href="javascript:;" class="weui-desktop-menu__link weui-desktop-menu__link_current">
-                  <strong class="weui-desktop-img-category__title">全部图片</strong>
-                  <em class="weui-desktop-img-category__size">(1)</em>
-                </a>
-              </li>
-              <li class="weui-desktop-menu__item">
-                <a href="javascript:;" class="weui-desktop-menu__link">
-                  <strong class="weui-desktop-img-category__title">未分组</strong>
-                  <em class="weui-desktop-img-category__size">(1)</em>
-                </a>
-              </li>
-              <li class="weui-desktop-menu__item">
-                <a href="javascript:;" class="weui-desktop-menu__link">
-                  <strong class="weui-desktop-img-category__title">文章配图</strong>
-                  <em class="weui-desktop-img-category__size">(0)</em>
-                </a>
-              </li>
-            </ul>
-            <div class="weui-desktop-img-category__add">
-              <div class="weui-desktop-popover__wrp">
-                <span class="weui-desktop-popover__target">
-                  <a href="javascript:;">新建分组</a>
-                </span>
-                <div class="weui-desktop-popover weui-desktop-popover_pos-up-center" style="display: none;">
-                  <div class="weui-desktop-popover__inner">
-                    <div class="weui-desktop-popover__desc">
-                      <div>
-                        <form weui="true"><div class="weui-desktop-form__control-group">
-                          <label class="weui-desktop-form__label">创建分组</label>
-                          <div class="weui-desktop-form__controls">
-                            <div class="weui-desktop-form__input-area">
-                              <span class="weui-desktop-form__input-wrp">
-                                <input type="text" name="group_name" placeholder="" class="weui-desktop-form__input">
-                              </span>
+        <div v-else-if="sendType === 'pic'" class="weui-desktop-step__panel">
+          <div class="weui-desktop-img-picker weui-desktop-grid">
+            <!-- <div class="weui-desktop-grid__item weui-desktop-img-category">
+              <ul class="weui-desktop-menu">
+                <li class="weui-desktop-menu__item">
+                  <a href="javascript:;" class="weui-desktop-menu__link weui-desktop-menu__link_current">
+                    <strong class="weui-desktop-img-category__title">全部图片</strong>
+                    <em class="weui-desktop-img-category__size">(1)</em>
+                  </a>
+                </li>
+                <li class="weui-desktop-menu__item">
+                  <a href="javascript:;" class="weui-desktop-menu__link">
+                    <strong class="weui-desktop-img-category__title">未分组</strong>
+                    <em class="weui-desktop-img-category__size">(1)</em>
+                  </a>
+                </li>
+                <li class="weui-desktop-menu__item">
+                  <a href="javascript:;" class="weui-desktop-menu__link">
+                    <strong class="weui-desktop-img-category__title">文章配图</strong>
+                    <em class="weui-desktop-img-category__size">(0)</em>
+                  </a>
+                </li>
+              </ul>
+              <div class="weui-desktop-img-category__add">
+                <div class="weui-desktop-popover__wrp">
+                  <span class="weui-desktop-popover__target">
+                    <a href="javascript:;">新建分组</a>
+                  </span>
+                  <div class="weui-desktop-popover weui-desktop-popover_pos-up-center" style="display: none;">
+                    <div class="weui-desktop-popover__inner">
+                      <div class="weui-desktop-popover__desc">
+                        <div>
+                          <form weui="true">
+                            <div class="weui-desktop-form__control-group">
+                              <label class="weui-desktop-form__label">创建分组</label>
+                              <div class="weui-desktop-form__controls">
+                                <div class="weui-desktop-form__input-area">
+                                  <span class="weui-desktop-form__input-wrp">
+                                    <input type="text" name="group_name" placeholder="" class="weui-desktop-form__input">
+                                  </span>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </form>
+                          </form>
+                        </div>
                       </div>
-                    </div>
-                    <div class="weui-desktop-popover__bar">
-                      <div>
-                        <button type="button" class="weui-desktop-btn weui-desktop-btn_primary">确定</button>
-                        <button type="button" class="weui-desktop-btn weui-desktop-btn_default">取消</button>
+                      <div class="weui-desktop-popover__bar">
+                        <div>
+                          <button type="button" class="weui-desktop-btn weui-desktop-btn_primary">确定</button>
+                          <button type="button" class="weui-desktop-btn weui-desktop-btn_default">取消</button>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-            </div>
+            </div> -->
             <div class="weui-desktop-grid__item">
               <div class="weui-desktop-img-picker__list__area">
                 <!-- <div class="weui-desktop-global-mod weui-desktop-media-global-bar">
@@ -730,204 +732,208 @@
                       </div>
                     </div>
                   </div> -->
-                  <div class="weui-desktop-media-list-wrp weui-desktop-img-picker__list__wrp js_img-picker_wrapper" style="height: 790px;">
+                  <div class="weui-desktop-media-list-wrp weui-desktop-img-picker__list__wrp js_img-picker_wrapper">
                     <div class="weui-desktop-img-picker__list">
                       <div v-for="(item, index) in imageData" :key="index" class="weui-desktop-img-picker__item" :class="{'selected' : mediaSelect[index]}" @click="selsectMedia(2, item, index)">
                         <i role="img" aria-describedby="图片描述" title="图片描述" class="weui-desktop-img-picker__img-thumb" :style="'background-image: url(' + item.url + ')'">
                         <span class="image_dialog__checkbox" style="display: none;"></span></i>
                         <strong class="weui-desktop-img-picker__img-title">{{item.name}}</strong>
                       </div>
+                      <div v-show="!imageData || imageData.length === 0" class="no_media_wrp">
+                        <p class="tips">暂无素材</p>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-      
-      <div v-else-if="sendType === 'voice'" class="weui-desktop-dialog__bd">
-        <div class="audio_music_dialog_content">
-          <div class="weui-desktop-tab weui-desktop-tab_dialog weui-desktop-tab_title">
-            <ul class="weui-desktop-tab__navs">
-              <li class="weui-desktop-tab__nav weui-desktop-tab__nav_current"><a href="javascript:void(0);" target="">素材库</a></li>
-            </ul>
-          </div>
-          <div class="weui-desktop-media-area">
-            <div class="weui-desktop-media-area_audio">
-              <!-- <div class="weui-desktop-media-area__hd weui-desktop-global-mod weui-desktop-media-global-bar">
-                <div class="weui-desktop-global__info">
-                  <p class="gap_top_item tips_global">由于版本兼容的原因,你暂时只可以选择60秒内的音频发送</p>
-                </div>
-                <div class="weui-desktop-global__extra">
-                  <button type="button" class="weui-desktop-btn weui-desktop-btn_default">上传音频</button>
-                </div>
-              </div> -->
-              <div class="weui-desktop-media__list-wrp weui-desktop-media-area__bd">
-                <p class="weui-desktop-media-tips weui-desktop-media-tips_loading" style="height: 645px; display: none;">加载中</p>
-                <p class="weui-desktop-media-tips" style="height: 645px; display: none;">暂无数据</p>
-                <ul class="weui-desktop-media__list" style="height: 645px;">
-                  <div class="tbody-list">
-                    <label v-for="(item, index) in voiceData" :key="index" class="audio_item_wrp">
-                      <div class="frm_checkbox_label audio_item" :class="{'checked' : mediaSelect[index]}" @click="selsectMedia(3, item, index)">
-                        <div class="lbl_content clear_float">
-                          <label class="weui-desktop-form__check-label audio_checkout" style="display: none;">
-                            <input type="checkbox" checking="" class="weui-desktop-form__checkbox"> <i class="weui-desktop-icon-checkbox"></i>
-                            <span class="weui-desktop-form__check-content"></span>
-                          </label>
-                          <div class="audio_item_left">
-                            <span class="audio_title ">{{item.name}}</span>
-                            <div class="audio_item_left_bottom">
-                              <span class="audio_date">{{item.update_time | dateFormat}}</span>
-                              <span class="audio_tip" style="display: none;">转码中</span>
-                              <span class="audio_tip" style="display: none;">转码失败</span>
-                            </div>
-                          </div>
-                          <div class="audio_item_right">
-                            <div class="audio_play audio_default">
-                              <div class="weui-desktop-audio-player weui-desktop-audio_stopped undefined">
-                                <em title="点击播放" class="weui-desktop-audio-player__switch"></em>
-                              </div>
-                            </div>
-                            <div class="audio_length"></div>
-                          </div>
-                          <div class="checked_layer" style="display: none;"></div>
-                          <div class="checked_layer_gray" style="display: none;"></div>
-                          <div class="transcoding_top_tip" style="display: none;">转码完成后才可以使用</div>
-                          <div class="transcoding_top_tip" style="display: none;">转码失败，不可以使用</div>
-                          <div class="transcoding_top_tip" style="display: none;">该音频超过60秒，不可以使用</div>
-                        </div>
-                      </div>
-                      <div class="frm_checkbox_label audio_item checked">
-                        <div class="lbl_content clear_float">
-                          <label class="weui-desktop-form__check-label audio_checkout" style="display: none;">
-                            <input type="checkbox" checking="" class="weui-desktop-form__checkbox"> <i class="weui-desktop-icon-checkbox"></i>
-                            <span class="weui-desktop-form__check-content"></span>
-                          </label>
-                          <div class="audio_item_left">
-                            <span class="audio_title ">音频测试</span>
-                            <div class="audio_item_left_bottom">
-                              <span class="audio_date">2019-12-24</span>
-                              <span class="audio_tip" style="display: none;">转码中</span>
-                              <span class="audio_tip" style="display: none;">转码失败</span>
-                            </div>
-                          </div>
-                          <div class="audio_item_right">
-                            <div class="audio_play audio_default">
-                              <div class="weui-desktop-audio-player weui-desktop-audio_stopped undefined">
-                                <em title="点击播放" class="weui-desktop-audio-player__switch"></em>
-                              </div>
-                            </div>
-                            <div class="audio_length">00:16</div>
-                          </div>
-                          <div class="checked_layer" style="display: none;"></div>
-                          <div class="checked_layer_gray" style="display: none;"></div>
-                          <div class="transcoding_top_tip" style="display: none;">转码完成后才可以使用</div>
-                          <div class="transcoding_top_tip" style="display: none;">转码失败，不可以使用</div>
-                          <div class="transcoding_top_tip" style="display: none;">该音频超过60秒，不可以使用</div>
-                        </div>
-                      </div>
-                      
-                    </label>
-                    
-                    
-                  </div>
-                  <div class="tbody-list" style="display: none;"></div>
-                </ul>
-              </div>
+        
+        <div v-else-if="sendType === 'voice'" class="weui-desktop-dialog__bd">
+          <div class="audio_music_dialog_content">
+            <div class="weui-desktop-tab weui-desktop-tab_dialog weui-desktop-tab_title">
+              <ul class="weui-desktop-tab__navs">
+                <li class="weui-desktop-tab__nav weui-desktop-tab__nav_current"><a href="javascript:void(0);" target="">素材库</a></li>
+              </ul>
             </div>
-            <div class="weui-desktop-media-area_music js_music_block" style="display: none;">
-              <div class="weui-desktop-media-area__hd weui-desktop-global-mod weui-desktop-media-global-bar search_before">
-                <div class="weui-desktop-global__info">
-                  <div class="weui-desktop-search weui-desktop-form__input_clear">
-                    <span class="weui-desktop-form__input-wrp">
-                      <span class="weui-desktop-form__input-append-in">
-                        <button type="button" class="weui-desktop-icon-btn weui-desktop-search__btn">
-                          <div class="weui-desktop-icon weui-desktop-icon__inputSearch weui-desktop-icon__small">
-                            <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M11.33 10.007l4.273 4.273a.502.502 0 0 1 .005.709l-.585.584a.499.499 0 0 1-.709-.004L10.046 11.3a6.278 6.278 0 1 1 1.284-1.294zm.012-3.729a5.063 5.063 0 1 0-10.127 0 5.063 5.063 0 0 0 10.127 0z"></path></svg>
+            <div class="weui-desktop-media-area">
+              <div class="weui-desktop-media-area_audio">
+                <!-- <div class="weui-desktop-media-area__hd weui-desktop-global-mod weui-desktop-media-global-bar">
+                  <div class="weui-desktop-global__info">
+                    <p class="gap_top_item tips_global">由于版本兼容的原因,你暂时只可以选择60秒内的音频发送</p>
+                  </div>
+                  <div class="weui-desktop-global__extra">
+                    <button type="button" class="weui-desktop-btn weui-desktop-btn_default">上传音频</button>
+                  </div>
+                </div> -->
+                <div class="weui-desktop-media__list-wrp weui-desktop-media-area__bd">
+                  <p class="weui-desktop-media-tips" style="height: 645px; display: none;">暂无数据</p>
+                  <ul class="weui-desktop-media__list">
+                    <div class="tbody-list">
+                      <label v-for="(item, index) in voiceData" :key="index" class="audio_item_wrp">
+                        <div class="frm_checkbox_label audio_item" :class="{'checked' : mediaSelect[index]}" @click="selsectMedia(3, item, index)">
+                          <div class="lbl_content clear_float">
+                            <label class="weui-desktop-form__check-label audio_checkout" style="display: none;">
+                              <input type="checkbox" checking="" class="weui-desktop-form__checkbox"> <i class="weui-desktop-icon-checkbox"></i>
+                              <span class="weui-desktop-form__check-content"></span>
+                            </label>
+                            <div class="audio_item_left">
+                              <span class="audio_title ">{{item.name}}</span>
+                              <div class="audio_item_left_bottom">
+                                <span class="audio_date">{{item.update_time | dateFormat}}</span>
+                                <span class="audio_tip" style="display: none;">转码中</span>
+                                <span class="audio_tip" style="display: none;">转码失败</span>
+                              </div>
+                            </div>
+                            <div class="audio_item_right">
+                              <div class="audio_play audio_default">
+                                <div class="weui-desktop-audio-player weui-desktop-audio_stopped undefined">
+                                  <em title="点击播放" class="weui-desktop-audio-player__switch"></em>
+                                </div>
+                              </div>
+                              <div class="audio_length"></div>
+                            </div>
+                            <div class="checked_layer" style="display: none;"></div>
+                            <div class="checked_layer_gray" style="display: none;"></div>
+                            <div class="transcoding_top_tip" style="display: none;">转码完成后才可以使用</div>
+                            <div class="transcoding_top_tip" style="display: none;">转码失败，不可以使用</div>
+                            <div class="transcoding_top_tip" style="display: none;">该音频超过60秒，不可以使用</div>
                           </div>
-                        </button>
+                        </div>
+                        <div class="frm_checkbox_label audio_item checked">
+                          <div class="lbl_content clear_float">
+                            <label class="weui-desktop-form__check-label audio_checkout" style="display: none;">
+                              <input type="checkbox" checking="" class="weui-desktop-form__checkbox"> <i class="weui-desktop-icon-checkbox"></i>
+                              <span class="weui-desktop-form__check-content"></span>
+                            </label>
+                            <div class="audio_item_left">
+                              <span class="audio_title ">音频测试</span>
+                              <div class="audio_item_left_bottom">
+                                <span class="audio_date">2019-12-24</span>
+                                <span class="audio_tip" style="display: none;">转码中</span>
+                                <span class="audio_tip" style="display: none;">转码失败</span>
+                              </div>
+                            </div>
+                            <div class="audio_item_right">
+                              <div class="audio_play audio_default">
+                                <div class="weui-desktop-audio-player weui-desktop-audio_stopped undefined">
+                                  <em title="点击播放" class="weui-desktop-audio-player__switch"></em>
+                                </div>
+                              </div>
+                              <div class="audio_length">00:16</div>
+                            </div>
+                            <div class="checked_layer" style="display: none;"></div>
+                            <div class="checked_layer_gray" style="display: none;"></div>
+                            <div class="transcoding_top_tip" style="display: none;">转码完成后才可以使用</div>
+                            <div class="transcoding_top_tip" style="display: none;">转码失败，不可以使用</div>
+                            <div class="transcoding_top_tip" style="display: none;">该音频超过60秒，不可以使用</div>
+                          </div>
+                        </div>
+                      </label>
+                    </div>
+                    <div v-show="!voiceData || voiceData.length === 0" class="no_media_wrp">
+                      <p class="tips">暂无素材</p>
+                    </div>
+                  </ul>
+                </div>
+              </div>
+              <div class="weui-desktop-media-area_music js_music_block" style="display: none;">
+                <div class="weui-desktop-media-area__hd weui-desktop-global-mod weui-desktop-media-global-bar search_before">
+                  <div class="weui-desktop-global__info">
+                    <div class="weui-desktop-search weui-desktop-form__input_clear">
+                      <span class="weui-desktop-form__input-wrp">
+                        <span class="weui-desktop-form__input-append-in">
+                          <button type="button" class="weui-desktop-icon-btn weui-desktop-search__btn">
+                            <div class="weui-desktop-icon weui-desktop-icon__inputSearch weui-desktop-icon__small">
+                              <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M11.33 10.007l4.273 4.273a.502.502 0 0 1 .005.709l-.585.584a.499.499 0 0 1-.709-.004L10.046 11.3a6.278 6.278 0 1 1 1.284-1.294zm.012-3.729a5.063 5.063 0 1 0-10.127 0 5.063 5.063 0 0 0 10.127 0z"></path></svg>
+                            </div>
+                          </button>
+                        </span>
+                        <input placeholder="输入歌名/歌手搜索" type="text" class="weui-desktop-form__input">
                       </span>
-                      <input placeholder="输入歌名/歌手搜索" type="text" class="weui-desktop-form__input">
-                    </span>
-                    <div class="weui-desktop-search__panel" style="display: none;"></div>
+                      <div class="weui-desktop-search__panel" style="display: none;"></div>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div class="weui-desktop-media__list-wrp weui-desktop-media-area__bd">
-                <p class="weui-desktop-media-tips weui-desktop-media-tips_loading" style="height: 645px; display: none;">加载中</p>
-                <p class="weui-desktop-media-tips" style="height: 645px; display: none;">没有相关搜索结果</p>
-                <ul class="weui-desktop-media__list qqmusic_list" style="height: 645px; display: none;">
-                  <div class="tbody-list"></div> <div class="tbody-list" style="display: none;"></div>
-                </ul>
+                <div class="weui-desktop-media__list-wrp weui-desktop-media-area__bd">
+                  <p class="weui-desktop-media-tips weui-desktop-media-tips_loading" style="height: 645px; display: none;">加载中</p>
+                  <p class="weui-desktop-media-tips" style="height: 645px; display: none;">没有相关搜索结果</p>
+                  <ul class="weui-desktop-media__list qqmusic_list" style="height: 645px; display: none;">
+                    <div class="tbody-list"></div> <div class="tbody-list" style="display: none;"></div>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div v-else-if="sendType === 'video'" class="weui-desktop-dialog__bd">
-        <div class="more-video__wrp">
-          <div class="more-video__lib">
-            <!-- <div class="more-video__title">
-              <button type="button" class="weui-desktop-btn weui-desktop-btn_default">本地上传</button>
-            </div> -->
-            <p class="weui-desktop-media-tips weui-desktop-media-tips_loading" style="height: 936.5px; display: none;">加载中</p>
-            <ul class="more-video__list" style="height: 912px;">
-              <li v-for="(item, index) in videoData" :key="index" class="more-video__item more-video__item_selected">
-                <div class="more-video__item-wrp" :class="{'selected' : mediaSelect[index]}" @click="selsectMedia(4, item, index)">
-                  <div class="more-video__item-img" :style="'background-image: url(' + item.url + ');background-color: #eee;'"></div>
-                  <div class="more-video__item-content">
-                    <div class="more-video__item-title">
-                      <b class="weui-desktop-key-tag" style="display: none;"></b><span>{{item.name}}</span>
+        <div v-else-if="sendType === 'video'" class="weui-desktop-dialog__bd">
+          <div class="more-video__wrp">
+            <div class="more-video__lib">
+              <!-- <div class="more-video__title">
+                <button type="button" class="weui-desktop-btn weui-desktop-btn_default">本地上传</button>
+              </div> -->
+              <p class="weui-desktop-media-tips weui-desktop-media-tips_loading" style="height: 936.5px; display: none;">加载中</p>
+              <ul class="more-video__list">
+                <li v-for="(item, index) in videoData" :key="index" class="more-video__item more-video__item_selected">
+                  <div class="more-video__item-wrp" :class="{'selected' : mediaSelect[index]}" @click="selsectMedia(4, item, index)">
+                    <div class="more-video__item-img" :style="'background-image: url(' + item.url + ');background-color: #eee;'"></div>
+                    <div class="more-video__item-content">
+                      <div class="more-video__item-title">
+                        <b class="weui-desktop-key-tag" style="display: none;"></b><span>{{item.name}}</span>
+                      </div>
+                      <div class="more-video__item-desc">{{item.update_time | dateFormat}}<span class="more-video__item-status"></span></div>
                     </div>
-                    <div class="more-video__item-desc">{{item.update_time | dateFormat}}<span class="more-video__item-status"></span></div>
+                    <div class="more-video__item-status-desc" style="display: none;"></div>
+                    <!-- <label class="weui-desktop-form__check-label" style="display: none;">
+                      <input type="checkbox" checking="" class="weui-desktop-form__checkbox"> <i class="weui-desktop-icon-checkbox"></i> <span class="weui-desktop-form__check-content"></span>
+                    </label>
+                    <span class="weui-desktop-simple-video__mask weui-desktop-simple-video__mask_suc"><i class="icon-svg-modules-media-vedio-player"></i><em class="weui-desktop-simple-video__duration">02:10</em></span> -->
                   </div>
-                  <div class="more-video__item-status-desc" style="display: none;"></div>
-                  <!-- <label class="weui-desktop-form__check-label" style="display: none;">
-                    <input type="checkbox" checking="" class="weui-desktop-form__checkbox"> <i class="weui-desktop-icon-checkbox"></i> <span class="weui-desktop-form__check-content"></span>
-                  </label>
-                  <span class="weui-desktop-simple-video__mask weui-desktop-simple-video__mask_suc"><i class="icon-svg-modules-media-vedio-player"></i><em class="weui-desktop-simple-video__duration">02:10</em></span> -->
-                </div>
-              </li>
-            </ul>
-          </div>
-          <!-- <div class="more-video__link" style="height: 888px; display: none;">
-            <form>
-              <div class="weui-desktop-form__control-group">
-                <label class="weui-desktop-form__label">视频/图文网址</label>
-                <div class="weui-desktop-form__controls">
-                  <div class="weui-desktop-form__input-area">
-                    <span class="weui-desktop-form__input-wrp"><input type="text" name="" placeholder="支持微信公众号文章链接，视频详情页链接和腾讯视频链接" require="true" class="weui-desktop-form__input"></span>
-                  </div>
-                  <button type="button" class="weui-desktop-btn weui-desktop-btn_default weui-desktop-btn_disabled">确定</button>
-                </div>
+                </li>
+              </ul>
+              <div v-show="!videoData || videoData.length === 0" class="no_media_wrp">
+                <p class="tips">暂无素材</p>
               </div>
-            </form> 
-            <p class="weui-desktop-media-tips weui-desktop-media-tips_loading" style="height: 385px; display: none;">加载中</p>
-            <ul class="more-video__list" style="display: none;">
-              <li class="more-video__empty">暂无视频</li>
-            </ul>
-            <ul class="more-video__list" style="display: none;">
-              <li class="more-video__item more-video__item_selected">
-                <div class="more-video__item-wrp">
-                  <div class="more-video__item-img" style="background-image: url(&quot;http://mmbiz.qpic.cn/mmbiz_jpg/Iubm4YfIbdAII10RFOFLztibW2GTdy8KssaDa3HIkTsSozVky8L7LjfPjFIhibhRwsVYP4YqUHRlfjMmumblShGw/0?wx_fmt=jpeg&quot;);"></div>
-                  <div class="more-video__item-content">
-                    <div class="more-video__item-title">测试视频</div>
-                    <div class="more-video__item-desc">2019-12-24 10:18</div>
+            </div>
+            <!-- <div class="more-video__link" style="height: 888px; display: none;">
+              <form>
+                <div class="weui-desktop-form__control-group">
+                  <label class="weui-desktop-form__label">视频/图文网址</label>
+                  <div class="weui-desktop-form__controls">
+                    <div class="weui-desktop-form__input-area">
+                      <span class="weui-desktop-form__input-wrp"><input type="text" name="" placeholder="支持微信公众号文章链接，视频详情页链接和腾讯视频链接" require="true" class="weui-desktop-form__input"></span>
+                    </div>
+                    <button type="button" class="weui-desktop-btn weui-desktop-btn_default weui-desktop-btn_disabled">确定</button>
                   </div>
-                  <label class="weui-desktop-form__check-label"><input type="checkbox" checking="" class="weui-desktop-form__checkbox"> <i class="weui-desktop-icon-checkbox"></i> <span class="weui-desktop-form__check-content"></span></label>
-                  <span class="weui-desktop-simple-video__mask weui-desktop-simple-video__mask_suc"><i class="icon-svg-modules-media-vedio-player"></i><em class="weui-desktop-simple-video__duration">02:10</em></span>
                 </div>
-              </li>
-            </ul>
-          </div> -->
+              </form> 
+              <p class="weui-desktop-media-tips weui-desktop-media-tips_loading" style="height: 385px; display: none;">加载中</p>
+              <ul class="more-video__list" style="display: none;">
+                <li class="more-video__empty">暂无视频</li>
+              </ul>
+              <ul class="more-video__list" style="display: none;">
+                <li class="more-video__item more-video__item_selected">
+                  <div class="more-video__item-wrp">
+                    <div class="more-video__item-img" style="background-image: url(&quot;http://mmbiz.qpic.cn/mmbiz_jpg/Iubm4YfIbdAII10RFOFLztibW2GTdy8KssaDa3HIkTsSozVky8L7LjfPjFIhibhRwsVYP4YqUHRlfjMmumblShGw/0?wx_fmt=jpeg&quot;);"></div>
+                    <div class="more-video__item-content">
+                      <div class="more-video__item-title">测试视频</div>
+                      <div class="more-video__item-desc">2019-12-24 10:18</div>
+                    </div>
+                    <label class="weui-desktop-form__check-label"><input type="checkbox" checking="" class="weui-desktop-form__checkbox"> <i class="weui-desktop-icon-checkbox"></i> <span class="weui-desktop-form__check-content"></span></label>
+                    <span class="weui-desktop-simple-video__mask weui-desktop-simple-video__mask_suc"><i class="icon-svg-modules-media-vedio-player"></i><em class="weui-desktop-simple-video__duration">02:10</em></span>
+                  </div>
+                </li>
+              </ul>
+            </div> -->
+          </div>
+        </div>
+        <pagination v-show="mediaListTotal>0" :total="mediaListTotal" :page.sync="mediaListIndex" :limit.sync="mediaListSize"  @pagination="getMediaList" />
+        <div class="dialog_ft">
+          <el-button type="primary" size="small" @click="confirmSend">确定</el-button>
+          <el-button size="small" @click="dialogSendVisible = false">取消</el-button>
         </div>
       </div>
-      
-
-      <div class="dialog_ft">
-        <el-button type="primary" size="small" @click="confirmSend">确定</el-button>
-        <el-button size="small" @click="dialogSendVisible = false">取消</el-button>
-		  </div>
     </el-dialog>
   </div>
 </template>
@@ -1194,19 +1200,25 @@ export default {
       selectMenuChildIndex: 0,
       sendType: '',
       dialogSendVisible: false,
+      sendLoading: false,
       richInput: '',
+      dialogSendWidth: '960px',
       mediaSelect: [],
       newsSelectId: '',
       mediaList: {
-        accessToken: '28_6CQ1MpCq_cWsjImX3gEG2Uo4ElRZylexr3rOQ2Nui9X0KKrA0iD2fQCuU--27ecP6rAKS9ENJqn1C1Gc7a5JIsT1EvxDb0O-o10usVdkENO0hKedJtpFQM5Q6BlgCWa46KuhHK-2eZGYcuLrARKgAAAHYR',
+        accessToken: '',
         count: 20,
         offset: 0,
         type: ''
       },
+      mediaListIndex: 1,
+      mediaListTotal: 0,
+      mediaListSize: 20,
       newsData: [],
       imageData: [],
       voiceData: [],
       videoData: [],
+      mediaObj: {},
       newsObj: {
         id: null,
         update: '',
@@ -1328,6 +1340,11 @@ export default {
       this.listQuery.pageIndex = data.page
       this.getWechatList()
     },
+    getMediaList(data) {
+      // 素材分页事件
+      this.mediaListIndex = data.page;
+      this.getMediaList();
+    },
     updateData() {
       // 编辑
       this.$refs['dataForm'].validate((valid) => {
@@ -1398,6 +1415,7 @@ export default {
       this.selectMenuIndex = 0
       this.selectMenuChildIndex = 0
       this.wechatName = row.name
+      this.mediaList.accessToken = row.accessToken
       this.getMenuListById()
     },
     getMenuListById(type, name) {
@@ -1530,14 +1548,26 @@ export default {
           } else if(this.menuForm.type === 'click') {
             param.menuKey = this.menuForm.menuKey
           } else if(this.menuForm.type === 'media_id') {
-            if (this.sendType === 'news') {
+            if (this.sendType === 'news' && this.newsObj.id) {
               param.mediaId = this.newsObj.id;
-            } else if (this.sendType === 'pic') {
+            } else if (this.sendType === 'pic' && this.imageObj.id) {
               param.mediaId = this.imageObj.id;
-            } else if (this.sendType === 'voice') {
+            } else if (this.sendType === 'voice' && this.voiceObj.id) {
               param.mediaId = this.voiceObj.id;
-            } else if (this.sendType === 'video') {
+            } else if (this.sendType === 'video' && this.videoObj.id) {
               param.mediaId = this.videoObj.id;
+            } else {
+              let msg = '';
+              if (this.sendType === '') {
+                msg = '请选择消息类型';
+              } else {
+                msg = '请从素材库选择素材';
+              }
+              this.$message({
+                message: msg,
+                type: 'warning'
+              });
+              return false;
             }
           }
           
@@ -1585,17 +1615,11 @@ export default {
         } else if(res.data.type === 'click') {
           this.menuForm.menuKey = res.data.menuKey
         } else if(res.data.type === 'media_id') {
-          // if (this.sendType === 'news') {
-          //   param.media_id = this.newsObj.id;
-          // } else if (this.sendType === 'word') {
-          
-          // } else if (this.sendType === 'pic') {
-          //   param.media_id = this.imageObj.id;
-          // } else if (this.sendType === 'voice') {
-          //   param.media_id = this.voiceObj.id;
-          // } else if (this.sendType === 'video') {
-          //   param.media_id = this.videoObj.id;
-          // }
+          this.sendType = '';
+          this.newsObj.id = null;
+          this.imageObj.id = null;
+          this.voiceObj.id = null;
+          this.videoObj.id = null;
         }
       })
       this.isSelectMenu = true
@@ -1682,7 +1706,11 @@ export default {
           this.menuForm.url = res.data.url 
           this.menuForm.pagePath = res.data.pagePath
         } else if(res.data.type === 'media_id') {
-
+          this.sendType = '';
+          this.newsObj.id = null;
+          this.imageObj.id = null;
+          this.voiceObj.id = null;
+          this.videoObj.id = null;
         }
       })
     },
@@ -1732,21 +1760,44 @@ export default {
       this.sendType = val;
       this.mediaSelect = [];
       this.menuForm.mediaId = '';
-      // if (val === 'word') {
-      //   this.$nextTick(() => {
-      //     this.$refs['sendEdit'].focus();
-      //   })
-      // }
+      if (this.sendType === 'pic') {
+        this.dialogSendWidth = '830px';
+      } else if (this.sendType === 'voice') {
+        this.dialogSendWidth = '780px';
+      } else {
+        this.dialogSendWidth = '960px';
+      }
     },
     sendSelect(val) {
       // 选择素材
       this.mediaList.type = val;
       this.menuForm.mediaId = '';
+      this.mediaSelect = [];
       this.dialogSendVisible = true;
+      this.getMediaList();
+    },
+    getMediaList() {
+      // 获取素材列表
+      this.mediaList.offset = (this.mediaListIndex - 1) * this.mediaListSize;
+      this.mediaList.count = this.mediaList.offset + this.mediaListSize;
+      this.sendLoading = true;
       getMediaList(this.mediaList).then(res => {
+        this.sendLoading = false;
+        this.mediaListTotal = res.data.total_count;
         if (Array.isArray(res.data.item)) {
           if (this.mediaList.type === 'news') {
-            this.newsData = res.data.item;
+            let nData = [];
+            res.data.item.forEach(item => {
+              let itemObj = {};
+              itemObj.media_id = item.media_id;
+              itemObj.update_time = item.update_time;
+              if (item.content && Array.isArray(item.content.news_item) && item.content.news_item.length > 0) {
+                itemObj.title = item.content.news_item[0].title;
+                itemObj.url = /data-src="(\S+)"/.exec(item.content.news_item[0].content)[1];
+              }
+              nData.push(itemObj);
+            })
+            this.newsData = nData;
           } else if (this.mediaList.type === 'image') {
             this.imageData = res.data.item;
           } else if (this.mediaList.type === 'voice') {
@@ -1755,41 +1806,35 @@ export default {
             this.videoData = res.data.item;
           }
         }
+      }).catch(err => {
+        this.sendLoading = false;
       })
     },
     selsectMedia(type, item, index) {
       this.mediaSelect = [];
       this.mediaSelect[index] = true;
-      if (type === 1) {
-        this.newsObj.id = item.id;
-        this.newsObj.update = item.update_time;
-        if (item.content && Array.isArray(item.content.news_item) && item.content.news_item.length > 0) {
-          this.newsObj.title = item.content.news_item[0].title;
-          this.newsObj.url = item.content.news_item[0].url;
-        }
-      } else if (type === 2) {
-        this.imageObj.id = item.media_id;
-        this.imageObj.url = item.url;
-      } else if (type === 3) {
-        this.voiceObj.id = item.media_id;
-        this.voiceObj.title = item.name;
-      } else if (type === 4) {
-        this.videoObj.id = item.media_id;
-        this.videoObj.title = item.name;
-        this.videoObj.update = item.update_time;
-        this.videoObj.url = item.url;
-      }
-      console.log(this.mediaSelect);
-      console.log(this.videoObj);
+      this.mediaObj = item;
     },
     confirmSend() {
       // 选择素材
-      this.dialogSendVisible = false;
-      if (this.menuForm.mediaId === null || this.menuForm.mediaId === '') {
-        
-      } else {
-        this.dialogSendVisible = false;
+      if (this.sendType === 'news') {
+        this.newsObj.id = this.mediaObj.media_id;
+        this.newsObj.update = this.mediaObj.update_time;
+        this.newsObj.title = this.mediaObj.title;
+        this.newsObj.url = this.mediaObj.url;
+      } else if (this.sendType === 'pic') {
+        this.imageObj.id = this.mediaObj.media_id;
+        this.imageObj.url = this.mediaObj.url;
+      } else if (this.sendType === 'voice') {
+        this.voiceObj.id = this.mediaObj.media_id;
+        this.voiceObj.title = this.mediaObj.name;
+      } else if (this.sendType === 'video') {
+        this.videoObj.id = this.mediaObj.media_id;
+        this.videoObj.title = this.mediaObj.name;
+        this.videoObj.update = this.mediaObj.update_time;
+        this.videoObj.url = this.mediaObj.url;
       }
+      this.dialogSendVisible = false;
     },
     deleteSelect(type) {
       // 删除选中素材
@@ -2533,7 +2578,7 @@ export default {
 
   .dialog_media_container {
     position: relative;
-    height: 498px;
+    height: 600px;
   }
 
   .appmsg_media_dialog>.sub_title_bar {
@@ -2608,11 +2653,6 @@ export default {
   .weui-desktop-img-picker {
     display: -ms-flexbox;
     display: flex;
-  }
-
-  .weui-desktop-img-picker > .weui-desktop-grid__item:first-child {
-    width: 190px;
-    margin-right: -1px;
   }
 
   .weui-desktop-img-category {
@@ -2712,14 +2752,11 @@ export default {
     hyphens: auto;
   }
 
-  .weui-desktop-img-picker__list__area {
-    border-left: 1px solid #E4E8EB;
-  }
-
   .weui-desktop-img-picker__list__wrp {
     position: relative;
     margin-top: 30px;
     overflow: auto;
+    height: 640px;
   }
 
   .weui-desktop-img-picker__list {
@@ -2733,10 +2770,10 @@ export default {
     position: relative;
     float: left;
     width: 110px;
-    margin: 0 13px 20px 0;
+    margin: 0 15px 20px 15px;
   }
 
-  .weui-desktop-img-picker__item.selected .weui-desktop-img-picker__img-thumb::before {
+  .weui-desktop-img-picker__item.selected .weui-desktop-img-picker__img-thumb::before, .weui-desktop-img-picker__item:hover .weui-desktop-img-picker__img-thumb::before {
     content: '';
     position: absolute;
     top: 0;
@@ -2747,16 +2784,8 @@ export default {
     opacity: 0.1;
   }
 
-  .weui-desktop-img-picker__item.selected .weui-desktop-img-picker__img-thumb {
+  .weui-desktop-img-picker__item.selected .weui-desktop-img-picker__img-thumb, .weui-desktop-img-picker__item:hover .weui-desktop-img-picker__img-thumb {
     box-shadow: 0 0 0 2px #44B549 inset;
-  }
-
-  .weui-desktop-img-picker__item {
-    cursor: pointer;
-    position: relative;
-    float: left;
-    width: 110px;
-    margin: 0 13px 20px 0;
   }
 
   .weui-desktop-img-picker__img-thumb {
@@ -2798,15 +2827,17 @@ export default {
   }
 
   .media_dialog.appmsg_list {
+      width: 900px;
       position: relative;
       padding: 28px 140px;
-      height: 345px;
+      height: 560px;
       margin: 0;
       overflow-y: auto;
   }
 
   .media_dialog .appmsg_col {
-    width: 48%;
+    width: 44%;
+    margin: 0 3%;
   }
 
   .appmsg_col {
@@ -3004,6 +3035,8 @@ export default {
   }
 
   .weui-desktop-media__list {
+    height: 645px;
+    overflow: auto;
     position: relative;
     padding: 0 40px;
   }
@@ -3013,7 +3046,7 @@ export default {
   }
 
   .audio_item_wrp:nth-child(odd) {
-    margin-right: 10px;
+    margin-right: 30px;
   }
 
   .audio_item_wrp {
@@ -3134,7 +3167,7 @@ export default {
     color: #9A9A9A;
   }
 
-  .audio_item.frm_checkbox_label.checked {
+  .audio_item.frm_checkbox_label.checked, .audio_item.frm_checkbox_label:hover {
     padding: 13px 14px;
     border: 2px solid #1AAD19;
   }
@@ -3170,10 +3203,9 @@ export default {
   }
 
   .more-video__list {
-    height: 440px;
-    overflow-y: hidden;
-    overflow-x: hidden;
-    margin-right: -20px;
+    min-height: 400px;
+    max-height: 600px;
+    overflow: auto;
   }
 
   .more-video__item_selected {
