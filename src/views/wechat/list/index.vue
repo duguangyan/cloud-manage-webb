@@ -1206,7 +1206,7 @@ export default {
       mediaSelect: [],
       newsSelectId: '',
       mediaList: {
-        accessToken: '',
+        accountId: '',
         count: 20,
         offset: 0,
         type: ''
@@ -1415,7 +1415,7 @@ export default {
       this.selectMenuIndex = 0
       this.selectMenuChildIndex = 0
       this.wechatName = row.name
-      this.mediaList.accessToken = row.accessToken
+      this.mediaList.accountId = row.id
       this.getMenuListById()
     },
     getMenuListById(type, name) {
@@ -1550,12 +1550,16 @@ export default {
           } else if(this.menuForm.type === 'media_id') {
             if (this.sendType === 'news' && this.newsObj.id) {
               param.mediaId = this.newsObj.id;
+              param.mediaType = 1;
             } else if (this.sendType === 'pic' && this.imageObj.id) {
               param.mediaId = this.imageObj.id;
+              param.mediaType = 2;
             } else if (this.sendType === 'voice' && this.voiceObj.id) {
               param.mediaId = this.voiceObj.id;
+              param.mediaType = 3;
             } else if (this.sendType === 'video' && this.videoObj.id) {
               param.mediaId = this.videoObj.id;
+              param.mediaType = 4;
             } else {
               let msg = '';
               if (this.sendType === '') {
@@ -1602,20 +1606,30 @@ export default {
     selectMenu(index, id) {
       // 选择主菜单
       getMenuById({ id: id }).then(res => {
-        this.menuForm.menuName = res.data.name 
-        this.menuForm.type = res.data.type 
-        this.menuForm.appId = res.data.appId 
+        this.menuForm.menuName = res.data.name;
+        this.menuForm.type = res.data.type;
+        this.menuForm.appId = res.data.appId;
+        this.sendType = '';
         if(res.data.type === 'view') {
-          this.menuForm.link = res.data.url
-          this.menuForm.url = ''
+          this.menuForm.link = res.data.url;
+          this.menuForm.url = '';
         } else if(res.data.type === 'miniprogram') {
-          this.menuForm.link = ''
-          this.menuForm.url = res.data.url
+          this.menuForm.link = '';
+          this.menuForm.url = res.data.url;
           this.menuForm.pagePath = res.data.pagePath
         } else if(res.data.type === 'click') {
-          this.menuForm.menuKey = res.data.menuKey
+          this.menuForm.menuKey = res.data.menuKey;
         } else if(res.data.type === 'media_id') {
-          this.sendType = '';
+          if (res.data.mediaType === 1) {
+            this.sendType = 'news';
+          } else if (res.data.mediaType === 2) {
+            this.sendType = 'pic';
+          } else if (res.data.mediaType === 3) {
+            this.sendType = 'voice';
+          } else if (res.data.mediaType === 4) {
+            this.sendType = 'video';
+          }
+
           this.newsObj.id = null;
           this.imageObj.id = null;
           this.voiceObj.id = null;
@@ -1689,24 +1703,34 @@ export default {
     },
     selectMenuChild(index, id) {
       // 选择子菜单
-      this.isSelectMenuChild = true
-      this.selectMenuChildId = id
-      this.selectMenuChildIndex = index
+      this.isSelectMenuChild = true;
+      this.selectMenuChildId = id;
+      this.selectMenuChildIndex = index;
       getMenuById({ id: id }).then(res => {
-        this.menuForm.menuChildName = res.data.name 
-        this.menuForm.type = res.data.type 
-        this.menuForm.appId = res.data.appId 
+        this.menuForm.menuChildName = res.data.name; 
+        this.menuForm.type = res.data.type;
+        this.menuForm.appId = res.data.appId; 
+        this.sendType = '';
         if(res.data.type === 'view') {
-          this.menuForm.link = res.data.url
-          this.menuForm.url = ''
+          this.menuForm.link = res.data.url;
+          this.menuForm.url = '';
         } else if(res.data.type === 'click') {
-          this.menuForm.menuKey = res.data.menuKey
+          this.menuForm.menuKey = res.data.menuKey;
         } else if(res.data.type === 'miniprogram') {
-          this.menuForm.link = ''
-          this.menuForm.url = res.data.url 
+          this.menuForm.link = '';
+          this.menuForm.url = res.data.url; 
           this.menuForm.pagePath = res.data.pagePath
         } else if(res.data.type === 'media_id') {
-          this.sendType = '';
+          if (res.data.mediaType === 1) {
+            this.sendType = 'news';
+          } else if (res.data.mediaType === 2) {
+            this.sendType = 'pic';
+          } else if (res.data.mediaType === 3) {
+            this.sendType = 'voice';
+          } else if (res.data.mediaType === 4) {
+            this.sendType = 'video';
+          }
+
           this.newsObj.id = null;
           this.imageObj.id = null;
           this.voiceObj.id = null;

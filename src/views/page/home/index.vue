@@ -301,7 +301,6 @@ export default {
       treeProps: {
         label: 'name',
         value: 'id',
-        expandTrigger: 'hover',
         checkStrictly: true
       },
       // treeProps: {
